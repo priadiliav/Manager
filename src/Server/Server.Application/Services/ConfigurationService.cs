@@ -1,0 +1,92 @@
+using Server.Application.Abstractions;
+using Server.Application.Dtos;
+using Server.Application.Dtos.Configuration;
+
+namespace Server.Application.Services;
+
+public interface IConfigurationService
+{
+	/// <summary>
+	/// Gets a specific configuration by its ID.
+	/// </summary>
+	/// <param name="configurationId"></param>
+	/// <returns></returns>
+	Task<ConfigurationDto?> GetConfigurationAsync(long configurationId);
+	
+	/// <summary>
+	/// Gets all configurations.
+	/// </summary>
+	/// <returns></returns>
+	Task<IEnumerable<ConfigurationDto>> GetConfigurationsAsync();
+	
+	/// <summary>
+	/// Creates a new configuration.
+	/// </summary>
+	/// <param name="request"></param>
+	/// <returns></returns>
+	Task<ConfigurationDto?> CreateConfigurationAsync(ConfigurationCreateRequest request);
+	
+	/// <summary>
+	/// Updates an existing configuration.
+	/// </summary>
+	/// <param name="configurationId"></param>
+	/// <param name="request"></param>
+	/// <returns></returns>
+	Task<ConfigurationDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request);
+}
+
+public class ConfigurationService (
+		ILongPollingDispatcher<long, ConfigurationDto> pollingService,
+		IUnitOfWork unitOfWork) : IConfigurationService
+{
+	public async Task<ConfigurationDto?> GetConfigurationAsync(long configurationId)
+	{
+		var configuration = await unitOfWork.Configurations.GetAsync(configurationId);
+		if (configuration is null)
+			return null;
+		
+		// Get count of subscribers for this configuration by long polling service
+		var subscriberCount = pollingService.GetSubscriberCount(configurationId);
+		return configuration.ToDto(subscriberCount);
+	}
+
+	public async Task<IEnumerable<ConfigurationDto>> GetConfigurationsAsync()
+	{
+		var configurations = await unitOfWork.Configurations.GetAllAsync();
+		return configurations.Select(x =>
+		{
+			var subscriberCount = pollingService.GetSubscriberCount(x.Id);
+			return x.ToDto(subscriberCount);
+		});
+	}
+
+	public async Task<ConfigurationDto?> CreateConfigurationAsync(ConfigurationCreateRequest request)
+	{
+		var configurationDomain = request.ToDomain();
+		await unitOfWork.Configurations.CreateAsync(configurationDomain);
+		await unitOfWork.SaveChangesAsync();
+
+		var createdConfigurationDto = await GetConfigurationAsync(configurationDomain.Id);
+		return createdConfigurationDto;
+	}
+
+	public async Task<ConfigurationDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request)
+	{
+		var existingConfigurationDomain = await unitOfWork.Configurations.GetAsync(configurationId);
+		if (existingConfigurationDomain is null)
+			return null;	
+		
+		var configurationDomain = request.ToDomain(configurationId);
+		existingConfigurationDomain.ModifyFrom(configurationDomain);
+		
+		await unitOfWork.Configurations.ModifyAsync(existingConfigurationDomain);
+		await unitOfWork.SaveChangesAsync();
+		
+		var updatedConfigurationDto = await GetConfigurationAsync(configurationId);
+		if(updatedConfigurationDto is null)
+			return null;
+		
+		pollingService.NotifyUpdateForKey(configurationId, updatedConfigurationDto);
+		return updatedConfigurationDto;
+	}
+}

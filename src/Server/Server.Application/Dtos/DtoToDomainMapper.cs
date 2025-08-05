@@ -1,0 +1,160 @@
+using Server.Application.Dtos.Agent;
+using Server.Application.Dtos.Configuration;
+using Server.Application.Dtos.Policy;
+using Server.Application.Dtos.Process;
+
+namespace Server.Application.Dtos;
+
+public static class DtoToDomainMapper
+{
+	#region Agent
+	public static Domain.Models.Agent ToDomain(this AgentDto source)
+		=> new()
+		{ 
+			Id = source.Id,
+			Name = source.Name,
+			ConfigurationId = source.ConfigurationId,
+		};
+
+	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source)
+		=> new()
+		{
+				Name = source.Name,
+				ConfigurationId = source.ConfigurationId
+		};
+	
+	public static Domain.Models.Agent ToDomain(this AgentModifyRequest source, Guid id)
+		=> new()
+		{
+				Id = id,
+				Name = source.Name,
+				ConfigurationId = source.ConfigurationId
+		};
+	#endregion
+	
+	#region Configuration
+	public static Domain.Models.Configuration ToDomain(this ConfigurationDto source)
+		=> new()
+		{
+				Id = source.Id,
+				Name = source.Name,
+				Agents = source.AgentIds
+						.Select(id => new Domain.Models.Agent { Id = id }).ToList(),
+				Processes = source.Processes
+						.Select(p => p.ToDomain(source.Id)).ToList(),
+				Policies = source.Policies
+						.Select(p => p.ToDomain(source.Id)).ToList()
+		};
+
+	public static Domain.Models.Configuration ToDomain(this ConfigurationCreateRequest source)
+		=> new()
+		{
+				Name = source.Name,
+				Processes = source.Processes
+						.Select(p => p.ToDomain()).ToList(),
+				Policies = source.Policies
+						.Select(p => p.ToDomain()).ToList()
+		};
+	
+	public static Domain.Models.Configuration ToDomain(this ConfigurationModifyRequest source, long id)
+		=> new()
+		{
+				Id = id,
+				Name = source.Name,
+				Processes = source.Processes
+						.Select(p => p.ToDomain()).ToList(),
+				Policies = source.Policies
+						.Select(p => p.ToDomain()).ToList()
+		};
+	#endregion
+
+	#region Process
+	public static Domain.Models.Process ToDomain(this ProcessDto source)
+		=> new()
+		{
+				Id = source.Id,
+				Name = source.Name
+		};
+	
+	public static Domain.Models.Process ToDomain(this ProcessCreateRequest source)
+		=> new()
+		{
+				Name = source.Name
+		};
+
+	public static Domain.Models.Process ToDomain(this ProcessModifyRequest source, long id)
+		=> new()
+		{
+				Id = id,
+				Name = source.Name
+		};
+	
+	private static Domain.Models.ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source, long configurationId)
+		=> new()
+		{
+				ProcessId = source.ProcessId,
+				ProcessState = source.ProcessState,
+				ConfigurationId = configurationId
+		};
+	
+	private static Domain.Models.ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source)
+		=> new()
+		{
+				ProcessId = source.ProcessId,
+				ProcessState = source.ProcessState,
+		};
+	#endregion
+	
+	#region Policy
+	public static Domain.Models.Policy ToDomain(this PolicyDto source)
+		=> new()
+		{
+				Id = source.Id,
+				Name = source.Name,
+				Description = source.Description,
+				RegistryPath = source.RegistryPath,
+				RegistryValueType = source.RegistryValueType,
+				RegistryKeyType = source.RegistryKeyType,
+				RegistryKey = source.RegistryKey
+		};
+	
+	public static Domain.Models.Policy ToDomain(this PolicyCreateRequest source)
+	 		=> new()
+		{
+				Name = source.Name,
+				Description = source.Description,
+				RegistryPath = source.RegistryPath,
+				RegistryValueType = source.RegistryValueType,
+				RegistryKeyType = source.RegistryKeyType,
+				RegistryKey = source.RegistryKey
+		};
+	
+	public static Domain.Models.Policy ToDomain(this PolicyModifyRequest source, long id)
+	 		=> new()
+		{
+				Id = id,
+				Name = source.Name,
+				Description = source.Description,
+				RegistryPath = source.RegistryPath,
+				RegistryValueType = source.RegistryValueType,
+				RegistryKeyType = source.RegistryKeyType,
+				RegistryKey = source.RegistryKey
+		};
+	
+	private static Domain.Models.PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source, long configurationId)
+		=> new()
+		{
+				PolicyId = source.PolicyId,
+				RegistryValue = source.RegistryValue,
+				ConfigurationId = configurationId
+		};
+
+
+	private static Domain.Models.PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source)
+		=> new()
+		{
+				PolicyId = source.PolicyId,
+				RegistryValue = source.RegistryValue,
+		};
+	#endregion
+}
