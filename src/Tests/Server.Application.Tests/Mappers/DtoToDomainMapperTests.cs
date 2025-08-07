@@ -43,7 +43,7 @@ public class DtoToDomainMapperTests
         };
 
         // Act
-        var result = request.ToDomain();
+        var result = request.ToDomain(new byte[] { }, new byte[] { });
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -331,16 +331,16 @@ public class DtoToDomainMapperTests
         };
 
         // Act
-        var agentResult = agentRequest.ToDomain();
+        var agentResult = agentRequest.ToDomain(new byte[] { }, new byte[] { });
         var processResult = processRequest.ToDomain();
         var policyResult = policyRequest.ToDomain();
 
         // Assert
         Assert.That(agentResult.Name, Is.EqualTo(""));
         Assert.That(agentResult.ConfigurationId, Is.EqualTo(0));
-        
+
         Assert.That(processResult.Name, Is.EqualTo(""));
-        
+
         Assert.That(policyResult.Name, Is.EqualTo(""));
         Assert.That(policyResult.Description, Is.EqualTo(""));
         Assert.That(policyResult.RegistryPath, Is.EqualTo(""));
@@ -374,4 +374,4 @@ public class DtoToDomainMapperTests
         Assert.That(result.Processes, Is.Empty);
         Assert.That(result.Policies, Is.Empty);
     }
-} 
+}

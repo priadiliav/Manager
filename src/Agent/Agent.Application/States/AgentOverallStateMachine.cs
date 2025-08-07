@@ -26,9 +26,9 @@ public class AgentOverallStateMachine : IAgentStateMachine
   private readonly StateMachine<AgentOverallState, AgentOverallTrigger> _machine;
   private readonly ILogger<AgentOverallStateMachine> _logger;
 
-  private readonly AgentStateContext _context;
   private readonly AgentAuthStateMachine _authMachine;
   private readonly AgentWorkStateMachine _workMachine;
+  private readonly AgentStateContext _context;
 
   public AgentOverallState CurrentState => _machine.State;
 

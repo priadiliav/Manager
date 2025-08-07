@@ -2,6 +2,7 @@ using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
 using Server.Application.Dtos.Process;
+using Server.Application.Dtos.User;
 
 namespace Server.Application.Dtos;
 
@@ -10,19 +11,21 @@ public static class DtoToDomainMapper
 	#region Agent
 	public static Domain.Models.Agent ToDomain(this AgentDto source)
 		=> new()
-		{ 
+		{
 			Id = source.Id,
 			Name = source.Name,
 			ConfigurationId = source.ConfigurationId,
 		};
 
-	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source)
+	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source, byte[] secretHash, byte[] secretSalt)
 		=> new()
 		{
 				Name = source.Name,
-				ConfigurationId = source.ConfigurationId
+				ConfigurationId = source.ConfigurationId,
+        SecretHash = secretHash,
+        SecretSalt = secretSalt
 		};
-	
+
 	public static Domain.Models.Agent ToDomain(this AgentModifyRequest source, Guid id)
 		=> new()
 		{
@@ -31,7 +34,7 @@ public static class DtoToDomainMapper
 				ConfigurationId = source.ConfigurationId
 		};
 	#endregion
-	
+
 	#region Configuration
 	public static Domain.Models.Configuration ToDomain(this ConfigurationDto source)
 		=> new()
@@ -55,7 +58,7 @@ public static class DtoToDomainMapper
 				Policies = source.Policies
 						.Select(p => p.ToDomain()).ToList()
 		};
-	
+
 	public static Domain.Models.Configuration ToDomain(this ConfigurationModifyRequest source, long id)
 		=> new()
 		{
@@ -75,7 +78,7 @@ public static class DtoToDomainMapper
 				Id = source.Id,
 				Name = source.Name
 		};
-	
+
 	public static Domain.Models.Process ToDomain(this ProcessCreateRequest source)
 		=> new()
 		{
@@ -88,7 +91,7 @@ public static class DtoToDomainMapper
 				Id = id,
 				Name = source.Name
 		};
-	
+
 	private static Domain.Models.ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source, long configurationId)
 		=> new()
 		{
@@ -96,7 +99,7 @@ public static class DtoToDomainMapper
 				ProcessState = source.ProcessState,
 				ConfigurationId = configurationId
 		};
-	
+
 	private static Domain.Models.ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source)
 		=> new()
 		{
@@ -104,7 +107,7 @@ public static class DtoToDomainMapper
 				ProcessState = source.ProcessState,
 		};
 	#endregion
-	
+
 	#region Policy
 	public static Domain.Models.Policy ToDomain(this PolicyDto source)
 		=> new()
@@ -117,7 +120,7 @@ public static class DtoToDomainMapper
 				RegistryKeyType = source.RegistryKeyType,
 				RegistryKey = source.RegistryKey
 		};
-	
+
 	public static Domain.Models.Policy ToDomain(this PolicyCreateRequest source)
 	 		=> new()
 		{
@@ -128,7 +131,7 @@ public static class DtoToDomainMapper
 				RegistryKeyType = source.RegistryKeyType,
 				RegistryKey = source.RegistryKey
 		};
-	
+
 	public static Domain.Models.Policy ToDomain(this PolicyModifyRequest source, long id)
 	 		=> new()
 		{
@@ -140,7 +143,7 @@ public static class DtoToDomainMapper
 				RegistryKeyType = source.RegistryKeyType,
 				RegistryKey = source.RegistryKey
 		};
-	
+
 	private static Domain.Models.PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source, long configurationId)
 		=> new()
 		{
@@ -157,4 +160,19 @@ public static class DtoToDomainMapper
 				RegistryValue = source.RegistryValue,
 		};
 	#endregion
+
+  #region User
+
+  public static Domain.Models.User ToDomain(this UserRegisterRequest source, byte[] passwordHash, byte[] passwordSalt)
+  {
+    return new Domain.Models.User
+    {
+      Username = source.Username,
+      Role = "User",
+      PasswordHash = passwordHash,
+      PasswordSalt = passwordSalt
+    };
+  }
+
+  #endregion
 }

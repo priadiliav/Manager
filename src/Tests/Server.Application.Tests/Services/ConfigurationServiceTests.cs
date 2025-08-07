@@ -1,4 +1,5 @@
 using Common.Messages;
+using Common.Messages.Configuration;
 using Server.Application.Abstractions;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Services;

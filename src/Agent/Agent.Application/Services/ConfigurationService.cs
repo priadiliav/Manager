@@ -1,7 +1,5 @@
 using Agent.Application.Abstractions;
-using Agent.Application.States;
-using Agent.Domain.Context;
-using Common.Messages;
+using Common.Messages.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Agent.Application.Services;
@@ -34,7 +32,7 @@ public class ConfigurationService : IConfigurationService
     }
 
 
-    // ConfigureAsync handling configuration updates via long polling approach
+    // Starts listening for configuration updates using the long polling client.
     public Task StartListeningAsync (CancellationToken cancellationToken)
       => _longPollingClient.StartListeningAsync(HandleConfigurationUpdateAsync, cancellationToken);
 }

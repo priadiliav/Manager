@@ -10,5 +10,5 @@
       <ProjectReference Include="..\..\Common\Common.Messages\Common.Messages.csproj" />
       <ProjectReference Include="..\Server.Domain\Server.Domain.csproj" />
     </ItemGroup>
-
+  
 </Project>

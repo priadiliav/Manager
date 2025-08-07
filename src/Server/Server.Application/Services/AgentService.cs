@@ -1,6 +1,8 @@
+using Common.Messages.Agent;
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Agent;
+using Server.Domain.Models;
 
 namespace Server.Application.Services;
 
@@ -11,21 +13,21 @@ public interface IAgentService
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<AgentDto>> GetAgentsAsync();
-	
+
 	/// <summary>
 	/// Gets a specific agent by its ID.
 	/// </summary>
 	/// <param name="agentId"></param>
 	/// <returns></returns>
 	Task<AgentDto?> GetAgentAsync(Guid agentId);
-	
+
 	/// <summary>
 	/// Creates a new agent.
 	/// </summary>
 	/// <param name="request"></param>
 	/// <returns></returns>
-	Task<AgentDto?> CreateAgentAsync(AgentCreateRequest request);
-	
+	Task<AgentCreateResponse?> CreateAgentAsync(AgentCreateRequest request);
+
 	/// <summary>
 	/// Updates an existing agent.
 	/// </summary>
@@ -33,10 +35,21 @@ public interface IAgentService
 	/// <param name="request"></param>
 	/// <returns></returns>
 	Task<AgentDto?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request);
+
+  /// <summary>
+  /// Logs in an agent using its ID and secret.
+  /// </summary>
+  /// <param name="request"></param>
+  /// <returns></returns>
+  Task<AgentLoginResponse?> LoginAsync(LoginRequestMessage request);
 }
 
-public class AgentService (IUnitOfWork unitOfWork) : IAgentService
+public class AgentService (
+  IJwtTokenProvider jwtTokenProvider,
+  IPasswordHasher passwordHasher,
+  IUnitOfWork unitOfWork) : IAgentService
 {
+  #region Crud
 	public async Task<IEnumerable<AgentDto>> GetAgentsAsync()
 	{
 		var agents = await unitOfWork.Agents.GetAllAsync();
@@ -49,14 +62,18 @@ public class AgentService (IUnitOfWork unitOfWork) : IAgentService
 		return agent?.ToDto();
 	}
 
-	public async Task<AgentDto?> CreateAgentAsync(AgentCreateRequest request)
-	{
-		var agentDomain = request.ToDomain();
+	public async Task<AgentCreateResponse?> CreateAgentAsync(AgentCreateRequest request)
+  {
+    var randomGuidString = Guid.NewGuid().ToString();
+
+    var (secretHash, secretSalt) = passwordHasher.CreatePasswordHash(randomGuidString);
+    var agentDomain = request.ToDomain(secretHash, secretSalt);
+
 		await unitOfWork.Agents.CreateAsync(agentDomain);
 		await unitOfWork.SaveChangesAsync();
 
-		var createdAgentDto = await GetAgentAsync(agentDomain.Id);
-		return createdAgentDto;
+		var createdAgentDto = await unitOfWork.Agents.GetAsync(agentDomain.Id);
+		return createdAgentDto?.ToCreateResponse(randomGuidString);
 	}
 
 	public async Task<AgentDto?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request)
@@ -64,14 +81,27 @@ public class AgentService (IUnitOfWork unitOfWork) : IAgentService
 		var existingAgentDomain = await unitOfWork.Agents.GetAsync(agentId);
 		if (existingAgentDomain is null)
 			return null;
-		
+
 		var agentDomain = request.ToDomain(agentId);
 		existingAgentDomain.ModifyFrom(agentDomain);
-	
+
 		await unitOfWork.Agents.ModifyAsync(existingAgentDomain);
 		await unitOfWork.SaveChangesAsync();
-		
+
 		var updatedAgentDto = await GetAgentAsync(agentId);
 		return updatedAgentDto;
 	}
+  #endregion
+
+  #region Authentication
+  public async Task<AgentLoginResponse?> LoginAsync(LoginRequestMessage request)
+  {
+    var agent = await unitOfWork.Agents.GetAsync(request.AgentId);
+    if (agent is null || !passwordHasher.IsPasswordValid(request.Secret, agent.SecretHash, agent.SecretSalt))
+      return null;
+
+    var token = jwtTokenProvider.GenerateToken(agent.Id.ToString(), "Agent");
+    return agent.ToLoginResponse(token);
+  }
+  #endregion
 }

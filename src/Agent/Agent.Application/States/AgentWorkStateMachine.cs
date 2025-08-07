@@ -25,10 +25,12 @@ public enum WorkTrigger
 
 public class AgentWorkStateMachine : IAgentStateMachine
 {
-  private readonly ILogger<AgentWorkStateMachine> _logger;
-  private readonly IEnumerable<ILongPollingRunner> _longPollingRunners;
   private readonly StateMachine<AgentWorkState, WorkTrigger> _machine;
+  private readonly ILogger<AgentWorkStateMachine> _logger;
+
+  private readonly IEnumerable<ILongPollingRunner> _longPollingRunners;
   private readonly AgentStateContext _context;
+
   public AgentWorkState CurrentState => _machine.State;
 
   public AgentWorkStateMachine(

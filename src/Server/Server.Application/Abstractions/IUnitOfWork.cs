@@ -6,5 +6,6 @@ public interface IUnitOfWork : IDisposable
 	IConfigurationRepository Configurations { get; }
 	IPolicyRepository Policies { get; }
 	IProcessRepository Processes { get; }
+  IUserRepository Users { get; }
 	Task<int> SaveChangesAsync();
 }

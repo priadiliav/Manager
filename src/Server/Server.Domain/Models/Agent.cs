@@ -6,6 +6,8 @@ public class Agent : ITrackable
 {
 	public Guid Id { get; init; }
 	public string Name { get; set; } = string.Empty;
+  public byte[] SecretHash { get; set; } = default!;
+  public byte[] SecretSalt { get; set; } = default!;
 	public long ConfigurationId { get; set; }
 	public virtual Configuration Configuration { get; set; } = null!;
 

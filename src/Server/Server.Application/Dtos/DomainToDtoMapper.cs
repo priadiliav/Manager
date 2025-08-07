@@ -1,8 +1,11 @@
+using System.Data.Common;
 using Common.Messages;
+using Common.Messages.Configuration;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
 using Server.Application.Dtos.Process;
+using Server.Application.Dtos.User;
 
 namespace Server.Application.Dtos;
 
@@ -18,18 +21,35 @@ public static class DomainToDtoMapper
 			ConfigurationId = agent.ConfigurationId
 		};
 	}
+
+  public static AgentCreateResponse ToCreateResponse(this Domain.Models.Agent agent, string secret)
+  {
+    return new AgentCreateResponse
+    {
+      Id = agent.Id,
+      Name = agent.Name,
+      ConfigurationId = agent.ConfigurationId,
+      Secret = secret
+    };
+  }
+
+  public static AgentLoginResponse ToLoginResponse(this Domain.Models.Agent agent, string token)
+  {
+    return new AgentLoginResponse
+    {
+      Token = token
+    };
+  }
 	#endregion
 
 	#region Configuration
 	public static ConfigurationDto ToDto(
-			this Domain.Models.Configuration configuration,
-			int subscriberCount = 0)
+			this Domain.Models.Configuration configuration)
 	{
 		return new ConfigurationDto
 		{
 			Id = configuration.Id,
 			Name = configuration.Name,
-			SubscriberCount = subscriberCount,
 			AgentIds = configuration.Agents.Select(a => a.Id).ToList(),
 			Processes = configuration.Processes.Select(p => p.ToDto()).ToList(),
 			Policies = configuration.Policies.Select(p => p.ToDto()).ToList()
@@ -90,4 +110,16 @@ public static class DomainToDtoMapper
 		};
 	}
 	#endregion
+
+  #region User
+  public static UserLoginResponse ToResponse(this Domain.Models.User user, string token)
+  {
+    return new UserLoginResponse
+    {
+      Username = user.Username,
+      Role = user.Role,
+      Token = token
+    };
+  }
+  #endregion
 }

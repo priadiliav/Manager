@@ -1,3 +1,5 @@
+using Common.Messages.Agent;
+using Microsoft.AspNetCore.Mvc;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
 
@@ -18,7 +20,7 @@ public static class AgentEndpoints
 		app.MapGet("/api/agents/{agentId:guid}", async (Guid agentId, IAgentService agentService) =>
 		{
 			var agent = await agentService.GetAgentAsync(agentId);
-			return agent is null 
+			return agent is null
 					? Results.NotFound()
 					: Results.Ok(agent);
 		})
@@ -28,7 +30,7 @@ public static class AgentEndpoints
 		app.MapPost("/api/agents", async (AgentCreateRequest request, IAgentService agentService) =>
 		{
 			var createdAgent = await agentService.CreateAgentAsync(request);
-			return createdAgent is null 
+			return createdAgent is null
 					? Results.BadRequest("Failed to create agent.")
 					: Results.Created($"/api/agents/{createdAgent.Id}", createdAgent);
 		})
@@ -38,11 +40,21 @@ public static class AgentEndpoints
 		app.MapPut("/api/agents/{agentId:guid}", async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>
 		{
 			var updatedAgent = await agentService.UpdateAgentAsync(agentId, request);
-			return updatedAgent is null 
+			return updatedAgent is null
 					? Results.NotFound()
-					: Results.Ok(updatedAgent); 
+					: Results.Ok(updatedAgent);
 		})
 		.WithName("UpdateAgent")
 		.WithTags("Agents");
+
+    app.MapPost("/api/agents/login", async ([FromBody] LoginRequestMessage request, IAgentService agentService) =>
+    {
+      var loginResponse = await agentService.LoginAsync(request);
+      return loginResponse is null
+          ? Results.Unauthorized()
+          : Results.Ok(loginResponse);
+    })
+    .WithName("AgentLogin")
+    .WithTags("Agents");
 	}
 }

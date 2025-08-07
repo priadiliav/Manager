@@ -5,6 +5,7 @@ using Agent.Domain.Context;
 using Agent.Infrastructure.Communication;
 using Agent.Worker;
 using Common.Messages;
+using Common.Messages.Configuration;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services
         sp => new InMemoryLongPollingClient<ConfigurationMessage>(
             sp.GetRequiredService<ILogger<InMemoryLongPollingClient<ConfigurationMessage>>>(),
             sp.GetRequiredService<HttpClient>(),
+            sp.GetRequiredService<AgentStateContext>(),
             "configuration/3/subscribe"));
 
 builder.Services.AddSingleton<ILongPollingRunner, ConfigurationService>();

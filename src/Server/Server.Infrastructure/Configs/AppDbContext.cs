@@ -9,11 +9,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 		public DbSet<Domain.Models.Configuration> Configurations { get; set; }
 		public DbSet<Domain.Models.Policy> Policies { get; set; }
 		public DbSet<Domain.Models.Process> Processes { get; set; }
-		
+    public DbSet<Domain.Models.User> Users { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-		
+
 			#region Policy in Configuration
 			modelBuilder.Entity<PolicyInConfiguration>()
 					.HasKey(pc => new { pc.ConfigurationId, pc.PolicyId });
@@ -28,7 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 					.WithMany(p => p.Configurations)
 					.HasForeignKey(pc => pc.PolicyId);
 			#endregion
-        
+
 			#region Process in Configuration
 			modelBuilder.Entity<ProcessInConfiguration>()
 					.HasKey(pc => new { pc.ConfigurationId, pc.ProcessId });

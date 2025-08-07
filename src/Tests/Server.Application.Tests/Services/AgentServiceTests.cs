@@ -11,14 +11,15 @@ public class AgentServiceTests
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IAgentRepository> _mockAgentRepository = null!;
     private AgentService _agentService = null!;
-
+    private IJwtTokenProvider _jwtTokenProvider = null!;
+    private IPasswordHasher _passwordHasher = null!;
     [SetUp]
     public void Setup()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockAgentRepository = new Mock<IAgentRepository>();
         _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
-        _agentService = new AgentService(_mockUnitOfWork.Object);
+        _agentService = new AgentService(_jwtTokenProvider, _passwordHasher, _mockUnitOfWork.Object);
     }
 
     [Test]
@@ -41,7 +42,7 @@ public class AgentServiceTests
         Assert.That(result, Has.Count.EqualTo(2));
         Assert.That(result.First().Name, Is.EqualTo("Agent1"));
         Assert.That(result.Last().Name, Is.EqualTo("Agent2"));
-        
+
         _mockAgentRepository.Verify(x => x.GetAllAsync(), Times.Once);
     }
 
@@ -57,7 +58,7 @@ public class AgentServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.Empty);
-        
+
         _mockAgentRepository.Verify(x => x.GetAllAsync(), Times.Once);
     }
 
@@ -67,7 +68,7 @@ public class AgentServiceTests
         // Arrange
         var agentId = Guid.NewGuid();
         var agent = new Agent { Id = agentId, Name = "TestAgent", ConfigurationId = 1 };
-        
+
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(agent);
 
         // Act
@@ -78,7 +79,7 @@ public class AgentServiceTests
         Assert.That(result!.Id, Is.EqualTo(agentId));
         Assert.That(result.Name, Is.EqualTo("TestAgent"));
         Assert.That(result.ConfigurationId, Is.EqualTo(1));
-        
+
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Once);
     }
 
@@ -94,7 +95,7 @@ public class AgentServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
-        
+
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Once);
     }
 
@@ -138,7 +139,7 @@ public class AgentServiceTests
         var existingAgent = new Agent { Id = agentId, Name = "OldName", ConfigurationId = 1 };
         var request = new AgentModifyRequest { Name = "NewName", ConfigurationId = 2 };
         var updatedAgent = new Agent { Id = agentId, Name = "NewName", ConfigurationId = 2 };
-        
+
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(existingAgent);
         _mockAgentRepository.Setup(x => x.ModifyAsync(It.IsAny<Agent>())).Returns(Task.CompletedTask);
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(updatedAgent);
@@ -152,7 +153,7 @@ public class AgentServiceTests
         Assert.That(result!.Id, Is.EqualTo(agentId));
         Assert.That(result.Name, Is.EqualTo("NewName"));
         Assert.That(result.ConfigurationId, Is.EqualTo(2));
-        
+
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Exactly(2));
         _mockAgentRepository.Verify(x => x.ModifyAsync(It.IsAny<Agent>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
@@ -164,7 +165,7 @@ public class AgentServiceTests
         // Arrange
         var agentId = Guid.NewGuid();
         var request = new AgentModifyRequest { Name = "NewName", ConfigurationId = 2 };
-        
+
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync((Agent?)null);
 
         // Act
@@ -172,7 +173,7 @@ public class AgentServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
-        
+
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Once);
         _mockAgentRepository.Verify(x => x.ModifyAsync(It.IsAny<Agent>()), Times.Never);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
@@ -184,7 +185,7 @@ public class AgentServiceTests
         // Arrange
         var request = new AgentCreateRequest { Name = "TestAgent", ConfigurationId = 1 };
         var createdAgent = new Agent { Id = Guid.NewGuid(), Name = "TestAgent", ConfigurationId = 1 };
-        
+
         _mockAgentRepository.Setup(x => x.CreateAsync(It.IsAny<Agent>())).Returns(Task.CompletedTask);
         _mockAgentRepository.Setup(x => x.GetAsync(createdAgent.Id)).ReturnsAsync(createdAgent);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
@@ -204,7 +205,7 @@ public class AgentServiceTests
         var existingAgent = new Agent { Id = agentId, Name = "OldName", ConfigurationId = 1 };
         var request = new AgentModifyRequest { Name = "NewName", ConfigurationId = 2 };
         var updatedAgent = new Agent { Id = agentId, Name = "NewName", ConfigurationId = 2 };
-        
+
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(existingAgent);
         _mockAgentRepository.Setup(x => x.ModifyAsync(It.IsAny<Agent>())).Returns(Task.CompletedTask);
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(updatedAgent);
@@ -216,4 +217,4 @@ public class AgentServiceTests
         // Assert
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
-} 
+}

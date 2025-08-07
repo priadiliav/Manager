@@ -23,8 +23,9 @@ public enum AuthenticationTrigger
 
 public class AgentAuthStateMachine : IAgentStateMachine
 {
-  private readonly ILogger<AgentAuthStateMachine> _logger;
   private readonly StateMachine<AgentAuthenticationState, AuthenticationTrigger> _machine;
+  private readonly ILogger<AgentAuthStateMachine> _logger;
+
   private readonly  IAuthenticationService _authenticationService;
   private readonly AgentStateContext _context;
 
@@ -57,11 +58,11 @@ public class AgentAuthStateMachine : IAgentStateMachine
 
     try
     {
-      await Task.Delay(1000);
+      await _authenticationService.AuthenticateAsync(_context.CancellationTokenSource.Token);
 
       await _machine.FireAsync(AuthenticationTrigger.Success);
     }
-    catch (Exception ex)
+    catch (Exception)
     {
       _logger.LogError("An error occurred during authentication");
 

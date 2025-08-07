@@ -8,12 +8,14 @@ public class UnitOfWork(
 	IPolicyRepository policyRepository,
 	IConfigurationRepository configurationRepository,
 	IAgentRepository agentRepository,
-	IProcessRepository processRepository) : IUnitOfWork
+	IProcessRepository processRepository,
+  IUserRepository userRepository) : IUnitOfWork
 {
 	public IAgentRepository Agents { get; } = agentRepository;
 	public IConfigurationRepository Configurations { get; } = configurationRepository;
 	public IPolicyRepository Policies { get; } = policyRepository;
 	public IProcessRepository Processes { get; } = processRepository;
+  public IUserRepository Users { get; } = userRepository;
 
 	public async Task<int> SaveChangesAsync()
 	{

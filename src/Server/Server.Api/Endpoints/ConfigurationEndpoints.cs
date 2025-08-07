@@ -1,4 +1,5 @@
 using Common.Messages;
+using Common.Messages.Configuration;
 using Server.Application.Abstractions;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Services;
@@ -15,6 +16,7 @@ public static class ConfigurationEndpoints
 			var configurations = await service.GetConfigurationsAsync();
 			return Results.Ok(configurations);
 		})
+    .RequireAuthorization(policy => policy.RequireRole("User"))
 		.WithName("GetConfigurations")
 		.WithTags("Configuration");
 
@@ -56,6 +58,7 @@ public static class ConfigurationEndpoints
 					? Results.NoContent()
 					: Results.Ok(update);
 		})
+    .RequireAuthorization(policy => policy.RequireRole("Agent"))
 		.WithName("SubscribeConfigurationUpdates")
 		.WithTags("Configuration");
 

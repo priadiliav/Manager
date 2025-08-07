@@ -41,7 +41,7 @@ public class PolicyServiceTests
         Assert.That(result, Has.Count.EqualTo(2));
         Assert.That(result.First().Name, Is.EqualTo("Policy1"));
         Assert.That(result.Last().Name, Is.EqualTo("Policy2"));
-        
+
         _mockPolicyRepository.Verify(x => x.GetAllAsync(), Times.Once);
     }
 
@@ -57,7 +57,7 @@ public class PolicyServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.Empty);
-        
+
         _mockPolicyRepository.Verify(x => x.GetAllAsync(), Times.Once);
     }
 
@@ -66,17 +66,17 @@ public class PolicyServiceTests
     {
         // Arrange
         var policyId = 1L;
-        var policy = new Policy 
-        { 
-            Id = policyId, 
-            Name = "TestPolicy", 
+        var policy = new Policy
+        {
+            Id = policyId,
+            Name = "TestPolicy",
             Description = "Test Description",
             RegistryPath = "HKLM\\Test",
             RegistryValueType = RegistryValueType.String,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "TestKey"
         };
-        
+
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(policy);
 
         // Act
@@ -91,7 +91,7 @@ public class PolicyServiceTests
         Assert.That(result.RegistryValueType, Is.EqualTo(RegistryValueType.String));
         Assert.That(result.RegistryKeyType, Is.EqualTo(RegistryKeyType.Hklm));
         Assert.That(result.RegistryKey, Is.EqualTo("TestKey"));
-        
+
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Once);
     }
 
@@ -107,7 +107,7 @@ public class PolicyServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
-        
+
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Once);
     }
 
@@ -115,9 +115,9 @@ public class PolicyServiceTests
     public async Task CreatePolicyAsync_ShouldCreateAndReturnPolicy()
     {
         // Arrange
-        var request = new PolicyCreateRequest 
-        { 
-                Name = "NewPolicy", 
+        var request = new PolicyCreateRequest
+        {
+                Name = "NewPolicy",
                 Description = "New Description",
                 RegistryPath = "HKLM\\New",
                 RegistryValueType = RegistryValueType.String,
@@ -151,7 +151,7 @@ public class PolicyServiceTests
         Assert.That(result.RegistryValueType, Is.EqualTo(RegistryValueType.String));
         Assert.That(result.RegistryKeyType, Is.EqualTo(RegistryKeyType.Hklm));
         Assert.That(result.RegistryKey, Is.EqualTo("NewKey"));
-        Assert.That(result.Id, Is.EqualTo(createdPolicy!.Id)); // тут вже дійсний Id
+        Assert.That(result.Id, Is.EqualTo(createdPolicy!.Id)); // тут вже дійсний AgentId
 
         _mockPolicyRepository.Verify(x => x.CreateAsync(It.IsAny<Policy>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
@@ -162,36 +162,36 @@ public class PolicyServiceTests
     {
         // Arrange
         var policyId = 1L;
-        var existingPolicy = new Policy 
-        { 
-            Id = policyId, 
-            Name = "OldName", 
+        var existingPolicy = new Policy
+        {
+            Id = policyId,
+            Name = "OldName",
             Description = "Old Description",
             RegistryPath = "HKLM\\Old",
             RegistryValueType = RegistryValueType.String,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "OldKey"
         };
-        var request = new PolicyModifyRequest 
-        { 
-            Name = "NewName", 
+        var request = new PolicyModifyRequest
+        {
+            Name = "NewName",
             Description = "New Description",
             RegistryPath = "HKLM\\New",
             RegistryValueType = RegistryValueType.Dword,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "NewKey"
         };
-        var updatedPolicy = new Policy 
-        { 
-            Id = policyId, 
-            Name = "NewName", 
+        var updatedPolicy = new Policy
+        {
+            Id = policyId,
+            Name = "NewName",
             Description = "New Description",
             RegistryPath = "HKLM\\New",
             RegistryValueType = RegistryValueType.Dword,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "NewKey"
         };
-        
+
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(existingPolicy);
         _mockPolicyRepository.Setup(x => x.ModifyAsync(It.IsAny<Policy>())).Returns(Task.CompletedTask);
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(updatedPolicy);
@@ -209,7 +209,7 @@ public class PolicyServiceTests
         Assert.That(result.RegistryValueType, Is.EqualTo(RegistryValueType.Dword));
         Assert.That(result.RegistryKeyType, Is.EqualTo(RegistryKeyType.Hklm));
         Assert.That(result.RegistryKey, Is.EqualTo("NewKey"));
-        
+
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Exactly(2));
         _mockPolicyRepository.Verify(x => x.ModifyAsync(It.IsAny<Policy>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
@@ -220,16 +220,16 @@ public class PolicyServiceTests
     {
         // Arrange
         var policyId = 1L;
-        var request = new PolicyModifyRequest 
-        { 
-            Name = "NewName", 
+        var request = new PolicyModifyRequest
+        {
+            Name = "NewName",
             Description = "New Description",
             RegistryPath = "HKLM\\New",
             RegistryValueType = RegistryValueType.String,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "NewKey"
         };
-        
+
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync((Policy?)null);
 
         // Act
@@ -237,7 +237,7 @@ public class PolicyServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
-        
+
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Once);
         _mockPolicyRepository.Verify(x => x.ModifyAsync(It.IsAny<Policy>()), Times.Never);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
@@ -247,26 +247,26 @@ public class PolicyServiceTests
     public async Task CreatePolicyAsync_ShouldCallSaveChanges()
     {
         // Arrange
-        var request = new PolicyCreateRequest 
-        { 
-            Name = "TestPolicy", 
+        var request = new PolicyCreateRequest
+        {
+            Name = "TestPolicy",
             Description = "Test Description",
             RegistryPath = "HKLM\\Test",
             RegistryValueType = RegistryValueType.String,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "TestKey"
         };
-        var createdPolicy = new Policy 
-        { 
-            Id = 1, 
-            Name = "TestPolicy", 
+        var createdPolicy = new Policy
+        {
+            Id = 1,
+            Name = "TestPolicy",
             Description = "Test Description",
             RegistryPath = "HKLM\\Test",
             RegistryValueType = RegistryValueType.String,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "TestKey"
         };
-        
+
         _mockPolicyRepository.Setup(x => x.CreateAsync(It.IsAny<Policy>())).Returns(Task.CompletedTask);
         _mockPolicyRepository.Setup(x => x.GetAsync(createdPolicy.Id)).ReturnsAsync(createdPolicy);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
@@ -283,36 +283,36 @@ public class PolicyServiceTests
     {
         // Arrange
         var policyId = 1L;
-        var existingPolicy = new Policy 
-        { 
-            Id = policyId, 
-            Name = "OldName", 
+        var existingPolicy = new Policy
+        {
+            Id = policyId,
+            Name = "OldName",
             Description = "Old Description",
             RegistryPath = "HKLM\\Old",
             RegistryValueType = RegistryValueType.String,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "OldKey"
         };
-        var request = new PolicyModifyRequest 
-        { 
-            Name = "NewName", 
+        var request = new PolicyModifyRequest
+        {
+            Name = "NewName",
             Description = "New Description",
             RegistryPath = "HKLM\\New",
             RegistryValueType = RegistryValueType.Dword,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "NewKey"
         };
-        var updatedPolicy = new Policy 
-        { 
-            Id = policyId, 
-            Name = "NewName", 
+        var updatedPolicy = new Policy
+        {
+            Id = policyId,
+            Name = "NewName",
             Description = "New Description",
             RegistryPath = "HKLM\\New",
             RegistryValueType = RegistryValueType.Dword,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "NewKey"
         };
-        
+
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(existingPolicy);
         _mockPolicyRepository.Setup(x => x.ModifyAsync(It.IsAny<Policy>())).Returns(Task.CompletedTask);
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(updatedPolicy);
@@ -330,17 +330,17 @@ public class PolicyServiceTests
     {
         // Arrange
         var policyId = 1L;
-        var policy = new Policy 
-        { 
-            Id = policyId, 
-            Name = "CompletePolicy", 
+        var policy = new Policy
+        {
+            Id = policyId,
+            Name = "CompletePolicy",
             Description = "Complete Description",
             RegistryPath = "HKLM\\Software\\Test",
             RegistryValueType = RegistryValueType.Binary,
             RegistryKeyType = RegistryKeyType.Hklm,
             RegistryKey = "CompleteKey"
         };
-        
+
         _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(policy);
 
         // Act
@@ -355,7 +355,7 @@ public class PolicyServiceTests
         Assert.That(result.RegistryValueType, Is.EqualTo(RegistryValueType.Binary));
         Assert.That(result.RegistryKeyType, Is.EqualTo(RegistryKeyType.Hklm));
         Assert.That(result.RegistryKey, Is.EqualTo("CompleteKey"));
-        
+
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Once);
     }
-} 
+}

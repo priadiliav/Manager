@@ -1,4 +1,5 @@
 using Common.Messages;
+using Common.Messages.Configuration;
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Configuration;
@@ -43,22 +44,13 @@ public class ConfigurationService (
 	public async Task<ConfigurationDto?> GetConfigurationAsync(long configurationId)
 	{
 		var configuration = await unitOfWork.Configurations.GetAsync(configurationId);
-		if (configuration is null)
-			return null;
-
-		// Get count of subscribers for this configuration by long polling service
-		var subscribersCount = pollingService.GetSubscribersCount(configurationId);
-		return configuration.ToDto(subscribersCount);
+		return configuration?.ToDto();
 	}
 
 	public async Task<IEnumerable<ConfigurationDto>> GetConfigurationsAsync()
 	{
 		var configurations = await unitOfWork.Configurations.GetAllAsync();
-		return configurations.Select(x =>
-		{
-			var subscriberCount = pollingService.GetSubscribersCount(x.Id);
-			return x.ToDto(subscriberCount);
-		});
+		return configurations.Select(x => x.ToDto());
 	}
 
 	public async Task<ConfigurationDto?> CreateConfigurationAsync(ConfigurationCreateRequest request)

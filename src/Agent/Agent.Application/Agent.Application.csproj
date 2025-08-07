@@ -12,10 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Dtos\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\..\Common\Common.Messages\Common.Messages.csproj" />
       <ProjectReference Include="..\Agent.Domain\Agent.Domain.csproj" />
     </ItemGroup>
