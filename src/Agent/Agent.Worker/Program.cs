@@ -1,12 +1,18 @@
 using Agent.Application.Abstractions;
 using Agent.Application.Services;
+using Agent.Application.States;
+using Agent.Domain.Context;
 using Agent.Infrastructure.Communication;
 using Agent.Worker;
 using Common.Messages;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// todo: simplify
+builder.Services.AddSingleton<AgentStateContext>();
+builder.Services.AddSingleton<AgentOverallStateMachine>();
+builder.Services.AddSingleton<AgentAuthStateMachine>();
+builder.Services.AddSingleton<AgentWorkStateMachine>();
+
 builder.Services.AddSingleton<HttpClient>(_ => new HttpClient
 {
     BaseAddress = new Uri("http://localhost:5267/api/")
@@ -21,7 +27,7 @@ builder.Services
 
 builder.Services.AddSingleton<ILongPollingRunner, ConfigurationService>();
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
-
+builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();

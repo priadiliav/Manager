@@ -1,19 +1,11 @@
+using Agent.Application.Abstractions;
 using Agent.Application.Services;
+using Agent.Application.States;
+using Agent.Domain.Context;
 
 namespace Agent.Worker;
 
-public class Worker(
-    IConfigurationService configurationService,
-		ILogger<Worker> logger) : BackgroundService
+public class Worker(AgentOverallStateMachine overallStateMachine) : BackgroundService
 {
-	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-	{
-    logger.LogInformation("Worker started.");
-
-    var configurationLongPollingRunner = configurationService.StartListeningAsync(stoppingToken);
-
-    await Task.WhenAll(configurationLongPollingRunner);
-
-    logger.LogInformation("Worker stopped.");
-	}
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken) => await overallStateMachine.StartAsync();
 }
