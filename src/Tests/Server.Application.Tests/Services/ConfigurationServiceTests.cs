@@ -1,3 +1,4 @@
+using Common.Messages;
 using Server.Application.Abstractions;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Services;
@@ -10,7 +11,7 @@ public class ConfigurationServiceTests
 {
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IConfigurationRepository> _mockConfigurationRepository = null!;
-    private Mock<ILongPollingDispatcher<long, ConfigurationDto>> _mockPollingService = null!;
+    private Mock<ILongPollingDispatcher<long, ConfigurationMessage>> _mockPollingService = null!;
     private ConfigurationService _configurationService = null!;
 
     [SetUp]
@@ -19,7 +20,7 @@ public class ConfigurationServiceTests
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockConfigurationRepository = new Mock<IConfigurationRepository>();
         _mockUnitOfWork.Setup(x => x.Configurations).Returns(_mockConfigurationRepository.Object);
-        _mockPollingService = new Mock<ILongPollingDispatcher<long, ConfigurationDto>>();
+        _mockPollingService = new Mock<ILongPollingDispatcher<long, ConfigurationMessage>>();
         _configurationService = new ConfigurationService(_mockPollingService.Object, _mockUnitOfWork.Object);
     }
 
@@ -43,7 +44,7 @@ public class ConfigurationServiceTests
         Assert.That(result.ToList(), Has.Count.EqualTo(2));
         Assert.That(result.ToList().First().Name, Is.EqualTo("Config1"));
         Assert.That(result.ToList().Last().Name, Is.EqualTo("Config2"));
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAllAsync(), Times.Once);
     }
 
@@ -59,7 +60,7 @@ public class ConfigurationServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.Empty);
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAllAsync(), Times.Once);
     }
 
@@ -68,15 +69,15 @@ public class ConfigurationServiceTests
     {
         // Arrange
         var configurationId = 1L;
-        var configuration = new Configuration 
-        { 
-            Id = configurationId, 
-            Name = "TestConfig", 
-            Agents = new List<Agent>(), 
-            Processes = new List<ProcessInConfiguration>(), 
-            Policies = new List<PolicyInConfiguration>() 
+        var configuration = new Configuration
+        {
+            Id = configurationId,
+            Name = "TestConfig",
+            Agents = new List<Agent>(),
+            Processes = new List<ProcessInConfiguration>(),
+            Policies = new List<PolicyInConfiguration>()
         };
-        
+
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(configuration);
 
         // Act
@@ -86,7 +87,7 @@ public class ConfigurationServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(configurationId));
         Assert.That(result.Name, Is.EqualTo("TestConfig"));
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAsync(configurationId), Times.Once);
     }
 
@@ -102,7 +103,7 @@ public class ConfigurationServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAsync(configurationId), Times.Once);
     }
 
@@ -132,7 +133,7 @@ public class ConfigurationServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Name, Is.EqualTo("NewConfig"));
-        Assert.That(result.Id, Is.EqualTo(createdConfiguration!.Id)); 
+        Assert.That(result.Id, Is.EqualTo(createdConfiguration!.Id));
 
         _mockConfigurationRepository.Verify(x => x.CreateAsync(It.IsAny<Configuration>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
@@ -143,24 +144,24 @@ public class ConfigurationServiceTests
     {
         // Arrange
         var configurationId = 1L;
-        var existingConfiguration = new Configuration 
-        { 
-            Id = configurationId, 
-            Name = "OldName", 
-            Agents = new List<Agent>(), 
-            Processes = new List<ProcessInConfiguration>(), 
-            Policies = new List<PolicyInConfiguration>() 
+        var existingConfiguration = new Configuration
+        {
+            Id = configurationId,
+            Name = "OldName",
+            Agents = new List<Agent>(),
+            Processes = new List<ProcessInConfiguration>(),
+            Policies = new List<PolicyInConfiguration>()
         };
         var request = new ConfigurationModifyRequest { Name = "NewName" };
-        var updatedConfiguration = new Configuration 
-        { 
-            Id = configurationId, 
-            Name = "NewName", 
-            Agents = new List<Agent>(), 
-            Processes = new List<ProcessInConfiguration>(), 
-            Policies = new List<PolicyInConfiguration>() 
+        var updatedConfiguration = new Configuration
+        {
+            Id = configurationId,
+            Name = "NewName",
+            Agents = new List<Agent>(),
+            Processes = new List<ProcessInConfiguration>(),
+            Policies = new List<PolicyInConfiguration>()
         };
-        
+
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(existingConfiguration);
         _mockConfigurationRepository.Setup(x => x.ModifyAsync(It.IsAny<Configuration>())).Returns(Task.CompletedTask);
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(updatedConfiguration);
@@ -173,7 +174,7 @@ public class ConfigurationServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(configurationId));
         Assert.That(result.Name, Is.EqualTo("NewName"));
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAsync(configurationId), Times.Exactly(2));
         _mockConfigurationRepository.Verify(x => x.ModifyAsync(It.IsAny<Configuration>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
@@ -185,7 +186,7 @@ public class ConfigurationServiceTests
         // Arrange
         var configurationId = 1L;
         var request = new ConfigurationModifyRequest { Name = "NewName" };
-        
+
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync((Configuration?)null);
 
         // Act
@@ -193,7 +194,7 @@ public class ConfigurationServiceTests
 
         // Assert
         Assert.That(result, Is.Null);
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAsync(configurationId), Times.Once);
         _mockConfigurationRepository.Verify(x => x.ModifyAsync(It.IsAny<Configuration>()), Times.Never);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
@@ -204,15 +205,15 @@ public class ConfigurationServiceTests
     {
         // Arrange
         var request = new ConfigurationCreateRequest { Name = "TestConfig" };
-        var createdConfiguration = new Configuration 
-        { 
-            Id = 1, 
-            Name = "TestConfig", 
-            Agents = new List<Agent>(), 
-            Processes = new List<ProcessInConfiguration>(), 
-            Policies = new List<PolicyInConfiguration>() 
+        var createdConfiguration = new Configuration
+        {
+            Id = 1,
+            Name = "TestConfig",
+            Agents = new List<Agent>(),
+            Processes = new List<ProcessInConfiguration>(),
+            Policies = new List<PolicyInConfiguration>()
         };
-        
+
         _mockConfigurationRepository.Setup(x => x.CreateAsync(It.IsAny<Configuration>())).Returns(Task.CompletedTask);
         _mockConfigurationRepository.Setup(x => x.GetAsync(createdConfiguration.Id)).ReturnsAsync(createdConfiguration);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
@@ -229,24 +230,24 @@ public class ConfigurationServiceTests
     {
         // Arrange
         var configurationId = 1L;
-        var existingConfiguration = new Configuration 
-        { 
-            Id = configurationId, 
-            Name = "OldName", 
-            Agents = new List<Agent>(), 
-            Processes = new List<ProcessInConfiguration>(), 
-            Policies = new List<PolicyInConfiguration>() 
+        var existingConfiguration = new Configuration
+        {
+            Id = configurationId,
+            Name = "OldName",
+            Agents = new List<Agent>(),
+            Processes = new List<ProcessInConfiguration>(),
+            Policies = new List<PolicyInConfiguration>()
         };
         var request = new ConfigurationModifyRequest { Name = "NewName" };
-        var updatedConfiguration = new Configuration 
-        { 
-            Id = configurationId, 
-            Name = "NewName", 
-            Agents = new List<Agent>(), 
-            Processes = new List<ProcessInConfiguration>(), 
-            Policies = new List<PolicyInConfiguration>() 
+        var updatedConfiguration = new Configuration
+        {
+            Id = configurationId,
+            Name = "NewName",
+            Agents = new List<Agent>(),
+            Processes = new List<ProcessInConfiguration>(),
+            Policies = new List<PolicyInConfiguration>()
         };
-        
+
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(existingConfiguration);
         _mockConfigurationRepository.Setup(x => x.ModifyAsync(It.IsAny<Configuration>())).Returns(Task.CompletedTask);
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(updatedConfiguration);
@@ -267,16 +268,16 @@ public class ConfigurationServiceTests
         var agents = new List<Agent> { new() { Id = Guid.NewGuid(), Name = "Agent1" } };
         var processes = new List<ProcessInConfiguration> { new() { ProcessId = 1, ProcessState = ProcessState.Active } };
         var policies = new List<PolicyInConfiguration> { new() { PolicyId = 1, RegistryValue = "TestValue" } };
-        
-        var configuration = new Configuration 
-        { 
-            Id = configurationId, 
-            Name = "TestConfig", 
-            Agents = agents, 
-            Processes = processes, 
-            Policies = policies 
+
+        var configuration = new Configuration
+        {
+            Id = configurationId,
+            Name = "TestConfig",
+            Agents = agents,
+            Processes = processes,
+            Policies = policies
         };
-        
+
         _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(configuration);
 
         // Act
@@ -289,7 +290,7 @@ public class ConfigurationServiceTests
         Assert.That(result.AgentIds.ToList(), Has.Count.EqualTo(1));
         Assert.That(result.Processes.ToList(), Has.Count.EqualTo(1));
         Assert.That(result.Policies.ToList(), Has.Count.EqualTo(1));
-        
+
         _mockConfigurationRepository.Verify(x => x.GetAsync(configurationId), Times.Once);
     }
-} 
+}

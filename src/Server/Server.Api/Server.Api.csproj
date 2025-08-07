@@ -16,4 +16,8 @@
       <ProjectReference Include="..\Server.Infrastructure\Server.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Extentions\" />
+    </ItemGroup>
+
 </Project>

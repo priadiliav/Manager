@@ -1,3 +1,4 @@
+using Common.Messages;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
@@ -18,7 +19,7 @@ public static class DomainToDtoMapper
 		};
 	}
 	#endregion
-	
+
 	#region Configuration
 	public static ConfigurationDto ToDto(
 			this Domain.Models.Configuration configuration,
@@ -34,8 +35,17 @@ public static class DomainToDtoMapper
 			Policies = configuration.Policies.Select(p => p.ToDto()).ToList()
 		};
 	}
+
+  public static ConfigurationMessage ToMessage(this Domain.Models.Configuration configuration)
+  {
+    return new ConfigurationMessage
+    {
+      // To be expanded
+      Name = configuration.Name,
+    };
+  }
 	#endregion
-	
+
 	#region Process
 	public static ProcessDto ToDto(this Domain.Models.Process process)
 	{
@@ -45,7 +55,7 @@ public static class DomainToDtoMapper
 			Name = process.Name
 		};
 	}
-	
+
 	public static ProcessInConfigurationDto ToDto(this Domain.Models.ProcessInConfiguration process)
 	{
 		return new ProcessInConfigurationDto
@@ -55,7 +65,7 @@ public static class DomainToDtoMapper
 		};
 	}
 	#endregion
-	
+
 	#region Policy
 	public static PolicyDto ToDto(this Domain.Models.Policy policy)
 	{
@@ -70,7 +80,7 @@ public static class DomainToDtoMapper
 			RegistryKey = policy.RegistryKey
 		};
 	}
-	
+
 	public static PolicyInConfigurationDto ToDto(this Domain.Models.PolicyInConfiguration policy)
 	{
 		return new PolicyInConfigurationDto

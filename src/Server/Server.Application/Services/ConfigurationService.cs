@@ -1,3 +1,4 @@
+using Common.Messages;
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Configuration;
@@ -12,20 +13,20 @@ public interface IConfigurationService
 	/// <param name="configurationId"></param>
 	/// <returns></returns>
 	Task<ConfigurationDto?> GetConfigurationAsync(long configurationId);
-	
+
 	/// <summary>
 	/// Gets all configurations.
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<ConfigurationDto>> GetConfigurationsAsync();
-	
+
 	/// <summary>
 	/// Creates a new configuration.
 	/// </summary>
 	/// <param name="request"></param>
 	/// <returns></returns>
 	Task<ConfigurationDto?> CreateConfigurationAsync(ConfigurationCreateRequest request);
-	
+
 	/// <summary>
 	/// Updates an existing configuration.
 	/// </summary>
@@ -36,7 +37,7 @@ public interface IConfigurationService
 }
 
 public class ConfigurationService (
-		ILongPollingDispatcher<long, ConfigurationDto> pollingService,
+		ILongPollingDispatcher<long, ConfigurationMessage> pollingService,
 		IUnitOfWork unitOfWork) : IConfigurationService
 {
 	public async Task<ConfigurationDto?> GetConfigurationAsync(long configurationId)
@@ -44,10 +45,10 @@ public class ConfigurationService (
 		var configuration = await unitOfWork.Configurations.GetAsync(configurationId);
 		if (configuration is null)
 			return null;
-		
+
 		// Get count of subscribers for this configuration by long polling service
-		var subscriberCount = pollingService.GetSubscriberCount(configurationId);
-		return configuration.ToDto(subscriberCount);
+		var subscribersCount = pollingService.GetSubscribersCount(configurationId);
+		return configuration.ToDto(subscribersCount);
 	}
 
 	public async Task<IEnumerable<ConfigurationDto>> GetConfigurationsAsync()
@@ -55,7 +56,7 @@ public class ConfigurationService (
 		var configurations = await unitOfWork.Configurations.GetAllAsync();
 		return configurations.Select(x =>
 		{
-			var subscriberCount = pollingService.GetSubscriberCount(x.Id);
+			var subscriberCount = pollingService.GetSubscribersCount(x.Id);
 			return x.ToDto(subscriberCount);
 		});
 	}
@@ -74,19 +75,15 @@ public class ConfigurationService (
 	{
 		var existingConfigurationDomain = await unitOfWork.Configurations.GetAsync(configurationId);
 		if (existingConfigurationDomain is null)
-			return null;	
-		
+			return null;
+
 		var configurationDomain = request.ToDomain(configurationId);
 		existingConfigurationDomain.ModifyFrom(configurationDomain);
-		
+
 		await unitOfWork.Configurations.ModifyAsync(existingConfigurationDomain);
 		await unitOfWork.SaveChangesAsync();
-		
+
 		var updatedConfigurationDto = await GetConfigurationAsync(configurationId);
-		if(updatedConfigurationDto is null)
-			return null;
-		
-		pollingService.NotifyUpdateForKey(configurationId, updatedConfigurationDto);
 		return updatedConfigurationDto;
 	}
 }

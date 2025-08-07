@@ -3,12 +3,12 @@ using Server.Application.Abstractions;
 
 namespace Server.Infrastructure.Communication;
 
-public class LongPollingDispatcher<TKey, T> : ILongPollingDispatcher<TKey, T> 
-		where TKey : notnull 
+public class InMemoryLongPollingDispatcher<TKey, T> : ILongPollingDispatcher<TKey, T>
+		where TKey : notnull
 		where T : notnull
 {
 	private readonly ConcurrentDictionary<TKey, TaskCompletionSource<T?>> _waitingClients = new();
-	
+
 	public Task<T?> WaitForUpdateAsync(TKey key, CancellationToken cancellationToken)
 	{
 		var tcs = new TaskCompletionSource<T?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -16,7 +16,7 @@ public class LongPollingDispatcher<TKey, T> : ILongPollingDispatcher<TKey, T>
 		_waitingClients.AddOrUpdate(key, tcs, (_, old) =>
 		{
 			old.TrySetResult(default);
-			return tcs;
+      return tcs;
 		});
 
 		cancellationToken.Register(() =>
@@ -27,7 +27,7 @@ public class LongPollingDispatcher<TKey, T> : ILongPollingDispatcher<TKey, T>
 
 		return tcs.Task;
 	}
-	
+
 	public void NotifyUpdateForKey(TKey key, T update)
 	{
 		if (_waitingClients.TryRemove(key, out var tcs))
@@ -48,6 +48,6 @@ public class LongPollingDispatcher<TKey, T> : ILongPollingDispatcher<TKey, T>
 	public void RemoveSubscriber(TKey key)
 		=> _waitingClients.TryRemove(key, out _);
 
-	public int GetSubscriberCount(TKey key)
+	public int GetSubscribersCount(TKey key)
 		=> _waitingClients.TryGetValue(key, out var tcs) ? (tcs.Task.IsCompleted ? 0 : 1) : 0;
 }

@@ -9,11 +9,9 @@
     <ItemGroup>
       <ProjectReference Include="..\Agent.Application\Agent.Application.csproj" />
     </ItemGroup>
-
+  
     <ItemGroup>
-      <Reference Include="Microsoft.Extensions.Logging.Abstractions">
-        <HintPath>..\..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.7\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
-      </Reference>
+      <Folder Include="Repositories\" />
     </ItemGroup>
 
 </Project>

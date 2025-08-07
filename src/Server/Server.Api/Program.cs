@@ -1,3 +1,4 @@
+using Common.Messages;
 using Microsoft.EntityFrameworkCore;
 using Server.Api.Endpoints;
 using Server.Application.Abstractions;
@@ -12,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options => 
+builder.Services.AddDbContext<AppDbContext>(options =>
 	options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //Repositories
@@ -29,7 +30,7 @@ builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();
 
 //Long polling services
-builder.Services.AddSingleton<ILongPollingDispatcher<long, ConfigurationDto>, LongPollingDispatcher<long, ConfigurationDto>>();
+builder.Services.AddSingleton<ILongPollingDispatcher<long, ConfigurationMessage>, InMemoryLongPollingDispatcher<long, ConfigurationMessage>>();
 
 var app = builder.Build();
 
@@ -37,7 +38,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
 	var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-	db.Database.Migrate(); 
+	db.Database.Migrate();
 }
 
 if (app.Environment.IsDevelopment())
@@ -47,7 +48,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI(c =>
 	{
 		c.SwaggerEndpoint("/swagger/v1/swagger.json", "Server API V1");
-		c.RoutePrefix = string.Empty; 
+		c.RoutePrefix = string.Empty;
 	});
 }
 

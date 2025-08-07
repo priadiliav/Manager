@@ -4,15 +4,15 @@ namespace Server.Domain.Models;
 
 public class Process : ITrackable
 {
-	public long Id { get; set; }
+	public long Id { get; init; }
 	public string Name { get; set; } = string.Empty;
-	public virtual ICollection<ProcessInConfiguration> Configurations { get; set; } = [];
-	
+	public virtual ICollection<ProcessInConfiguration> Configurations { get; init; } = [];
+
 	public void ModifyFrom(Process process)
 	{
-		if (process is null) 
+		if (process is null)
 			throw new ArgumentNullException(nameof(process));
-		
+
 		Name = process.Name;
 	}
 

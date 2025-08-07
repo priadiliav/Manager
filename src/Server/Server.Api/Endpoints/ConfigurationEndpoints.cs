@@ -1,3 +1,4 @@
+using Common.Messages;
 using Server.Application.Abstractions;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Services;
@@ -16,12 +17,12 @@ public static class ConfigurationEndpoints
 		})
 		.WithName("GetConfigurations")
 		.WithTags("Configuration");
-		
+
 		app.MapGet("/api/configurations/{id:long}", async (IConfigurationService service, long id) =>
 		{
 			var configuration = await service.GetConfigurationAsync(id);
-			return configuration is not null 
-					? Results.Ok(configuration) 
+			return configuration is not null
+					? Results.Ok(configuration)
 					: Results.NotFound();
 		})
 		.WithName("GetConfigurationById")
@@ -48,7 +49,7 @@ public static class ConfigurationEndpoints
 		.WithTags("Configuration");
 
 		app.MapGet("/api/configuration/{id:long}/subscribe",
-		async (long id, ILongPollingDispatcher<long, ConfigurationDto> pollingService, CancellationToken ct) =>
+		async (long id, ILongPollingDispatcher<long, ConfigurationMessage> pollingService, CancellationToken ct) =>
 		{
 			var update = await pollingService.WaitForUpdateAsync(id, ct);
 			return update == null
@@ -57,5 +58,15 @@ public static class ConfigurationEndpoints
 		})
 		.WithName("SubscribeConfigurationUpdates")
 		.WithTags("Configuration");
+
+    // Test endpoint for long pilling notification
+    app.MapPost("/api/configuration/{id:long}/notify",
+    (long id, ConfigurationMessage message, ILongPollingDispatcher<long, ConfigurationMessage> pollingService) =>
+    {
+        pollingService.NotifyUpdateForKey(id, message);
+        return Results.Ok();
+    })
+    .WithName("NotifyConfigurationUpdate")
+    .WithTags("Configuration");
 	}
 }
