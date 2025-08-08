@@ -2,5 +2,6 @@ namespace Server.Application.Abstractions;
 
 public interface IJwtTokenProvider
 {
-  string GenerateToken(string username, string role);
+  string GenerateTokenForAgent(string username, string role);
+  string GenerateTokenForAgent(Guid agentId);
 }

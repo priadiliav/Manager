@@ -37,10 +37,9 @@ public interface IConfigurationService
 	Task<ConfigurationDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request);
 }
 
-public class ConfigurationService (
-		ILongPollingDispatcher<long, ConfigurationMessage> pollingService,
-		IUnitOfWork unitOfWork) : IConfigurationService
+public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationService
 {
+  #region Crud
 	public async Task<ConfigurationDto?> GetConfigurationAsync(long configurationId)
 	{
 		var configuration = await unitOfWork.Configurations.GetAsync(configurationId);
@@ -78,4 +77,5 @@ public class ConfigurationService (
 		var updatedConfigurationDto = await GetConfigurationAsync(configurationId);
 		return updatedConfigurationDto;
 	}
+  #endregion
 }

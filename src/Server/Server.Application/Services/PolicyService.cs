@@ -13,20 +13,20 @@ public interface IPolicyService
 	/// <param name="policyId"></param>
 	/// <returns></returns>
 	Task<PolicyDto?> GetPolicyAsync(long policyId);
-	
+
 	/// <summary>
 	/// Gets all policies.
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<PolicyDto>> GetPoliciesAsync();
-	
+
 	/// <summary>
 	/// Creates a new policy.
 	/// </summary>
 	/// <param name="request"></param>
 	/// <returns></returns>
 	Task<PolicyDto?> CreatePolicyAsync(PolicyCreateRequest request);
-	
+
 	/// <summary>
 	/// Updates an existing policy.
 	/// </summary>
@@ -38,6 +38,7 @@ public interface IPolicyService
 
 public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
 {
+  #region Crud
 	public async Task<PolicyDto?> GetPolicyAsync(long policyId)
 	{
 		var policy = await unitOfWork.Policies.GetAsync(policyId);
@@ -55,7 +56,7 @@ public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
 		var policyDomain = request.ToDomain();
 		await unitOfWork.Policies.CreateAsync(policyDomain);
 		await unitOfWork.SaveChangesAsync();
-		
+
 		var createdPolicyDto = await GetPolicyAsync(policyDomain.Id);
 		return createdPolicyDto;
 	}
@@ -65,14 +66,15 @@ public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
 		var existingPolicyDomain = await unitOfWork.Policies.GetAsync(policyId);
 		if (existingPolicyDomain is null)
 			return null;
-		
+
 		var policyDomain = request.ToDomain(policyId);
 		existingPolicyDomain.ModifyFrom(policyDomain);
-		
+
 		await unitOfWork.Policies.ModifyAsync(existingPolicyDomain);
 		await unitOfWork.SaveChangesAsync();
-		
+
 		var updatedPolicyDto = await GetPolicyAsync(policyId);
 		return updatedPolicyDto;
 	}
+  #endregion
 }

@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Common.Messages.Process;
+using Server.Application.Abstractions;
 using Server.Application.Dtos.Process;
 using Server.Application.Services;
 
@@ -7,43 +10,66 @@ public static class ProcessEndpoints
 {
 	public static void MapProcessEndpoints(this IEndpointRouteBuilder app)
   {
-    app.MapGet("/processes", async (IProcessService processService) =>
+    var group = app.MapGroup("/api/processes")
+      .WithTags("Processes")
+      .RequireAuthorization(policy => policy.RequireRole("User"));
+
+    group.MapGet("/",
+      async (IProcessService processService) =>
       {
         var processes = await processService.GetProcessesAsync();
         return Results.Ok(processes);
       })
-      .RequireAuthorization(policy => policy.RequireRole("Agent", "User"))
-      .WithName("GetProcesses")
-      .WithTags("Processes");
+      .WithName("GetProcesses");
 
-		app.MapGet("/processes/{id:long}", async (IProcessService processService, long id) =>
-		{
-			var process = await processService.GetProcessAsync(id);
-			return process is not null
-					? Results.Ok(process)
-					: Results.NotFound();
-		})
-		.WithName("GetProcessById")
-		.WithTags("Processes");
+    group.MapGet("/{id:long}",
+      async (IProcessService processService, long id) =>
+      {
+        var process = await processService.GetProcessAsync(id);
+        return process is not null
+            ? Results.Ok(process)
+            : Results.NotFound();
+      })
+      .WithName("GetProcessById");
 
-		app.MapPost("/processes", async (IProcessService processService, ProcessCreateRequest createRequest) =>
-		{
-			var createdProcess = await processService.CreateProcessAsync(createRequest);
-			return createdProcess is not null
-					? Results.Created($"/processes/{createdProcess.Id}", createdProcess)
-					: Results.BadRequest("Failed to create process.");
-		})
-		.WithName("CreateProcess")
-		.WithTags("Processes");
+    group.MapPost("/",
+      async (IProcessService processService, ProcessCreateRequest createRequest) =>
+      {
+        var createdProcess = await processService.CreateProcessAsync(createRequest);
+        return createdProcess is not null
+            ? Results.Created($"/processes/{createdProcess.Id}", createdProcess)
+            : Results.BadRequest("Failed to create process.");
+      })
+      .WithName("CreateProcess");
 
-		app.MapPut("/processes/{id:long}", async (IProcessService processService, long id, ProcessModifyRequest modifyRequest) =>
-		{
-			var updatedProcess = await processService.UpdateProcessAsync(id, modifyRequest);
-			return updatedProcess is not null
-					? Results.Ok(updatedProcess)
-					: Results.NotFound();
-		})
-		.WithName("UpdateProcess")
-		.WithTags("Processes");
-	}
+    group.MapPut("/{id:long}",
+      async (IProcessService processService, long id, ProcessModifyRequest modifyRequest) =>
+      {
+        var updatedProcess = await processService.UpdateProcessAsync(id, modifyRequest);
+        return updatedProcess is not null
+            ? Results.Ok(updatedProcess)
+            : Results.NotFound();
+      })
+      .WithName("UpdateProcess");
+
+    group.MapGet("/subscribe",
+      async (ILongPollingDispatcher<Guid, ProcessesMessage> pollingService, CancellationToken ct, HttpContext context) =>
+      {
+        // Getting the agent ID from the authenticated user
+        var agentId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        Guid.TryParse(agentId, out var agentIdGuid);
+
+        if (agentIdGuid == Guid.Empty)
+          return Results.Unauthorized();
+
+        var update = await pollingService.WaitForUpdateAsync(agentIdGuid, ct);
+
+        return update is null
+            ? Results.NoContent()
+            : Results.Ok(update);
+      })
+      .RequireAuthorization(policy => policy.RequireRole("Agent"))
+      .WithName("SubscribeToProcessesUpdates");
+  }
 }

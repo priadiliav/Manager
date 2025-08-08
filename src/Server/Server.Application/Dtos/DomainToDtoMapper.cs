@@ -1,5 +1,6 @@
 using System.Data.Common;
 using Common.Messages;
+using Common.Messages.Agent;
 using Common.Messages.Configuration;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
@@ -33,9 +34,9 @@ public static class DomainToDtoMapper
     };
   }
 
-  public static AgentLoginResponse ToLoginResponse(this Domain.Models.Agent agent, string token)
+  public static AgentLoginResponseMessage ToLoginResponse(this Domain.Models.Agent agent, string token)
   {
-    return new AgentLoginResponse
+    return new AgentLoginResponseMessage
     {
       Token = token
     };

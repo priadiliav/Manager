@@ -12,20 +12,20 @@ public interface IProcessService
 	/// <param name="processId"></param>
 	/// <returns></returns>
 	Task<ProcessDto?> GetProcessAsync(long processId);
-	
+
 	/// <summary>
 	/// Gets all processes.
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<ProcessDto>> GetProcessesAsync();
-	
+
 	/// <summary>
 	/// Creates a new process.
 	/// </summary>
 	/// <param name="request"></param>
 	/// <returns></returns>
 	Task<ProcessDto?> CreateProcessAsync(ProcessCreateRequest request);
-	
+
 	/// <summary>
 	/// Updates an existing process.
 	/// </summary>
@@ -37,6 +37,7 @@ public interface IProcessService
 
 public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
 {
+  #region Crud
 	public async Task<ProcessDto?> GetProcessAsync(long processId)
 	{
 		var process = await unitOfWork.Processes.GetAsync(processId);
@@ -63,15 +64,16 @@ public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
 	{
 		var existingProcess = await unitOfWork.Processes.GetAsync(processId);
 		if (existingProcess == null)
-			return null; 
-		
+			return null;
+
 		var processDomain = request.ToDomain(processId);
 		existingProcess.ModifyFrom(processDomain);
-		
+
 		await unitOfWork.Processes.ModifyAsync(existingProcess);
 		await unitOfWork.SaveChangesAsync();
-		
+
 		var updatedProcessDto = await GetProcessAsync(processId);
 		return updatedProcessDto;
 	}
+  #endregion
 }

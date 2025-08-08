@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Common.Messages.Agent;
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
@@ -41,7 +42,7 @@ public interface IAgentService
   /// </summary>
   /// <param name="request"></param>
   /// <returns></returns>
-  Task<AgentLoginResponse?> LoginAsync(LoginRequestMessage request);
+  Task<AgentLoginResponseMessage?> LoginAsync(AgentLoginRequestMessage request);
 }
 
 public class AgentService (
@@ -94,13 +95,13 @@ public class AgentService (
   #endregion
 
   #region Authentication
-  public async Task<AgentLoginResponse?> LoginAsync(LoginRequestMessage request)
+  public async Task<AgentLoginResponseMessage?> LoginAsync(AgentLoginRequestMessage request)
   {
     var agent = await unitOfWork.Agents.GetAsync(request.AgentId);
     if (agent is null || !passwordHasher.IsPasswordValid(request.Secret, agent.SecretHash, agent.SecretSalt))
       return null;
 
-    var token = jwtTokenProvider.GenerateToken(agent.Id.ToString(), "Agent");
+    var token = jwtTokenProvider.GenerateTokenForAgent(agent.Id);
     return agent.ToLoginResponse(token);
   }
   #endregion

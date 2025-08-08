@@ -5,15 +5,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Agent.Infrastructure.Communication;
 
-public class InMemoryLongPollingClient<TResponse>: ILongPollingClient<TResponse> where TResponse : class
+public class LongPollingClient<TResponse>: ILongPollingClient<TResponse> where TResponse : class
 {
-  private readonly ILogger<InMemoryLongPollingClient<TResponse>> _logger;
+  private readonly ILogger<LongPollingClient<TResponse>> _logger;
 	private readonly HttpClient _httpClient;
   private readonly AgentStateContext _context;
 	private readonly string _pollingUrl;
 
-	public InMemoryLongPollingClient(
-    ILogger<InMemoryLongPollingClient<TResponse>> logger,
+	public LongPollingClient(
+    ILogger<LongPollingClient<TResponse>> logger,
     HttpClient httpClient,
     AgentStateContext context,
 	  string pollingUrl)
@@ -40,23 +40,16 @@ public class InMemoryLongPollingClient<TResponse>: ILongPollingClient<TResponse>
           HttpCompletionOption.ResponseHeadersRead,
           cancellationToken);
 
-      if (response.IsSuccessStatusCode)
-      {
-        _logger.LogInformation("Received response from long polling URL: {PollingUrl}", _pollingUrl);
+      response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken: cancellationToken);
+      _logger.LogInformation("Received response from long polling URL: {PollingUrl}", _pollingUrl);
 
-        if (content is not null)
-          await handleMessage(content);
-      }
-      else
-      {
-        _logger.LogError("Failed to receive response from long polling URL: {PollingUrl}, Status Code: {StatusCode}",
-            _pollingUrl,
-            response.StatusCode);
+      var content = await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken: cancellationToken);
+      if (content is not null)
+        await handleMessage(content);
 
-        await Task.Delay(1000, cancellationToken);
-      }
+      // Delay before next poll
+      await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
     }
   }
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Server.Domain.Abstractions;
 using Server.Domain.Models;
 
 namespace Server.Infrastructure.Configs;
@@ -44,5 +45,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 					.WithMany(p => p.Configurations)
 					.HasForeignKey(pc => pc.ProcessId);
 			#endregion
+		}
+
+		public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+		{
+			var entries = ChangeTracker.Entries()
+					.Where(e => e is { Entity: ITrackable, State: EntityState.Added or EntityState.Modified });
+
+			var now = DateTimeOffset.UtcNow;
+
+			foreach (var entry in entries)
+      {
+        var entity = (ITrackable)entry.Entity;
+        switch (entry.State)
+        {
+          case EntityState.Added:
+            entity.CreatedAt = now;
+            entity.ModifiedAt = now;
+            break;
+          case EntityState.Modified:
+            entity.ModifiedAt = now;
+            break;
+          case EntityState.Detached:
+            break;
+          case EntityState.Unchanged:
+            break;
+          case EntityState.Deleted:
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
+
+			return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 		}
 }

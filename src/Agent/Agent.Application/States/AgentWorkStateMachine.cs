@@ -29,15 +29,19 @@ public class AgentWorkStateMachine : IAgentStateMachine
   private readonly ILogger<AgentWorkStateMachine> _logger;
 
   private readonly IEnumerable<ILongPollingRunner> _longPollingRunners;
+  private readonly IEnumerable<IWatcherRunner> _watcherRunners;
+
   private readonly AgentStateContext _context;
 
   public AgentWorkState CurrentState => _machine.State;
 
   public AgentWorkStateMachine(
+    IEnumerable<IWatcherRunner> watcherRunners,
     IEnumerable<ILongPollingRunner> longPollingRunners,
     ILogger<AgentWorkStateMachine> logger,
     AgentStateContext context)
   {
+    _watcherRunners = watcherRunners ?? throw new ArgumentNullException(nameof(watcherRunners));
     _longPollingRunners = longPollingRunners ?? throw new ArgumentNullException(nameof(longPollingRunners));
     _context = context ?? throw new ArgumentNullException(nameof(context));
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -66,12 +70,17 @@ public class AgentWorkStateMachine : IAgentStateMachine
 
     try
     {
-      var longPollingTasks = _longPollingRunners.Select(runner =>
-          runner.StartListeningAsync(_context.CancellationTokenSource.Token)).ToArray();
+      var longPollingTasks = _longPollingRunners
+          .Select(runner => runner.StartListeningAsync(_context.CancellationTokenSource.Token))
+          .ToArray();
+
+      var watcherTasks = _watcherRunners
+          .Select(runner => runner.StartWatchingAsync(_context.CancellationTokenSource.Token))
+          .ToArray();
 
       await _machine.FireAsync(WorkTrigger.StartProcessing);
 
-      await Task.WhenAll(longPollingTasks);
+      await Task.WhenAll(longPollingTasks.Concat(watcherTasks));
     }
     catch (Exception ex)
     {

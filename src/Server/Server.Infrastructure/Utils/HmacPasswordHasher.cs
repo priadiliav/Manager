@@ -2,7 +2,7 @@ using Server.Application.Abstractions;
 
 namespace Server.Infrastructure.Utils;
 
-public class PasswordHasher : IPasswordHasher
+public class HmacPasswordHasher : IPasswordHasher
 {
   public bool IsPasswordValid(string password, byte[] storedHash, byte[] storedSalt)
   {

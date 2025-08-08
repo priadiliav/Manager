@@ -8,31 +8,38 @@ using Server.Infrastructure.Configs;
 
 namespace Server.Infrastructure.Utils;
 
-public class JwtTokenProvider : IJwtTokenProvider
+public class JwtTokenProvider(IOptions<JwtSettings> settings) : IJwtTokenProvider
 {
-  private readonly JwtSettings _settings;
+  private readonly JwtSettings _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
 
-  public JwtTokenProvider(IOptions<JwtSettings> settings)
-  {
-    _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
-  }
+  public string GenerateTokenForAgent(string username, string role)
+    => GenerateToken(new Dictionary<string, string>
+      {
+        { ClaimTypes.Name, username },
+        { ClaimTypes.Role, role },
+        { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString() }
+      });
 
-  public string GenerateToken(string username, string role)
+  public string GenerateTokenForAgent(Guid agentId)
+    => GenerateToken(new Dictionary<string, string>
+      {
+        { ClaimTypes.NameIdentifier, agentId.ToString() },
+        { ClaimTypes.Role, "Agent" },
+        { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString() }
+      });
+
+  private string GenerateToken(Dictionary<string, string> claims)
   {
     var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-    var claims = new[]
-    {
-        new Claim(JwtRegisteredClaimNames.Sub, username),
-        new Claim(ClaimTypes.Role, role),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    };
+    var jwtClaims = claims.Select(kvp => new Claim(kvp.Key, kvp.Value)).ToList();
+    jwtClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
 
     var token = new JwtSecurityToken(
         issuer: _settings.Issuer,
         audience: _settings.Audience,
-        claims: claims,
+        claims: jwtClaims,
         expires: DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes),
         signingCredentials: credentials);
 

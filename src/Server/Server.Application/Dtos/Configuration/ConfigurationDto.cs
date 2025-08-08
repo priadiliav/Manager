@@ -7,8 +7,6 @@ public class ConfigurationDto
 {
 	public long Id { get; init; }
 	public string Name { get; init; } = string.Empty;
-	
-	public int SubscriberCount { get; init; } = 0;
 	public IEnumerable<Guid> AgentIds { get; init; } = [];
 	public IEnumerable<PolicyInConfigurationDto> Policies { get; init; } = [];
 	public IEnumerable<ProcessInConfigurationDto> Processes { get; init; } = [];

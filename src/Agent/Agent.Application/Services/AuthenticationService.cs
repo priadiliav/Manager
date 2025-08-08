@@ -18,7 +18,7 @@ public class AuthenticationService(
 {
   public async Task AuthenticateAsync(CancellationToken cancellationToken)
   {
-    var loginRequest = new LoginRequestMessage
+    var loginRequest = new AgentLoginRequestMessage
     {
         AgentId = Guid.Parse("01988658-1a43-79a5-9720-a0e3ef4ba673"),
         Secret = "cdd89139-d7ce-4a5c-9b6c-d107d564ed4c"
@@ -35,9 +35,8 @@ public class AuthenticationService(
     if (!response.IsSuccessStatusCode)
       throw new UnauthorizedAccessException();
 
-    // deserialize the response body with LoginResponseMessage
     var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-    var loginResponse = JsonSerializer.Deserialize<LoginResponseMessage>(
+    var loginResponse = JsonSerializer.Deserialize<AgentLoginResponseMessage>(
         responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
     if (loginResponse is null)

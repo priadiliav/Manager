@@ -7,54 +7,58 @@ namespace Server.Api.Endpoints;
 
 public static class AgentEndpoints
 {
+
 	public static void MapAgentEndpoints(this IEndpointRouteBuilder app)
-	{
-		app.MapGet("/api/agents", async (IAgentService agentService) =>
-		{
-			var agents = await agentService.GetAgentsAsync();
-			return Results.Ok(agents);
-		})
-		.WithName("GetAgents")
-		.WithTags("Agents");
+  {
+    var group = app.MapGroup("/api/agents")
+        .WithTags("Agents")
+        .RequireAuthorization(policy => policy.RequireRole("User"));
 
-		app.MapGet("/api/agents/{agentId:guid}", async (Guid agentId, IAgentService agentService) =>
-		{
-			var agent = await agentService.GetAgentAsync(agentId);
-			return agent is null
-					? Results.NotFound()
-					: Results.Ok(agent);
-		})
-		.WithName("GetAgentById")
-		.WithTags("Agents");
+    group.MapGet("/",
+        async (IAgentService agentService) =>
+        {
+          var agents = await agentService.GetAgentsAsync();
+          return Results.Ok(agents);
+        })
+        .WithName("GetAgents");
 
-		app.MapPost("/api/agents", async (AgentCreateRequest request, IAgentService agentService) =>
-		{
-			var createdAgent = await agentService.CreateAgentAsync(request);
-			return createdAgent is null
-					? Results.BadRequest("Failed to create agent.")
-					: Results.Created($"/api/agents/{createdAgent.Id}", createdAgent);
-		})
-		.WithName("CreateAgent")
-		.WithTags("Agents");
+    group.MapGet("/{agentId:guid}",
+        async (Guid agentId, IAgentService agentService) =>
+        {
+          var agent = await agentService.GetAgentAsync(agentId);
+          return agent is null
+              ? Results.NotFound()
+              : Results.Ok(agent);
+        })
+        .WithName("GetAgentById");
 
-		app.MapPut("/api/agents/{agentId:guid}", async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>
-		{
-			var updatedAgent = await agentService.UpdateAgentAsync(agentId, request);
-			return updatedAgent is null
-					? Results.NotFound()
-					: Results.Ok(updatedAgent);
-		})
-		.WithName("UpdateAgent")
-		.WithTags("Agents");
+    group.MapPost("/",
+        async (AgentCreateRequest request, IAgentService agentService) => {
+          var createdAgent = await agentService.CreateAgentAsync(request);
+          return createdAgent is null
+              ? Results.BadRequest("Failed to create agent.")
+              : Results.Created($"/api/agents/{createdAgent.Id}", createdAgent);
+        })
+        .WithName("CreateAgent");
 
-    app.MapPost("/api/agents/login", async ([FromBody] LoginRequestMessage request, IAgentService agentService) =>
-    {
-      var loginResponse = await agentService.LoginAsync(request);
-      return loginResponse is null
-          ? Results.Unauthorized()
-          : Results.Ok(loginResponse);
-    })
-    .WithName("AgentLogin")
-    .WithTags("Agents");
-	}
+    group.MapPut("/{agentId:guid}",
+        async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>
+        {
+          var updatedAgent = await agentService.UpdateAgentAsync(agentId, request);
+          return updatedAgent is null
+              ? Results.NotFound()
+              : Results.Ok(updatedAgent);
+        })
+        .WithName("UpdateAgent");
+
+    group.MapPost("/login",
+        async ([FromBody] AgentLoginRequestMessage request, IAgentService agentService) =>
+        {
+          var loginResponse = await agentService.LoginAsync(request);
+          return loginResponse is null
+              ? Results.Unauthorized()
+              : Results.Ok(loginResponse);
+        })
+        .WithName("AgentLogin");
+  }
 }

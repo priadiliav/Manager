@@ -17,13 +17,6 @@ public class UnitOfWork(
 	public IProcessRepository Processes { get; } = processRepository;
   public IUserRepository Users { get; } = userRepository;
 
-	public async Task<int> SaveChangesAsync()
-	{
-		return await context.SaveChangesAsync();
-	}
-
-	public void Dispose()
-	{
-		context.Dispose();
-	}
+	public async Task<int> SaveChangesAsync() => await context.SaveChangesAsync();
+	public void Dispose() => context.Dispose();
 }

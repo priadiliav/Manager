@@ -12,7 +12,6 @@ public class ConfigurationServiceTests
 {
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IConfigurationRepository> _mockConfigurationRepository = null!;
-    private Mock<ILongPollingDispatcher<long, ConfigurationMessage>> _mockPollingService = null!;
     private ConfigurationService _configurationService = null!;
 
     [SetUp]
@@ -21,8 +20,7 @@ public class ConfigurationServiceTests
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockConfigurationRepository = new Mock<IConfigurationRepository>();
         _mockUnitOfWork.Setup(x => x.Configurations).Returns(_mockConfigurationRepository.Object);
-        _mockPollingService = new Mock<ILongPollingDispatcher<long, ConfigurationMessage>>();
-        _configurationService = new ConfigurationService(_mockPollingService.Object, _mockUnitOfWork.Object);
+        _configurationService = new ConfigurationService( _mockUnitOfWork.Object);
     }
 
     [Test]

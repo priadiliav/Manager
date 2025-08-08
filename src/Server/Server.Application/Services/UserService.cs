@@ -23,7 +23,7 @@ public class UserService(
     if (user is null || !passwordHasher.IsPasswordValid(request.Password, user.PasswordHash, user.PasswordSalt))
       return null;
 
-    var token = jwtTokenProvider.GenerateToken(user.Username, user.Role);
+    var token = jwtTokenProvider.GenerateTokenForAgent(user.Username, user.Role);
     return user.ToResponse(token);
   }
 

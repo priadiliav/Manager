@@ -8,6 +8,6 @@ public class CpuMetricStrategy : IMetricStrategy
 
   public object Collect()
   {
-    return new { Usage = 45 }; // Приклад
+    return new { Usage = 45 };
   }
 }
