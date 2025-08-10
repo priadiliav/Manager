@@ -3,6 +3,7 @@ using System.Text;
 using Common.Messages.Configuration;
 using Common.Messages.Policy;
 using Common.Messages.Process;
+using k8s;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,7 @@ using Server.Application.Abstractions;
 using Server.Application.Services;
 using Server.Infrastructure.Communication;
 using Server.Infrastructure.Configs;
+using Server.Infrastructure.Managers;
 using Server.Infrastructure.Repositories;
 using Server.Infrastructure.Utils;
 
@@ -85,6 +87,7 @@ builder.Services.AddAuthorization();
 #endregion
 
 #region Infrastructure configuration
+// Repositories
 builder.Services.AddScoped<IAgentRepository, AgentRepository>();
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
@@ -93,12 +96,19 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
-builder.Services.AddScoped<IClusterManager, ClusterManager>();
+// Kubernetes client configuration
+builder.Services.AddSingleton<IKubernetes>(sp =>
+{
+  var config = KubernetesClientConfiguration.InClusterConfig();
+  return new Kubernetes(config);
+});
+builder.Services.AddSingleton<IClusterManager, ClusterManager>();
 
 // Long polling services
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ProcessesMessage>, InMemoryLongPollingDispatcher<Guid, ProcessesMessage>>();
+
 #endregion
 
 #region Application configuration
@@ -141,6 +151,7 @@ app.MapPolicyEndpoints();
 app.MapConfigurationEndpoints();
 app.MapMetricEndpoints();
 app.MapUserEndpoints();
+app.MapClusterEndpoints();
 
 app.UseHttpsRedirection();
 app.Run();

@@ -1,13 +1,20 @@
+using Server.Application.Abstractions;
+
 namespace Server.Api.Endpoints;
 
 public static class ClusterEndpoints
 {
   public static void MapClusterEndpoints(this IEndpointRouteBuilder app)
   {
-    // Define your cluster-related endpoints here
-    app.MapGet("/cluster/status", () => "Cluster is running")
-       .WithName("GetClusterStatus")
-       .WithOpenApi();
+    var group = app.MapGroup("/cluster")
+        .WithTags("Cluster");
 
+    group.MapGet("/deployments",
+        async (IClusterManager clusterManager) =>
+        {
+          var deployments = await clusterManager.GetDeploymentsAsync();
+          return Results.Ok(deployments);
+        })
+        .WithName("GetDeploymentsAsync");
   }
 }
