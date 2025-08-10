@@ -1,7 +1,10 @@
 parameters:
   server-api:
     image: "vitaliipriadilia/server.api"
-    tag: "latest"
+    tag: "v0.0.1"
+
+serviceAccount:
+  name: server-api
 
 secrets:
   database:

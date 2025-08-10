@@ -21,6 +21,7 @@ spec:
         app: manager
         component: manager-api
     spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
       initContainers:
         - name: wait-for-db
           image: busybox
@@ -35,7 +36,7 @@ spec:
               echo "Database is up"
       containers:
         - name: manager-server-api
-          image: {{ index .Values.parameters "server-api" "image" | quote }}
+          image: "{{ index .Values.parameters "server-api" "image" }}:{{ index .Values.parameters "server-api" "tag" }}"
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
