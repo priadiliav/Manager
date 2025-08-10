@@ -5,11 +5,12 @@ public class Tests
 	[SetUp]
 	public void Setup()
 	{
+    Assert.That(true, Is.True);
 	}
 
 	[Test]
 	public void Test1()
 	{
-		Assert.Pass();
+    Assert.That(true, Is.True);
 	}
 }
