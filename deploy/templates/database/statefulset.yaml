@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: database-statefulset
+spec:
+  serviceName: database-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manager
+      component: database
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: manager
+        component: database
+    spec:
+      containers:
+        - name: database
+          image: docker.io/library/postgres:17.4
+          ports:
+            - containerPort: 5432
+              name: tcp
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: database-config
+            - secretRef:
+                name: database-secrets
+          volumeMounts:
+            - name: database-data
+              mountPath: /var/lib/postgresql/data
+          imagePullPolicy: IfNotPresent
+  volumeClaimTemplates:
+    - metadata:
+        name: database-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi

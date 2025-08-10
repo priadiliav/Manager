@@ -1,0 +1,20 @@
+parameters:
+  server-api:
+    image: "vitaliipriadilia/server.api"
+    tag: "latest"
+
+secrets:
+  database:
+    POSTGRES_PASSWORD: "postgres"
+  server-api:
+    JwtSettings__Secret: "super-long-very-secure-secret-key-here-should-be-64-bytes"
+    JwtSettings__Issuer: "Manager"
+    JwtSettings__Audience: "ManagerUsers"
+    JwtSettings__ExpiryMinutes: "60"
+
+config:
+  database:
+    POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+    POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    POSTGRES_USER: "postgres"
+    POSTGRES_DB: "Manager"
