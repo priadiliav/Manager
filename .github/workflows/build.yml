@@ -1,4 +1,4 @@
-name: Build and Push Server.Api
+name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
@@ -10,11 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         fetch-depth: 0
-
-      - name: Check files presence
-        run: |
-          ls -la src/Common/Common.Messages/
-          ls -la src/Server/Server.Api/
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
