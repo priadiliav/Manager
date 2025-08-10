@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Common.Messages.Configuration;
 using Common.Messages.Policy;
@@ -70,6 +71,9 @@ builder.Services.AddAuthentication("Bearer")
 
       ValidateLifetime = true,
 
+      RoleClaimType = ClaimTypes.Role,
+      NameClaimType = ClaimTypes.Name,
+
       ValidateIssuerSigningKey = true,
       IssuerSigningKey = new SymmetricSecurityKey(
           Encoding.UTF8.GetBytes(jwtSettings.Secret)),
@@ -101,6 +105,7 @@ builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
 builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 #endregion
 
 var app = builder.Build();
@@ -127,6 +132,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapAuthEndpoints();
 app.MapAgentEndpoints();
 app.MapProcessEndpoints();
 app.MapPolicyEndpoints();

@@ -2,9 +2,7 @@ using Server.Domain.Models;
 
 namespace Server.Application.Abstractions;
 
-public interface IUserRepository
+public interface IUserRepository : IRepository<User, long>
 {
-  Task<User?> GetAsync(long id);
   Task<User?> GetAsync(string username);
-  Task CreateAsync(User user);
 }

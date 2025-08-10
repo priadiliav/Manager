@@ -12,9 +12,9 @@ public interface IAuthenticationService
 }
 
 public class AuthenticationService(
-    AgentStateContext context,
-    HttpClient httpClient,
-    ILogger<AuthenticationService> logger) : IAuthenticationService
+  AgentStateContext context,
+  HttpClient httpClient,
+  ILogger<AuthenticationService> logger) : IAuthenticationService
 {
   public async Task AuthenticateAsync(CancellationToken cancellationToken)
   {
@@ -28,7 +28,7 @@ public class AuthenticationService(
     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
     var response = await httpClient.PostAsync(
-        "/api/agents/login",
+        "/api/auth/agent/login",
         content,
         cancellationToken);
 

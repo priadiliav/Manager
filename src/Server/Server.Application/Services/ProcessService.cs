@@ -37,7 +37,6 @@ public interface IProcessService
 
 public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
 {
-  #region Crud
 	public async Task<ProcessDto?> GetProcessAsync(long processId)
 	{
 		var process = await unitOfWork.Processes.GetAsync(processId);
@@ -75,5 +74,4 @@ public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
 		var updatedProcessDto = await GetProcessAsync(processId);
 		return updatedProcessDto;
 	}
-  #endregion
 }

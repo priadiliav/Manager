@@ -7,12 +7,10 @@ namespace Server.Api.Endpoints;
 
 public static class AgentEndpoints
 {
-
 	public static void MapAgentEndpoints(this IEndpointRouteBuilder app)
   {
     var group = app.MapGroup("/api/agents")
-        .WithTags("Agents")
-        .RequireAuthorization(policy => policy.RequireRole("User"));
+        .WithTags("Agents");
 
     group.MapGet("/",
         async (IAgentService agentService) =>
@@ -20,6 +18,7 @@ public static class AgentEndpoints
           var agents = await agentService.GetAgentsAsync();
           return Results.Ok(agents);
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetAgents");
 
     group.MapGet("/{agentId:guid}",
@@ -30,6 +29,7 @@ public static class AgentEndpoints
               ? Results.NotFound()
               : Results.Ok(agent);
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetAgentById");
 
     group.MapPost("/",
@@ -39,6 +39,7 @@ public static class AgentEndpoints
               ? Results.BadRequest("Failed to create agent.")
               : Results.Created($"/api/agents/{createdAgent.Id}", createdAgent);
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateAgent");
 
     group.MapPut("/{agentId:guid}",
@@ -49,16 +50,7 @@ public static class AgentEndpoints
               ? Results.NotFound()
               : Results.Ok(updatedAgent);
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdateAgent");
-
-    group.MapPost("/login",
-        async ([FromBody] AgentLoginRequestMessage request, IAgentService agentService) =>
-        {
-          var loginResponse = await agentService.LoginAsync(request);
-          return loginResponse is null
-              ? Results.Unauthorized()
-              : Results.Ok(loginResponse);
-        })
-        .WithName("AgentLogin");
   }
 }

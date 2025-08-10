@@ -36,21 +36,12 @@ public interface IAgentService
 	/// <param name="request"></param>
 	/// <returns></returns>
 	Task<AgentDto?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request);
-
-  /// <summary>
-  /// Logs in an agent using its ID and secret.
-  /// </summary>
-  /// <param name="request"></param>
-  /// <returns></returns>
-  Task<AgentLoginResponseMessage?> LoginAsync(AgentLoginRequestMessage request);
 }
 
 public class AgentService (
-  IJwtTokenProvider jwtTokenProvider,
   IPasswordHasher passwordHasher,
   IUnitOfWork unitOfWork) : IAgentService
 {
-  #region Crud
 	public async Task<IEnumerable<AgentDto>> GetAgentsAsync()
 	{
 		var agents = await unitOfWork.Agents.GetAllAsync();
@@ -92,17 +83,4 @@ public class AgentService (
 		var updatedAgentDto = await GetAgentAsync(agentId);
 		return updatedAgentDto;
 	}
-  #endregion
-
-  #region Authentication
-  public async Task<AgentLoginResponseMessage?> LoginAsync(AgentLoginRequestMessage request)
-  {
-    var agent = await unitOfWork.Agents.GetAsync(request.AgentId);
-    if (agent is null || !passwordHasher.IsPasswordValid(request.Secret, agent.SecretHash, agent.SecretSalt))
-      return null;
-
-    var token = jwtTokenProvider.GenerateTokenForAgent(agent.Id);
-    return agent.ToLoginResponse(token);
-  }
-  #endregion
 }

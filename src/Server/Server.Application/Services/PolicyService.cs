@@ -38,7 +38,6 @@ public interface IPolicyService
 
 public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
 {
-  #region Crud
 	public async Task<PolicyDto?> GetPolicyAsync(long policyId)
 	{
 		var policy = await unitOfWork.Policies.GetAsync(policyId);
@@ -76,5 +75,4 @@ public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
 		var updatedPolicyDto = await GetPolicyAsync(policyId);
 		return updatedPolicyDto;
 	}
-  #endregion
 }

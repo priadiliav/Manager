@@ -9,10 +9,9 @@ namespace Server.Api.Endpoints;
 public static class ConfigurationEndpoints
 {
 	public static void MapConfigurationEndpoints(this IEndpointRouteBuilder app)
-	{
+  {
     var group = app.MapGroup("/api/configurations")
-        .WithTags("Configuration")
-        .RequireAuthorization(policy => policy.RequireRole("User"));
+        .WithTags("Configuration");
 
     group.MapGet("/",
         async (IConfigurationService service) =>
@@ -20,9 +19,10 @@ public static class ConfigurationEndpoints
           var configurations = await service.GetConfigurationsAsync();
           return Results.Ok(configurations);
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetConfigurations");
 
-    app.MapGet("/{id:long}",
+    group.MapGet("/{id:long}",
         async (IConfigurationService service, long id) =>
         {
           var configuration = await service.GetConfigurationAsync(id);
@@ -30,9 +30,10 @@ public static class ConfigurationEndpoints
               ? Results.Ok(configuration)
               : Results.NotFound();
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetConfigurationById");
 
-    app.MapPost("/",
+    group.MapPost("/",
         async (ConfigurationCreateRequest request, IConfigurationService service) =>
         {
           var createdConfiguration = await service.CreateConfigurationAsync(request);
@@ -40,9 +41,10 @@ public static class ConfigurationEndpoints
               ? Results.Created($"/api/configurations/{createdConfiguration.Id}", createdConfiguration)
               : Results.BadRequest("Failed to create configuration.");
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateConfiguration");
 
-    app.MapPut("/{id:long}",
+    group.MapPut("/{id:long}",
         async (IConfigurationService service, long id, ConfigurationModifyRequest request) =>
         {
           var updatedConfiguration = await service.UpdateConfigurationAsync(id, request);
@@ -50,13 +52,14 @@ public static class ConfigurationEndpoints
               ? Results.Ok(updatedConfiguration)
               : Results.NotFound();
         })
+        .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdateConfiguration");
 
-    app.MapGet("/subscribe",
+    group.MapGet("/subscribe",
         async (ILongPollingDispatcher<Guid, ConfigurationMessage> pollingService, CancellationToken ct, HttpContext context) =>
         {
           // Getting the agent ID from the authenticated user
-          var agentId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+          var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
 
           Guid.TryParse(agentId, out var agentIdGuid);
 

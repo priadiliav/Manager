@@ -11,15 +11,15 @@ public class AgentServiceTests
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IAgentRepository> _mockAgentRepository = null!;
     private AgentService _agentService = null!;
-    private IJwtTokenProvider _jwtTokenProvider = null!;
     private IPasswordHasher _passwordHasher = null!;
+
     [SetUp]
     public void Setup()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockAgentRepository = new Mock<IAgentRepository>();
         _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
-        _agentService = new AgentService(_jwtTokenProvider, _passwordHasher, _mockUnitOfWork.Object);
+        _agentService = new AgentService(_passwordHasher, _mockUnitOfWork.Object);
     }
 
     [Test]

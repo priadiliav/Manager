@@ -39,7 +39,6 @@ public interface IConfigurationService
 
 public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationService
 {
-  #region Crud
 	public async Task<ConfigurationDto?> GetConfigurationAsync(long configurationId)
 	{
 		var configuration = await unitOfWork.Configurations.GetAsync(configurationId);
@@ -77,5 +76,4 @@ public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationServi
 		var updatedConfigurationDto = await GetConfigurationAsync(configurationId);
 		return updatedConfigurationDto;
 	}
-  #endregion
 }

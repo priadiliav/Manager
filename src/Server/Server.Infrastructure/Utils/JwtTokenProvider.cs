@@ -12,20 +12,18 @@ public class JwtTokenProvider(IOptions<JwtSettings> settings) : IJwtTokenProvide
 {
   private readonly JwtSettings _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
 
-  public string GenerateTokenForAgent(string username, string role)
+  public string GenerateTokenForUser(string username, string role)
     => GenerateToken(new Dictionary<string, string>
       {
         { ClaimTypes.Name, username },
         { ClaimTypes.Role, role },
-        { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString() }
       });
 
   public string GenerateTokenForAgent(Guid agentId)
     => GenerateToken(new Dictionary<string, string>
       {
-        { ClaimTypes.NameIdentifier, agentId.ToString() },
+        { ClaimTypes.Name, agentId.ToString() },
         { ClaimTypes.Role, "Agent" },
-        { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString() }
       });
 
   private string GenerateToken(Dictionary<string, string> claims)
