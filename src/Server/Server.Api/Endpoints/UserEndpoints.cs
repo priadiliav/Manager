@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using Server.Application.Dtos.User;
-using Server.Application.Services;
-
 namespace Server.Api.Endpoints;
 
 public static class UserEndpoints

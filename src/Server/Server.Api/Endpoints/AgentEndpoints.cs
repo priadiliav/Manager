@@ -1,5 +1,3 @@
-using Common.Messages.Agent;
-using Microsoft.AspNetCore.Mvc;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
 

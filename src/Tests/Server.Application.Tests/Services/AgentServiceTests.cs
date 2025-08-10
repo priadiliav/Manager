@@ -18,6 +18,7 @@ public class AgentServiceTests
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockAgentRepository = new Mock<IAgentRepository>();
+        _passwordHasher = new Mock<IPasswordHasher>().Object;
         _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
         _agentService = new AgentService(_passwordHasher, _mockUnitOfWork.Object);
     }
