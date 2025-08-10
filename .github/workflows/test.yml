@@ -1,0 +1,30 @@
+name: Test Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test Server.Domain.Tests
+        run: dotnet test src/Tests/Server.Domain.Tests/Server.Domain.Tests.csproj --no-build --verbosity normal
+
+      - name: Test Server.Infrastructure.Tests
+        run: dotnet test src/Tests/Server.Infrastructure.Tests/Server.Infrastructure.Tests.csproj --no-build --verbosity normal
+
+      - name: Test Server.Application.Tests
+        run: dotnet test src/Tests/Server.Application.Tests/Server.Application.Tests.csproj --no-build --verbosity normal

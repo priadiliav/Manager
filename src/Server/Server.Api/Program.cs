@@ -93,6 +93,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
+builder.Services.AddScoped<IClusterManager, ClusterManager>();
+
 // Long polling services
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
