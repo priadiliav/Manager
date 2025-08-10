@@ -5,10 +5,10 @@ namespace Server.Domain.Models;
 public class Agent : IEntity<Guid>
 {
   public Guid Id { get; init; }
-	public string Name { get; set; } = string.Empty;
+  public long ConfigurationId { get; set; }
+  public string Name { get; set; } = string.Empty;
   public byte[] SecretHash { get; init; } = default!;
   public byte[] SecretSalt { get; init; } = default!;
-	public long ConfigurationId { get; set; }
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
 	public virtual Configuration Configuration { get; set; } = null!;
