@@ -2,6 +2,11 @@ name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Docker image version'
+        required: true
+        default: 'latest'
 
 jobs:
   build-and-push:
@@ -35,4 +40,4 @@ jobs:
           context: .
           file: src/Server/Server.Api/Dockerfile
           push: true
-          tags: vitaliipriadilia/server.api:latest
+          tags: vitaliipriadilia/server.api:${{ github.event.inputs.version }}

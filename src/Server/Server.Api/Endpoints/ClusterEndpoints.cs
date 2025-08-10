@@ -6,7 +6,7 @@ public static class ClusterEndpoints
 {
   public static void MapClusterEndpoints(this IEndpointRouteBuilder app)
   {
-    var group = app.MapGroup("/cluster")
+    var group = app.MapGroup("/api/cluster")
         .WithTags("Cluster");
 
     group.MapGet("/deployments",
