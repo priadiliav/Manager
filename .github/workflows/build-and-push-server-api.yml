@@ -27,6 +27,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./src/Server/Server.Api
+          context: .
+          file: src/Server/Server.Api/Dockerfile
           push: true
           tags: vitaliipriadilia/server.api:latest
