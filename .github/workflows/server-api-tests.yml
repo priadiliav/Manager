@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/Server/**'
+      - 'src/Tests/Server.Domain.Tests/**'
+      - 'src/Tests/Server.Infrastructure.Tests/**'
+      - 'src/Tests/Server.Application.Tests/**'
 
 jobs:
   test:
