@@ -8,10 +8,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import { Icon } from '@mui/material';
-import MemoryIcon from '@mui/icons-material/Memory';
-import PolicyIcon from '@mui/icons-material/Policy';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import PodcastsIcon from '@mui/icons-material/Podcasts';
 interface DrawerMenuProps {
@@ -34,16 +31,6 @@ const firstList = [
     path: '/cluster',
     icon: <Icon component={PodcastsIcon} />
   },
-  // {
-  //   text: 'Processes',
-  //   path: '/processes',
-  //   icon: <Icon component={MemoryIcon} />
-  // },
-  // {
-  //   text: 'Policies',
-  //   path: '/policies',
-  //   icon: <Icon component={PolicyIcon} />
-  // }
 ];
 
 
