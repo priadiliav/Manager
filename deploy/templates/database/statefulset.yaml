@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: database-statefulset
+  namespace: {{ .Release.Namespace }}
 spec:
   serviceName: database-service
   replicas: 1
@@ -19,7 +20,7 @@ spec:
     spec:
       containers:
         - name: database
-          image: docker.io/library/postgres:17.4
+          image: "{{ index .Values.parameters "database" "image" }}:{{ index .Values.parameters "database" "tag" }}"
           ports:
             - containerPort: 5432
               name: tcp

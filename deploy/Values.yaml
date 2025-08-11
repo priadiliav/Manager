@@ -2,6 +2,12 @@ parameters:
   server-api:
     image: "vitaliipriadilia/server.api"
     tag: "v0.0.1"
+  server-ui:
+    image: "vitaliipriadilia/server.ui"
+    tag: "v0.0.2"
+  database:
+    image: "docker.io/library/postgres"
+    tag: "17.4"
 
 serviceAccount:
   name: server-api
@@ -23,3 +29,5 @@ config:
     POSTGRES_DB: "Manager"
   server-api:
     ASPNETCORE_ENVIRONMENT: "Development"
+  server-ui:
+    BACKEND_URL: "http://manager-server-api-service:8080"

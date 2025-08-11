@@ -6,9 +6,9 @@ RELEASE_NAME = manager
 CHART_PATH = ./
 VALUES_FILE = Values.yaml
 
-PROXY_SERVICE = manager-server-api-service
-PROXY_TARGET_PORT = 8080
-PROXY_PORT = 8080
+PROXY_SERVICE = manager-server-ui-service
+PROXY_TARGET_PORT = 80
+PROXY_PORT = 80
 
 deploy:
 	@helm list -q | findstr $(RELEASE_NAME) >nul 2>&1 && ( \

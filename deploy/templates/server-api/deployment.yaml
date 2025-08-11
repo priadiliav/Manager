@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: manager-server-api-deployment
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   revisionHistoryLimit: 3
@@ -41,4 +42,5 @@ spec:
           envFrom:
             - secretRef:
                 name: manager-server-api-secrets
-
+            - configMapRef:
+                name: manager-server-api-config
