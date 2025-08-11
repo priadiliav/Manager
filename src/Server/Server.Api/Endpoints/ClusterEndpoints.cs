@@ -1,4 +1,4 @@
-using Server.Application.Abstractions;
+using Server.Application.Services;
 
 namespace Server.Api.Endpoints;
 
@@ -10,9 +10,9 @@ public static class ClusterEndpoints
         .WithTags("Cluster");
 
     group.MapGet("/deployments",
-        async (IClusterManager clusterManager) =>
+        async (IClusterService clusterService) =>
         {
-          var deployments = await clusterManager.GetDeploymentsAsync();
+          var deployments = await clusterService.GetDeploymentsAsync();
           return Results.Ok(deployments);
         })
         .WithName("GetDeploymentsAsync");

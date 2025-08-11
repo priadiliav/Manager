@@ -96,13 +96,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
-// Kubernetes client configuration
+// Kubernetes client configuration todo: to be moved to a separate microservice
 builder.Services.AddSingleton<IKubernetes>(sp =>
 {
   var config = KubernetesClientConfiguration.InClusterConfig();
   return new Kubernetes(config);
 });
-builder.Services.AddSingleton<IClusterManager, ClusterManager>();
+builder.Services.AddSingleton<IClusterManager, K8ClusterManager>();
 
 // Long polling services
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
@@ -118,6 +118,7 @@ builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IClusterService, ClusterService>();
 #endregion
 
 var app = builder.Build();
