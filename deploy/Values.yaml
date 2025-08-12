@@ -6,7 +6,7 @@ parameters:
     tag: "v0.0.7"
   server-ui:
     image: "vitaliipriadilia/server.ui"
-    tag: "v0.0.7"
+    tag: "v0.0.8"
   database:
     image: "docker.io/library/postgres"
     tag: "17.4"

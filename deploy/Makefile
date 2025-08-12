@@ -6,9 +6,7 @@ RELEASE_NAME = manager
 CHART_PATH = ./
 VALUES_FILE = Values.yaml
 
-PROXY_SERVICE = manager-server-ui-service
-PROXY_TARGET_PORT = 80
-PROXY_PORT = 80
+PROXY_CONTROLLER = ingress-nginx-controller-56d7c84fd4-mm4p8
 
 deploy:
 	@helm list -q | findstr $(RELEASE_NAME) >nul 2>&1 && ( \
@@ -20,9 +18,7 @@ deploy:
 	)
 
 proxy:
-	@echo "Setting up proxy for $(RELEASE_NAME)..."
-	@kubectl port-forward svc/$(PROXY_SERVICE) $(PROXY_PORT):$(PROXY_TARGET_PORT)
-
+	@kubectl port-forward -n ingress-nginx pod/$(PROXY_CONTROLLER) 8080:80
 
 delete:
 	@helm uninstall $(RELEASE_NAME) || echo Release $(RELEASE_NAME) not found or already deleted.
