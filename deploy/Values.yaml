@@ -2,7 +2,7 @@
 parameters:
   server-api:
     image: "vitaliipriadilia/server.api"
-    tag: "v0.0.1"
+    tag: "v0.0.3"
   server-ui:
     image: "vitaliipriadilia/server.ui"
     tag: "v0.0.3"

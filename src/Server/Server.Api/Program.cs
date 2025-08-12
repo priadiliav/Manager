@@ -4,6 +4,7 @@ using Common.Messages.Configuration;
 using Common.Messages.Policy;
 using Common.Messages.Process;
 using k8s;
+using k8s.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -86,6 +87,16 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddAuthorization();
 #endregion
 
+#region CORS configuration
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowAllOrigins",
+    corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin()
+      .AllowAnyMethod()
+      .AllowAnyHeader());
+});
+#endregion
+
 #region Infrastructure configuration
 // Repositories
 builder.Services.AddScoped<IAgentRepository, AgentRepository>();
@@ -99,7 +110,18 @@ builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 // Kubernetes client configuration todo: to be moved to a separate microservice
 builder.Services.AddSingleton<IKubernetes>(sp =>
 {
-  var config = KubernetesClientConfiguration.InClusterConfig();
+  KubernetesClientConfiguration config;
+
+  try
+  {
+    config = KubernetesClientConfiguration.InClusterConfig();
+  }
+  catch (KubeConfigException)
+  {
+    var configFilePath = builder.Configuration.GetValue<string>("KubernetesConfig:ConfigFilePath");
+    config = KubernetesClientConfiguration.BuildConfigFromConfigFile(configFilePath);
+  }
+
   return new Kubernetes(config);
 });
 builder.Services.AddSingleton<IClusterManager, K8ClusterManager>();
@@ -141,6 +163,8 @@ if (app.Environment.IsDevelopment())
 		c.RoutePrefix = string.Empty;
 	});
 }
+
+app.UseCors("AllowAllOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();
