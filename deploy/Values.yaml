@@ -1,11 +1,12 @@
 # todo: refactor
 parameters:
+  host: "manager-server-ui.local"
   server-api:
     image: "vitaliipriadilia/server.api"
-    tag: "v0.0.3"
+    tag: "v0.0.7"
   server-ui:
     image: "vitaliipriadilia/server.ui"
-    tag: "v0.0.3"
+    tag: "v0.0.7"
   database:
     image: "docker.io/library/postgres"
     tag: "17.4"
@@ -31,4 +32,4 @@ config:
   server-api:
     ASPNETCORE_ENVIRONMENT: "Development"
   server-ui:
-    BACKEND_URL: "http://manager-server-api-service:8080"
+    BACKEND_URL: "/api"

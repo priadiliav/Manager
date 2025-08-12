@@ -1,3 +1,3 @@
 window._env_ = {
-  BACKEND_URL: "http://localhost:5267"
+  BACKEND_URL: "http://localhost:5267/api"
 };

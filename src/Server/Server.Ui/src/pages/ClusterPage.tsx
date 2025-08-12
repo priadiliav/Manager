@@ -19,7 +19,7 @@ export const ClusterPage = () => {
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const fetchClusterData = async () => {
     try {
-      const response = await api.get('/api/cluster/deployments');
+      const response = await api.get('/cluster/deployments');
       if (response.status === 200) {
         setDeployments(response.data);
       } else {

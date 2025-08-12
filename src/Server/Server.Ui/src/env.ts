@@ -9,5 +9,5 @@ declare global {
 }
 
 export const env: EnvConfig = {
-  BACKEND_URL: window._env_?.BACKEND_URL || 'http://localhost:3000'
+  BACKEND_URL: window._env_?.BACKEND_URL || ''
 };
