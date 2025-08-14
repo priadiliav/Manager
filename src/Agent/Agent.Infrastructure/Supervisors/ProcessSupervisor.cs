@@ -14,8 +14,14 @@ public class ProcessSupervisor : IProcessSupervisor
     throw new NotImplementedException();
   }
 
-  public Task StartProcessWatcherAsync(Func<string, int, Task> onProcessStarted, CancellationToken cancellationToken = default)
+  public async Task StartProcessWatcherAsync(Func<string, int, Task> onProcessStarted, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    while (!cancellationToken.IsCancellationRequested)
+    {
+      await Task.Delay(1000, cancellationToken); // Simulate delay for process checking
+
+      // Example of invoking the callback with dummy data
+      await onProcessStarted("DummyProcess", 1234);
+    }
   }
 }

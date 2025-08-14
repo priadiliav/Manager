@@ -28,6 +28,7 @@ public class AgentWorkStateMachine : IAgentStateMachine
   private readonly StateMachine<AgentWorkState, WorkTrigger> _machine;
   private readonly ILogger<AgentWorkStateMachine> _logger;
 
+  private readonly IEnumerable<IPublisherRunner> _publisherRunners;
   private readonly IEnumerable<ILongPollingRunner> _longPollingRunners;
   private readonly IEnumerable<IWatcherRunner> _watcherRunners;
 
@@ -36,11 +37,13 @@ public class AgentWorkStateMachine : IAgentStateMachine
   public AgentWorkState CurrentState => _machine.State;
 
   public AgentWorkStateMachine(
+    IEnumerable<IPublisherRunner> publisherRunners,
     IEnumerable<IWatcherRunner> watcherRunners,
     IEnumerable<ILongPollingRunner> longPollingRunners,
     ILogger<AgentWorkStateMachine> logger,
     AgentStateContext context)
   {
+    _publisherRunners = publisherRunners ?? throw new ArgumentNullException(nameof(publisherRunners));
     _watcherRunners = watcherRunners ?? throw new ArgumentNullException(nameof(watcherRunners));
     _longPollingRunners = longPollingRunners ?? throw new ArgumentNullException(nameof(longPollingRunners));
     _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -70,6 +73,10 @@ public class AgentWorkStateMachine : IAgentStateMachine
 
     try
     {
+       var publisherTasks = _publisherRunners
+          .Select(runner => runner.StartPublishingAsync(_context.CancellationTokenSource.Token))
+          .ToArray();
+
       var longPollingTasks = _longPollingRunners
           .Select(runner => runner.StartListeningAsync(_context.CancellationTokenSource.Token))
           .ToArray();
@@ -80,7 +87,9 @@ public class AgentWorkStateMachine : IAgentStateMachine
 
       await _machine.FireAsync(WorkTrigger.StartProcessing);
 
-      await Task.WhenAll(longPollingTasks.Concat(watcherTasks));
+      await Task.WhenAll(longPollingTasks
+          .Concat(watcherTasks)
+          .Concat(publisherTasks));
     }
     catch (Exception ex)
     {

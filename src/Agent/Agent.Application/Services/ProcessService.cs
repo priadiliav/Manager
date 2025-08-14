@@ -35,7 +35,6 @@ public class ProcessService : IProcessService
     _logger.LogInformation("Received process update: {Message}", message);
 
     var processesDomain = message.Processes.Select(p => p.ToDomain()).ToList();
-
     await _processRepository.AddRange(processesDomain);
   }
 
