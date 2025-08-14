@@ -36,33 +36,7 @@ export const ClusterPage = () => {
 
   return (
     <>
-      <h1>Cluster Deployments</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Namespace</th>
-            <th>Image</th>
-            <th>Status</th>
-            <th>Pods</th>
-          </tr>
-        </thead>
-        <tbody>
-          {deployments.map((deployment) => (
-            <tr key={`${deployment.namespace}/${deployment.name}`}>
-              <td>{deployment.name}</td>
-              <td>{deployment.namespace}</td>
-              <td>{deployment.image}</td>
-              <td>{deployment.status}</td>
-              <td>
-                {deployment.pods.map((pod) => (
-                  <div key={`${pod.namespace}/${pod.name}`}>{pod.name} ({pod.status})</div>
-                ))}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      Cluster info
     </>
   );
 }

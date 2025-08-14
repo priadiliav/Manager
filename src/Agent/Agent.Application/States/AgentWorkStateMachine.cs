@@ -28,24 +28,26 @@ public class AgentWorkStateMachine : IAgentStateMachine
   private readonly StateMachine<AgentWorkState, WorkTrigger> _machine;
   private readonly ILogger<AgentWorkStateMachine> _logger;
 
+  private readonly IEnumerable<IPublisherRunner> _publisherRunners;
   private readonly IEnumerable<ILongPollingRunner> _longPollingRunners;
-  private readonly IEnumerable<IWatcherRunner> _watcherRunners;
 
-  private readonly AgentStateContext _context;
+  private readonly List<RunnerStateMachine> _runnerMachines;
 
   public AgentWorkState CurrentState => _machine.State;
 
   public AgentWorkStateMachine(
-    IEnumerable<IWatcherRunner> watcherRunners,
+    IEnumerable<IPublisherRunner> publisherRunners,
     IEnumerable<ILongPollingRunner> longPollingRunners,
     ILogger<AgentWorkStateMachine> logger,
+    ILoggerFactory loggerFactory,
     AgentStateContext context)
   {
-    _watcherRunners = watcherRunners ?? throw new ArgumentNullException(nameof(watcherRunners));
+    _publisherRunners = publisherRunners ?? throw new ArgumentNullException(nameof(publisherRunners));
     _longPollingRunners = longPollingRunners ?? throw new ArgumentNullException(nameof(longPollingRunners));
-    _context = context ?? throw new ArgumentNullException(nameof(context));
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     _machine = new StateMachine<AgentWorkState, WorkTrigger>(AgentWorkState.Start);
+
+    _runnerMachines = [];
 
     _machine.Configure(AgentWorkState.Start)
         .Permit(WorkTrigger.StartListening, AgentWorkState.Listening);
@@ -62,31 +64,33 @@ public class AgentWorkStateMachine : IAgentStateMachine
     _machine.Configure(AgentWorkState.Error)
         .Permit(WorkTrigger.Pause, AgentWorkState.Paused)
         .Permit(WorkTrigger.Resume, AgentWorkState.Listening);
+
+    foreach (var runner in publisherRunners)
+    {
+      _runnerMachines.Add(new RunnerStateMachine(
+          logger: loggerFactory.CreateLogger<RunnerStateMachine>(),
+          () => runner.PublishOnceAsync(context.CancellationTokenSource.Token),
+          TimeSpan.FromSeconds(10),
+          context.CancellationTokenSource.Token
+      ));
+    }
+
+    foreach (var runner in longPollingRunners)
+    {
+      _runnerMachines.Add(new RunnerStateMachine(
+          logger: loggerFactory.CreateLogger<RunnerStateMachine>(),
+          () => runner.ListenOnceAsync(context.CancellationTokenSource.Token),
+          TimeSpan.FromSeconds(1),
+          context.CancellationTokenSource.Token
+      ));
+    }
   }
 
   public async Task StartAsync()
   {
-    await _machine.FireAsync(WorkTrigger.StartListening);
+    _logger.LogInformation("Agent started");
 
-    try
-    {
-      var longPollingTasks = _longPollingRunners
-          .Select(runner => runner.StartListeningAsync(_context.CancellationTokenSource.Token))
-          .ToArray();
-
-      var watcherTasks = _watcherRunners
-          .Select(runner => runner.StartWatchingAsync(_context.CancellationTokenSource.Token))
-          .ToArray();
-
-      await _machine.FireAsync(WorkTrigger.StartProcessing);
-
-      await Task.WhenAll(longPollingTasks.Concat(watcherTasks));
-    }
-    catch (Exception ex)
-    {
-      _logger.LogError("An error occurred in one of the long polling runners.");
-
-      await _machine.FireAsync(WorkTrigger.ErrorOccurred);
-    }
+    var tasks = _runnerMachines.Select(rm => rm.RunAsync()).ToList();
+    await Task.WhenAll(tasks);
   }
 }

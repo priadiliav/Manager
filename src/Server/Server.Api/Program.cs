@@ -141,6 +141,7 @@ builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClusterService, ClusterService>();
+builder.Services.AddScoped<IMetricService, MetricService>();
 #endregion
 
 var app = builder.Build();
