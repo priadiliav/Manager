@@ -59,7 +59,7 @@ public static class ProcessEndpoints
         async (ILongPollingDispatcher<Guid, ProcessesMessage> pollingService, CancellationToken ct, HttpContext context) =>
         {
           // Getting the agent ID from the authenticated user
-          var agentId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+          var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
 
           Guid.TryParse(agentId, out var agentIdGuid);
 

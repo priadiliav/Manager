@@ -1,41 +1,35 @@
-using System.Runtime.CompilerServices;
 using Agent.Application.Abstractions;
-using Common.Messages;
 using Common.Messages.Metric;
+using Microsoft.Extensions.Logging;
 
 namespace Agent.Application.Services;
 
 public interface IMetricService : IPublisherRunner
 {
-    // Define methods for metric service
 }
 
-public class MetricService : IMetricService
+public class MetricService(
+  ILogger<MetricService> logger,
+  IPublisherClient<MetricsMessage> publisherClient,
+  IEnumerable<IMetricCollector> metricCollectors)
+  : IMetricService
 {
-  private readonly IPublisherClient<MetricsMessage> _publisherClient;
-  private readonly IEnumerable<IMetricCollector> _metricCollectors;
-
-  public MetricService(IPublisherClient<MetricsMessage> publisherClient, IEnumerable<IMetricCollector> metricCollectors)
+  private async Task<MetricsMessage> GetMetricsAsync(CancellationToken cancellationToken)
   {
-    _publisherClient = publisherClient ?? throw new ArgumentNullException(nameof(publisherClient));
-    _metricCollectors = metricCollectors ?? throw new ArgumentNullException(nameof(metricCollectors));
-  }
+    var collectionTasks = metricCollectors.Select(c => c.CollectAsync(cancellationToken));
+    var metrics = await Task.WhenAll(collectionTasks);
 
-  private async IAsyncEnumerable<IMessage> GenerateMetricsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-  {
-    while (!cancellationToken.IsCancellationRequested)
+    // todo: replace with a dto mapper
+    return new MetricsMessage
     {
-      var metrics = await Task.WhenAll(_metricCollectors.Select(c => c.CollectAsync(cancellationToken)));
-
-      yield return new MetricsMessage
-      {
-          Metrics = metrics.Select(m => new MetricMessage { Name = m.Name, Value = m.Value }).ToList()
-      };
-
-      await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
-    }
+        Metrics = metrics.Select(m => new MetricMessage
+        {
+            Name = m.Name,
+            Value = m.Value
+        }).ToList()
+    };
   }
 
-  public Task StartPublishingAsync(CancellationToken cancellationToken = default)
-    => _publisherClient.StartPublishingAsync(GenerateMetricsAsync(cancellationToken), cancellationToken);
+  public async Task PublishOnceAsync(CancellationToken cancellationToken = default)
+     => await publisherClient.PublishAsync(await GetMetricsAsync(cancellationToken), cancellationToken);
 }
