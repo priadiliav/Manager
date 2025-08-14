@@ -1,9 +1,6 @@
 name: Build and Upload Agent.Worker
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
