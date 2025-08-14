@@ -2,11 +2,6 @@ name: Build and Upload Agent.Worker
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version of the Agent.Worker executable'
-        required: true
-        default: '1.0.0'
 
 jobs:
   build:
@@ -30,5 +25,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Agent.Worker.exe
-          path: src/Agent/Agent.Worker/output/Agent.Worker.exe
+          name: Agent.Worker
+          path: src/Agent/Agent.Worker/output/
