@@ -9,6 +9,7 @@ using Common.Messages.Metric;
 using Common.Messages.Process;
 
 var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddWindowsService();
 
 #region Finite state machine configurations
 builder.Services.AddSingleton<AgentStateContext>();
