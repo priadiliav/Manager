@@ -3,14 +3,14 @@ using Server.Application.Abstractions;
 using Server.Domain.Models;
 using Server.Infrastructure.Configs;
 
-namespace Server.Infrastructure.Repositories;
+namespace Server.Infrastructure.Repositories.Relational;
 
 public class AgentRepository(AppDbContext dbContext) : IAgentRepository
 {
 	public async Task<IEnumerable<Agent>> GetAllAsync()
 		=> await dbContext.Agents.ToListAsync();
-	
-	public async Task<Agent?> GetAsync(Guid id) 
+
+	public async Task<Agent?> GetAsync(Guid id)
 		=> await dbContext.Agents
 				.Include(x => x.Configuration)
 				.FirstOrDefaultAsync(x => x.Id == id);

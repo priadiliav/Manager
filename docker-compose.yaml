@@ -1,15 +1,80 @@
 services:
-  database:
-    container_name: database
+  postgres:
+    container_name: postgres
     image: postgres:latest
     environment:
+      POSTGRES_DB: Manager
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: Manager
     ports:
-      - "5432:5432"
+      - "5432:5432" # PostgreSQL port
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  clickhouse:
+    container_name: clickhouse
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_DB: Manager
+      CLICKHOUSE_USER: admin
+      CLICKHOUSE_PASSWORD: admin123
+    ports:
+      - "8123:8123" # HTTP port
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./src/Server/Server.Infrastructure/Migrations/Clickhouse:/docker-entrypoint-initdb.d
+
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    restart: always
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd-data
+    volumes:
+      - etcd_data:/etcd-data
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2023-09-30T07-02-29Z
+    restart: always
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: server /minio_data
+    ports:
+      - "9000:9000" # MinIO port
+    volumes:
+      - minio_data:/minio_data
+
+  milvus:
+    container_name: milvus
+    image: milvusdb/milvus:v2.6.0
+    restart: always
+    depends_on:
+      - etcd
+      - minio
+    ports:
+      - "19530:19530" # gRPC
+      - "19121:19121" # REST
+      - "9091:9091" # HTTP
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_USE_SSL: false
+      MILVUS_LOG_LEVEL: debug
+    volumes:
+      - milvus_data:/var/lib/milvus
+    command: ["milvus", "run", "standalone"]
 
   server.api:
     container_name: server-api
@@ -20,9 +85,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=Manager;Username=postgres;Password=postgres
     ports:
-      - "8080:8080"
+      - "8080:8080" # API port
     depends_on:
-      - database
+      - postgres
+      - clickhouse
+      - milvus
 
   server.ui:
     container_name: server-ui
@@ -30,9 +97,13 @@ services:
       context: .
       dockerfile: src/Server/Server.Ui/Dockerfile
     ports:
-      - "5000:80"
+      - "5000:80" # UI port
     depends_on:
       - server.api
 
 volumes:
   db_data:
+  clickhouse_data:
+  milvus_data:
+  etcd_data:
+  minio_data:

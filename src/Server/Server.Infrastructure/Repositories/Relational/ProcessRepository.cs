@@ -3,7 +3,7 @@ using Server.Application.Abstractions;
 using Server.Domain.Models;
 using Server.Infrastructure.Configs;
 
-namespace Server.Infrastructure.Repositories;
+namespace Server.Infrastructure.Repositories.Relational;
 
 public class ProcessRepository(AppDbContext dbContext) : IProcessRepository
 {
@@ -13,7 +13,7 @@ public class ProcessRepository(AppDbContext dbContext) : IProcessRepository
 	public async Task<Process?> GetAsync(long id)
 		=> await dbContext.Processes
 				.Include(x => x.Configurations)
-				.FirstOrDefaultAsync(x => x.Id == id); 
+				.FirstOrDefaultAsync(x => x.Id == id);
 
 	public Task CreateAsync(Process process)
 	{

@@ -1,7 +1,7 @@
 using Server.Application.Abstractions;
 using Server.Infrastructure.Configs;
 
-namespace Server.Infrastructure.Repositories;
+namespace Server.Infrastructure.Repositories.Relational;
 
 public class UnitOfWork(
 	AppDbContext context,

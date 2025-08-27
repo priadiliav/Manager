@@ -1,5 +1,3 @@
-using System.Data.Common;
-using Common.Messages;
 using Common.Messages.Agent;
 using Common.Messages.Configuration;
 using Server.Application.Dtos.Agent;
@@ -10,7 +8,7 @@ using Server.Application.Dtos.User;
 
 namespace Server.Application.Dtos;
 
-public static class DomainToDtoMapper
+public static class ToDtoMapper
 {
 	#region Agent
 	public static AgentDto ToDto(this Domain.Models.Agent agent)

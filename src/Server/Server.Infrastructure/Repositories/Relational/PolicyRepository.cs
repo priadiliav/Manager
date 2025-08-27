@@ -3,7 +3,7 @@ using Server.Application.Abstractions;
 using Server.Domain.Models;
 using Server.Infrastructure.Configs;
 
-namespace Server.Infrastructure.Repositories;
+namespace Server.Infrastructure.Repositories.Relational;
 
 public class PolicyRepository(AppDbContext dbContext) : IPolicyRepository
 {
@@ -14,7 +14,7 @@ public class PolicyRepository(AppDbContext dbContext) : IPolicyRepository
 		=> dbContext.Policies
 				.Include(x => x.Configurations)
 				.FirstOrDefaultAsync(x => x.Id == id);
-	
+
 	public Task CreateAsync(Policy policy)
 	{
 		dbContext.Policies.Add(policy);

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using ClickHouse.Driver.ADO;
 using Common.Messages.Configuration;
 using Common.Messages.Policy;
 using Common.Messages.Process;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Milvus.Client;
 using Server.Api.Endpoints;
 using Server.Application.Abstractions;
 using Server.Application.Services;
@@ -16,6 +18,8 @@ using Server.Infrastructure.Communication;
 using Server.Infrastructure.Configs;
 using Server.Infrastructure.Managers;
 using Server.Infrastructure.Repositories;
+using Server.Infrastructure.Repositories.Relational;
+using Server.Infrastructure.Repositories.TimeSeries;
 using Server.Infrastructure.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,7 +54,7 @@ builder.Services.AddSwaggerGen(c =>
 
 #region Database configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
-	options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+	options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresSqlConnection")));
 #endregion
 
 #region JWT Token configuration
@@ -98,7 +102,7 @@ builder.Services.AddCors(options =>
 #endregion
 
 #region Infrastructure configuration
-// Repositories
+// Relational repositories
 builder.Services.AddScoped<IAgentRepository, AgentRepository>();
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
@@ -107,11 +111,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
+// Time-series repositories
+builder.Services.AddScoped<IMetricRepository, MetricRepository>();
+
 // Kubernetes client configuration todo: to be moved to a separate microservice
 builder.Services.AddSingleton<IKubernetes>(sp =>
 {
   KubernetesClientConfiguration config;
-
   try
   {
     config = KubernetesClientConfiguration.InClusterConfig();
@@ -121,10 +127,32 @@ builder.Services.AddSingleton<IKubernetes>(sp =>
     var configFilePath = builder.Configuration.GetValue<string>("KubernetesConfig:ConfigFilePath");
     config = KubernetesClientConfiguration.BuildConfigFromConfigFile(configFilePath);
   }
-
   return new Kubernetes(config);
 });
 builder.Services.AddSingleton<IClusterManager, K8ClusterManager>();
+
+
+//Clickhose client configuration
+builder.Services.AddSingleton<ClickHouseConnection>(sp =>
+{
+  var connectionString = builder.Configuration.GetConnectionString("ClickHouseConnection");
+  return new ClickHouseConnection(connectionString);
+});
+
+// Milvus client configuration
+builder.Services.AddSingleton<MilvusClient>(sp =>
+{
+  var milvusConfig = builder.Configuration.GetSection("MilvusSettings").Get<MilvusSettings>();
+
+  if (milvusConfig is null)
+    throw new InvalidOperationException("Milvus settings are not configured properly.");
+
+  var client = new MilvusClient(
+      host: milvusConfig.Host,
+      port: milvusConfig.Port);
+
+  return client;
+});
 
 // Long polling services
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();

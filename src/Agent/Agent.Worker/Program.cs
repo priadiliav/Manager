@@ -33,9 +33,9 @@ builder.Services
             "processes/subscribe"));
 
 builder.Services
-    .AddSingleton<IPublisherClient<MetricsMessage>, PublisherClient<MetricsMessage>>(
-        sp => new PublisherClient<MetricsMessage>(
-            sp.GetRequiredService<ILogger<PublisherClient<MetricsMessage>>>(),
+    .AddSingleton<IPublisherClient<MetricMessage>, PublisherClient<MetricMessage>>(
+        sp => new PublisherClient<MetricMessage>(
+            sp.GetRequiredService<ILogger<PublisherClient<MetricMessage>>>(),
             sp.GetRequiredService<HttpClient>(),
             sp.GetRequiredService<AgentStateContext>(),
             "metrics/publish"));

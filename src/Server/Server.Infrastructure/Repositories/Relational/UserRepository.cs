@@ -3,7 +3,7 @@ using Server.Application.Abstractions;
 using Server.Domain.Models;
 using Server.Infrastructure.Configs;
 
-namespace Server.Infrastructure.Repositories;
+namespace Server.Infrastructure.Repositories.Relational;
 
 public class UserRepository(AppDbContext dbContext) : IUserRepository
 {

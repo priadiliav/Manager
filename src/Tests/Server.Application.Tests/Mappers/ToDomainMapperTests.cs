@@ -8,7 +8,7 @@ using Server.Domain.Models;
 namespace Server.Application.Tests.Mappers;
 
 [TestFixture]
-public class DtoToDomainMapperTests
+public class ToDomainMapperTests
 {
     [Test]
     public void ToDomain_AgentDto_ShouldMapCorrectly()

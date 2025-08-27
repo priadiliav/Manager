@@ -1,12 +1,14 @@
+using Common.Messages.Metric;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
 using Server.Application.Dtos.Process;
 using Server.Application.Dtos.User;
+using Server.Domain.Models;
 
 namespace Server.Application.Dtos;
 
-public static class DtoToDomainMapper
+public static class ToDomainMapper
 {
 	#region Agent
 	public static Domain.Models.Agent ToDomain(this AgentDto source)
@@ -171,6 +173,22 @@ public static class DtoToDomainMapper
       Role = "User",
       PasswordHash = passwordHash,
       PasswordSalt = passwordSalt
+    };
+  }
+
+  #endregion
+
+  #region Metrics
+
+  public static Domain.Models.Metric ToDomain(this MetricMessage source, Guid agentId)
+  {
+    return new Domain.Models.Metric
+    {
+      AgentId = agentId,
+      Timestamp = source.Timestamp,
+      CpuUsage = source.CpuUsage,
+      MemoryUsage = source.MemoryUsage,
+      DiskUsage = source.DiskUsage
     };
   }
 

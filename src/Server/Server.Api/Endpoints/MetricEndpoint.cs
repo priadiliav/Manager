@@ -13,7 +13,7 @@ public static class MetricEndpoint
         .WithTags("Metrics");
 
     group.MapPost("/publish",
-        async ([FromBody] MetricsMessage metricsMessage, IMetricService metricService, HttpContext context) =>
+        async ([FromBody] MetricMessage metricsMessage, IMetricService metricService, HttpContext context) =>
         {
           var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
 

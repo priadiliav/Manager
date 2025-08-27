@@ -1,18 +1,26 @@
 using Common.Messages.Metric;
+using Server.Application.Abstractions;
+using Server.Application.Dtos;
 
 namespace Server.Application.Services;
 
 public interface IMetricService
 {
-  Task CreateMetricsAsync(Guid agentId, MetricsMessage metricsMessage);
+  /// <summary>
+  /// Creates metrics for a specific agent.
+  /// </summary>
+  /// <param name="agentId"></param>
+  /// <param name="metricMessage"></param>
+  /// <returns></returns>
+  Task CreateMetricsAsync(Guid agentId, MetricMessage metricMessage);
 }
 
-public class MetricService : IMetricService
+public class MetricService(IMetricRepository metricRepository) : IMetricService
 {
-  public async Task CreateMetricsAsync(Guid agentId, MetricsMessage metricsMessage)
+  public async Task CreateMetricsAsync(Guid agentId, MetricMessage metricMessage)
   {
-    // Simulate processing the metrics message
-    Console.WriteLine($"Received metrics from agent {agentId}:");
-    Console.WriteLine(string.Join(", ", metricsMessage.Metrics.Select(m => $"{m.Name}: {m.Value}")));
+    var metric = metricMessage.ToDomain(agentId);
+
+    await metricRepository.CreateAsync(metric);
   }
 }

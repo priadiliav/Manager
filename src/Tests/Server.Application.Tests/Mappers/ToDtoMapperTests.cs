@@ -5,7 +5,7 @@ using Server.Domain.Models;
 namespace Server.Application.Tests.Mappers;
 
 [TestFixture]
-public class DomainToDtoMapperTests
+public class ToDtoMapperTests
 {
     [Test]
     public void ToDto_Agent_ShouldMapCorrectly()

@@ -1,10 +1,9 @@
-﻿using System;
+﻿#nullable disable
+
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-#nullable disable
-
-namespace Server.Infrastructure.Migrations
+namespace Server.Infrastructure.Migrations.PostgresSql
 {
     /// <inheritdoc />
     public partial class Init : Migration

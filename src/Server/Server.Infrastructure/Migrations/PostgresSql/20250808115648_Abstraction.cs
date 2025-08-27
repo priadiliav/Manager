@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿#nullable disable
 
-#nullable disable
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Server.Infrastructure.Migrations
+namespace Server.Infrastructure.Migrations.PostgresSql
 {
     /// <inheritdoc />
-    public partial class Last_Updates : Migration
+    public partial class Abstraction : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

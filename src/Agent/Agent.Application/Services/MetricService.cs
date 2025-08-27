@@ -10,23 +10,21 @@ public interface IMetricService : IPublisherRunner
 
 public class MetricService(
   ILogger<MetricService> logger,
-  IPublisherClient<MetricsMessage> publisherClient,
+  IPublisherClient<MetricMessage> publisherClient,
   IEnumerable<IMetricCollector> metricCollectors)
   : IMetricService
 {
-  private async Task<MetricsMessage> GetMetricsAsync(CancellationToken cancellationToken)
+  private async Task<MetricMessage> GetMetricsAsync(CancellationToken cancellationToken)
   {
     var collectionTasks = metricCollectors.Select(c => c.CollectAsync(cancellationToken));
     var metrics = await Task.WhenAll(collectionTasks);
 
-    // todo: replace with a dto mapper
-    return new MetricsMessage
+    return new MetricMessage
     {
-        Metrics = metrics.Select(m => new MetricMessage
-        {
-            Name = m.Name,
-            Value = m.Value
-        }).ToList()
+      CpuUsage = 50 + new Random().Next(0, 50),
+      MemoryUsage = 1024 + new Random().Next(0, 1024),
+      DiskUsage = 500 + new Random().Next(0, 500),
+      Timestamp = DateTime.UtcNow,
     };
   }
 
