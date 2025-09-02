@@ -21,6 +21,14 @@ public class MetricService(IMetricRepository metricRepository) : IMetricService
   {
     var metric = metricMessage.ToDomain(agentId);
 
-    await metricRepository.CreateAsync(metric);
+    Console.WriteLine(@$"Received metrics from agent {agentId}:
+            CPU {metric.CpuUsage},
+            Memory {metric.MemoryUsage},
+            Disk {metric.DiskUsage},
+            Network {metric.NetworkUsage},
+            Uptime {metric.Uptime}
+            at {metric.Timestamp}");
+
+    //await metricRepository.CreateAsync(metric);
   }
 }

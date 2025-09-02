@@ -1,4 +1,6 @@
 using Agent.Application.Abstractions;
+using Agent.Application.Publishers;
+using Agent.Application.Receivers;
 using Agent.Application.Services;
 using Agent.Application.States;
 using Agent.Domain.Context;
@@ -7,6 +9,7 @@ using Agent.Infrastructure.Communication;
 using Agent.Worker;
 using Common.Messages.Metric;
 using Common.Messages.Process;
+using Common.Messages.Static;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService();
@@ -15,6 +18,7 @@ builder.Services.AddWindowsService();
 builder.Services.AddSingleton<AgentStateContext>();
 builder.Services.AddSingleton<AgentOverallStateMachine>();
 builder.Services.AddSingleton<AgentAuthStateMachine>();
+builder.Services.AddSingleton<AgentSyncStateMachine>();
 builder.Services.AddSingleton<AgentWorkStateMachine>();
 #endregion
 
@@ -40,17 +44,18 @@ builder.Services
             sp.GetRequiredService<AgentStateContext>(),
             "metrics/publish"));
 
-builder.Services.AddSingleton<IMetricCollector, CpuMetricCollector>();
-builder.Services.AddSingleton<IMetricCollector, MemoryMetricCollector>();
+builder.Services.AddSingleton<IDynamicDataCollector<double>, CpuUsageCollector>();
+builder.Services.AddSingleton<IDynamicDataCollector<double>, MemoryUsageCollector>();
+builder.Services.AddSingleton<IDynamicDataCollector<double>, DiskUsageCollector>();
+builder.Services.AddSingleton<IDynamicDataCollector<double>, NetworkUsageCollector>();
+builder.Services.AddSingleton<IDynamicDataCollector<double>, UptimeCollector>();
+
+builder.Services.AddSingleton<IStaticDataCollector<CpuInfoMessage>, CpuInfoDataCollector>();
 #endregion
 
 #region Application layer configurations
-builder.Services.AddSingleton<ILongPollingRunner, ProcessService>();
-builder.Services.AddSingleton<IProcessService, ProcessService>();
-
-builder.Services.AddSingleton<IMetricService, MetricService>();
-builder.Services.AddSingleton<IPublisherRunner, MetricService>();
-
+builder.Services.AddSingleton<IReceiverRunner, ProcessReceiver>();
+builder.Services.AddSingleton<IPublisherRunner, MetricsPublisher>();
 builder.Services.AddSingleton<IAuthenticationService, AuthService>();
 #endregion
 

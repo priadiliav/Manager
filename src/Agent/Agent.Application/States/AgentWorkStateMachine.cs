@@ -23,13 +23,13 @@ public enum WorkTrigger
   ErrorOccurred
 }
 
-public class AgentWorkStateMachine : IAgentStateMachine
+public class AgentWorkStateMachine
 {
   private readonly StateMachine<AgentWorkState, WorkTrigger> _machine;
   private readonly ILogger<AgentWorkStateMachine> _logger;
 
   private readonly IEnumerable<IPublisherRunner> _publisherRunners;
-  private readonly IEnumerable<ILongPollingRunner> _longPollingRunners;
+  private readonly IEnumerable<IReceiverRunner> _longPollingRunners;
 
   private readonly List<RunnerStateMachine> _runnerMachines;
 
@@ -37,7 +37,7 @@ public class AgentWorkStateMachine : IAgentStateMachine
 
   public AgentWorkStateMachine(
     IEnumerable<IPublisherRunner> publisherRunners,
-    IEnumerable<ILongPollingRunner> longPollingRunners,
+    IEnumerable<IReceiverRunner> longPollingRunners,
     ILogger<AgentWorkStateMachine> logger,
     ILoggerFactory loggerFactory,
     AgentStateContext context)
@@ -69,7 +69,7 @@ public class AgentWorkStateMachine : IAgentStateMachine
     {
       _runnerMachines.Add(new RunnerStateMachine(
           logger: loggerFactory.CreateLogger<RunnerStateMachine>(),
-          () => runner.PublishOnceAsync(context.CancellationTokenSource.Token),
+          () => runner.PublishAsync(context.CancellationTokenSource.Token),
           TimeSpan.FromSeconds(10),
           context.CancellationTokenSource.Token
       ));
@@ -79,7 +79,7 @@ public class AgentWorkStateMachine : IAgentStateMachine
     {
       _runnerMachines.Add(new RunnerStateMachine(
           logger: loggerFactory.CreateLogger<RunnerStateMachine>(),
-          () => runner.ListenOnceAsync(context.CancellationTokenSource.Token),
+          () => runner.ReceiveAsync(context.CancellationTokenSource.Token),
           TimeSpan.FromSeconds(1),
           context.CancellationTokenSource.Token
       ));
@@ -88,8 +88,6 @@ public class AgentWorkStateMachine : IAgentStateMachine
 
   public async Task StartAsync()
   {
-    _logger.LogInformation("Agent started");
-
     var tasks = _runnerMachines.Select(rm => rm.RunAsync()).ToList();
     await Task.WhenAll(tasks);
   }

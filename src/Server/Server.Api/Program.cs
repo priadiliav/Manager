@@ -16,7 +16,6 @@ using Server.Application.Abstractions;
 using Server.Application.Services;
 using Server.Infrastructure.Communication;
 using Server.Infrastructure.Configs;
-using Server.Infrastructure.Managers;
 using Server.Infrastructure.Repositories;
 using Server.Infrastructure.Repositories.Relational;
 using Server.Infrastructure.Repositories.TimeSeries;
@@ -114,24 +113,6 @@ builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 // Time-series repositories
 builder.Services.AddScoped<IMetricRepository, MetricRepository>();
 
-// Kubernetes client configuration todo: to be moved to a separate microservice
-builder.Services.AddSingleton<IKubernetes>(sp =>
-{
-  KubernetesClientConfiguration config;
-  try
-  {
-    config = KubernetesClientConfiguration.InClusterConfig();
-  }
-  catch (KubeConfigException)
-  {
-    var configFilePath = builder.Configuration.GetValue<string>("KubernetesConfig:ConfigFilePath");
-    config = KubernetesClientConfiguration.BuildConfigFromConfigFile(configFilePath);
-  }
-  return new Kubernetes(config);
-});
-builder.Services.AddSingleton<IClusterManager, K8ClusterManager>();
-
-
 //Clickhose client configuration
 builder.Services.AddSingleton<ClickHouseConnection>(sp =>
 {
@@ -168,7 +149,6 @@ builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IClusterService, ClusterService>();
 builder.Services.AddScoped<IMetricService, MetricService>();
 #endregion
 
@@ -205,7 +185,7 @@ app.MapPolicyEndpoints();
 app.MapConfigurationEndpoints();
 app.MapMetricEndpoints();
 app.MapUserEndpoints();
-app.MapClusterEndpoints();
+app.MapSyncEndpoints();
 
 app.UseHttpsRedirection();
 app.Run();

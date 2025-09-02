@@ -21,7 +21,7 @@ public enum AuthenticationTrigger
   ErrorOccurred
 }
 
-public class AgentAuthStateMachine : IAgentStateMachine
+public class AgentAuthStateMachine
 {
   private readonly StateMachine<AgentAuthenticationState, AuthenticationTrigger> _machine;
   private readonly ILogger<AgentAuthStateMachine> _logger;

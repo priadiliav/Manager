@@ -188,6 +188,8 @@ public static class ToDomainMapper
       Timestamp = source.Timestamp,
       CpuUsage = source.CpuUsage,
       MemoryUsage = source.MemoryUsage,
+      NetworkUsage = source.NetworkUsage,
+      Uptime = source.Uptime,
       DiskUsage = source.DiskUsage
     };
   }

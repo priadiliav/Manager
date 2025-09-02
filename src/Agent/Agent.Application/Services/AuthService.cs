@@ -11,17 +11,14 @@ public interface IAuthenticationService
   Task AuthenticateAsync(CancellationToken cancellationToken);
 }
 
-public class AuthService(
-  AgentStateContext context,
-  HttpClient httpClient,
-  ILogger<AuthService> logger) : IAuthenticationService
+public class AuthService(AgentStateContext context, HttpClient httpClient) : IAuthenticationService
 {
   public async Task AuthenticateAsync(CancellationToken cancellationToken)
   {
     var loginRequest = new AgentLoginRequestMessage
     {
-        AgentId = Guid.Parse("0198a897-68c4-7b90-9907-1a19038cf619"),
-        Secret = "929cdc79-e7b4-4adc-b06c-de8463b27eec"
+        AgentId = Guid.Parse("019906dd-c448-797d-99c2-b037a8caed09"),
+        Secret = "a1f93576-2987-4c6d-9cdd-e7c7b0ac39f1"
     };
 
     var json = JsonSerializer.Serialize(loginRequest);
