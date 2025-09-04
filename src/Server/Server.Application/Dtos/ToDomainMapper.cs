@@ -1,4 +1,6 @@
+using Common.Messages.Agent;
 using Common.Messages.Metric;
+using Common.Messages.Static;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
@@ -19,13 +21,17 @@ public static class ToDomainMapper
 			ConfigurationId = source.ConfigurationId,
 		};
 
-	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source, byte[] secretHash, byte[] secretSalt)
+	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source,
+      Hardware hardware,
+      byte[] secretHash,
+      byte[] secretSalt)
 		=> new()
 		{
 				Name = source.Name,
 				ConfigurationId = source.ConfigurationId,
         SecretHash = secretHash,
-        SecretSalt = secretSalt
+        SecretSalt = secretSalt,
+        Hardware = hardware
 		};
 
 	public static Domain.Models.Agent ToDomain(this AgentModifyRequest source, Guid id)
@@ -36,6 +42,23 @@ public static class ToDomainMapper
 				ConfigurationId = source.ConfigurationId
 		};
 	#endregion
+
+  #region Hardware
+  public static Domain.Models.Hardware ToDomain(this HardwareMessage source, Guid agentId)
+    => new()
+    {
+      CpuCores      = source.CpuCores,
+      CpuModel      = source.CpuModel,
+      CpuSpeedGHz   = source.CpuSpeedGHz,
+      CpuArchitecture = source.CpuArchitecture,
+      GpuModel      = source.GpuModel,
+      GpuMemoryMB   = source.GpuMemoryMB,
+      RamModel      = source.RamModel,
+      TotalMemoryMB = source.TotalMemoryMB,
+      DiskModel     = source.DiskModel,
+      TotalDiskMB   = source.TotalDiskMB
+    };
+  #endregion
 
 	#region Configuration
 	public static Domain.Models.Configuration ToDomain(this ConfigurationDto source)

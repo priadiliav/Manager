@@ -1,9 +1,10 @@
-﻿#nullable disable
-
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace Server.Infrastructure.Migrations.PostgresSql
+#nullable disable
+
+namespace Server.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class Init : Migration
@@ -24,6 +25,30 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Configurations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Hardware",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CpuModel = table.Column<string>(type: "text", nullable: false),
+                    CpuCores = table.Column<int>(type: "integer", nullable: false),
+                    CpuSpeedGHz = table.Column<double>(type: "double precision", nullable: false),
+                    CpuArchitecture = table.Column<string>(type: "text", nullable: false),
+                    GpuModel = table.Column<string>(type: "text", nullable: false),
+                    GpuMemoryMB = table.Column<int>(type: "integer", nullable: false),
+                    RamModel = table.Column<string>(type: "text", nullable: false),
+                    TotalMemoryMB = table.Column<long>(type: "bigint", nullable: false),
+                    DiskModel = table.Column<string>(type: "text", nullable: false),
+                    TotalDiskMB = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Hardware", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,10 +109,11 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ConfigurationId = table.Column<long>(type: "bigint", nullable: false),
+                    HardwareId = table.Column<long>(type: "bigint", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     SecretHash = table.Column<byte[]>(type: "bytea", nullable: false),
                     SecretSalt = table.Column<byte[]>(type: "bytea", nullable: false),
-                    ConfigurationId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     ModifiedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
@@ -98,6 +124,12 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                         name: "FK_Agents_Configurations_ConfigurationId",
                         column: x => x.ConfigurationId,
                         principalTable: "Configurations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Agents_Hardware_HardwareId",
+                        column: x => x.HardwareId,
+                        principalTable: "Hardware",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -162,6 +194,12 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                 column: "ConfigurationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Agents_HardwareId",
+                table: "Agents",
+                column: "HardwareId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PolicyInConfiguration_PolicyId",
                 table: "PolicyInConfiguration",
                 column: "PolicyId");
@@ -186,6 +224,9 @@ namespace Server.Infrastructure.Migrations.PostgresSql
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Hardware");
 
             migrationBuilder.DropTable(
                 name: "Policies");

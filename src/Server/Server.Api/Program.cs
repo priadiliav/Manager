@@ -51,11 +51,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 #endregion
 
-#region Database configuration
-builder.Services.AddDbContext<AppDbContext>(options =>
-	options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresSqlConnection")));
-#endregion
-
 #region JWT Token configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddSingleton<IJwtTokenProvider, JwtTokenProvider>();
@@ -107,11 +102,21 @@ builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
 builder.Services.AddScoped<IPolicyRepository, PolicyRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IHardwareRepository, HardwareRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
 // Time-series repositories
 builder.Services.AddScoped<IMetricRepository, MetricRepository>();
+
+// Long polling services
+builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
+builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
+builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ProcessesMessage>, InMemoryLongPollingDispatcher<Guid, ProcessesMessage>>();
+
+// PostgreSQL database configuration
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresSqlConnection")));
 
 //Clickhose client configuration
 builder.Services.AddSingleton<ClickHouseConnection>(sp =>
@@ -119,27 +124,6 @@ builder.Services.AddSingleton<ClickHouseConnection>(sp =>
   var connectionString = builder.Configuration.GetConnectionString("ClickHouseConnection");
   return new ClickHouseConnection(connectionString);
 });
-
-// Milvus client configuration
-builder.Services.AddSingleton<MilvusClient>(sp =>
-{
-  var milvusConfig = builder.Configuration.GetSection("MilvusSettings").Get<MilvusSettings>();
-
-  if (milvusConfig is null)
-    throw new InvalidOperationException("Milvus settings are not configured properly.");
-
-  var client = new MilvusClient(
-      host: milvusConfig.Host,
-      port: milvusConfig.Port);
-
-  return client;
-});
-
-// Long polling services
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ProcessesMessage>, InMemoryLongPollingDispatcher<Guid, ProcessesMessage>>();
-
 #endregion
 
 #region Application configuration
@@ -185,7 +169,6 @@ app.MapPolicyEndpoints();
 app.MapConfigurationEndpoints();
 app.MapMetricEndpoints();
 app.MapUserEndpoints();
-app.MapSyncEndpoints();
 
 app.UseHttpsRedirection();
 app.Run();

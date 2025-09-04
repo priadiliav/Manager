@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Common.Messages.Agent;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
 
@@ -39,6 +41,25 @@ public static class AgentEndpoints
         })
         .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateAgent");
+
+    group.MapPut("/sync", async (AgentSyncRequestMessage agentSyncRequestMessage, IAgentService agentService, HttpContext context) =>
+        {
+          // Getting the agent ID from the authenticated user
+          var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
+
+          Guid.TryParse(agentId, out var agentIdGuid);
+
+          if (agentIdGuid == Guid.Empty)
+            return Results.Unauthorized();
+
+          var result = await agentService.SyncAgentAsync(agentIdGuid, agentSyncRequestMessage);
+
+          return result is null
+              ? Results.NotFound()
+              : Results.Ok();
+        })
+        .RequireAuthorization(policy => policy.RequireRole("Agent"))
+        .WithName("SyncAgents");
 
     group.MapPut("/{agentId:guid}",
         async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>

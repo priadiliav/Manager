@@ -49,8 +49,6 @@ builder.Services.AddSingleton<IDynamicDataCollector<double>, MemoryUsageCollecto
 builder.Services.AddSingleton<IDynamicDataCollector<double>, DiskUsageCollector>();
 builder.Services.AddSingleton<IDynamicDataCollector<double>, NetworkUsageCollector>();
 builder.Services.AddSingleton<IDynamicDataCollector<double>, UptimeCollector>();
-
-builder.Services.AddSingleton<IStaticDataCollector<CpuInfoMessage>, CpuInfoDataCollector>();
 #endregion
 
 #region Application layer configurations

@@ -11,7 +11,9 @@ public class Agent : IEntity<Guid>
   public byte[] SecretSalt { get; init; } = default!;
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
+
 	public virtual Configuration Configuration { get; set; } = null!;
+  public virtual Hardware Hardware { get; set; } = null!;
 
   /// <summary>
   /// Modifies the current agent with the values from another agent.
@@ -25,6 +27,5 @@ public class Agent : IEntity<Guid>
 
 		Name = agent.Name;
 		ConfigurationId = agent.ConfigurationId;
-		Configuration = agent.Configuration;
 	}
 }

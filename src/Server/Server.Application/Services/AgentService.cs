@@ -36,6 +36,14 @@ public interface IAgentService
 	/// <param name="request"></param>
 	/// <returns></returns>
 	Task<AgentDto?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request);
+
+  /// <summary>
+  /// Syncs an agent with the provided static information, such as hardware details.
+  /// </summary>
+  /// <param name="agentId"></param>
+  /// <param name="message"></param>
+  /// <returns></returns>
+  Task<AgentDto?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message);
 }
 
 public class AgentService (
@@ -59,12 +67,14 @@ public class AgentService (
     var randomGuidString = Guid.NewGuid().ToString();
 
     var (secretHash, secretSalt) = passwordHasher.CreatePasswordHash(randomGuidString);
-    var agentDomain = request.ToDomain(secretHash, secretSalt);
 
-		await unitOfWork.Agents.CreateAsync(agentDomain);
-		await unitOfWork.SaveChangesAsync();
+    var hardware = Hardware.Empty();
+    var agentDomain = request.ToDomain(hardware, secretHash, secretSalt);
 
-		var createdAgentDto = await unitOfWork.Agents.GetAsync(agentDomain.Id);
+    await unitOfWork.Agents.CreateAsync(agentDomain);
+    await unitOfWork.SaveChangesAsync();
+
+    var createdAgentDto = await unitOfWork.Agents.GetAsync(agentDomain.Id);
 		return createdAgentDto?.ToCreateResponse(randomGuidString);
 	}
 
@@ -83,4 +93,21 @@ public class AgentService (
 		var updatedAgentDto = await GetAgentAsync(agentId);
 		return updatedAgentDto;
 	}
+
+  public async Task<AgentDto?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message)
+  {
+    var existingAgentDomain = await unitOfWork.Agents.GetAsync(agentId);
+    if (existingAgentDomain is null)
+      return null;
+
+    // Software updates and another static agent information can be handled here in the future
+    var hardwareDomain = message.Hardware.ToDomain(agentId);
+    existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
+    await unitOfWork.Hardware.ModifyAsync(existingAgentDomain.Hardware);
+
+    await unitOfWork.SaveChangesAsync();
+
+    var updatedAgentDto = await GetAgentAsync(agentId);
+    return updatedAgentDto;
+  }
 }

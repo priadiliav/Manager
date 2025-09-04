@@ -24,8 +24,5 @@ public class Configuration : IEntity<long>
 			throw new ArgumentNullException(nameof(configuration));
 
 		Name = configuration.Name;
-		Agents = configuration.Agents;
-		Policies = configuration.Policies;
-		Processes = configuration.Processes;
 	}
 }

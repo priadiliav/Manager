@@ -43,7 +43,7 @@ public class ToDomainMapperTests
         };
 
         // Act
-        var result = request.ToDomain(new byte[] { }, new byte[] { });
+        var result = request.ToDomain(new Hardware(),new byte[] { }, new byte[] { });
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -331,7 +331,7 @@ public class ToDomainMapperTests
         };
 
         // Act
-        var agentResult = agentRequest.ToDomain(new byte[] { }, new byte[] { });
+        var agentResult = agentRequest.ToDomain(new Hardware(), new byte[] { }, new byte[] { });
         var processResult = processRequest.ToDomain();
         var policyResult = policyRequest.ToDomain();
 

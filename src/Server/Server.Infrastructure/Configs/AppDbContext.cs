@@ -11,12 +11,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 		public DbSet<Domain.Models.Policy> Policies { get; set; }
 		public DbSet<Domain.Models.Process> Processes { get; set; }
     public DbSet<Domain.Models.User> Users { get; set; }
+    public DbSet<Domain.Models.Hardware> Hardware { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-			#region Policy in Configuration
+			#region Policy in Configuration m:m
 			modelBuilder.Entity<PolicyInConfiguration>()
 					.HasKey(pc => new { pc.ConfigurationId, pc.PolicyId });
 
@@ -31,7 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 					.HasForeignKey(pc => pc.PolicyId);
 			#endregion
 
-			#region Process in Configuration
+			#region Process in Configuration m:m
 			modelBuilder.Entity<ProcessInConfiguration>()
 					.HasKey(pc => new { pc.ConfigurationId, pc.ProcessId });
 
@@ -45,6 +46,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 					.WithMany(p => p.Configurations)
 					.HasForeignKey(pc => pc.ProcessId);
 			#endregion
+
+      #region Hardware in Agent 1:1
+      modelBuilder.Entity<Hardware>()
+          .HasOne(h => h.Agent)
+          .WithOne(a => a.Hardware)
+          .HasForeignKey<Hardware>(h => h.AgentId)
+          .OnDelete(DeleteBehavior.Cascade)
+          .IsRequired();
+      #endregion
 		}
 
 		public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())

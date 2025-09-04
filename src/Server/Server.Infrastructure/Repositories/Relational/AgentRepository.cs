@@ -13,6 +13,7 @@ public class AgentRepository(AppDbContext dbContext) : IAgentRepository
 	public async Task<Agent?> GetAsync(Guid id)
 		=> await dbContext.Agents
 				.Include(x => x.Configuration)
+        .Include(x => x.Hardware)
 				.FirstOrDefaultAsync(x => x.Id == id);
 
 	public Task CreateAsync(Agent agent)

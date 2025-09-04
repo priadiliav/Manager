@@ -1,6 +1,7 @@
 using Agent.Application.Abstractions;
 using Agent.Application.Services;
 using Agent.Domain.Context;
+using Common.Messages.Agent;
 using Common.Messages.Metric;
 using Common.Messages.Static;
 using Microsoft.Extensions.Logging;
@@ -29,13 +30,13 @@ public class AgentSyncStateMachine
   private readonly ILogger<AgentAuthStateMachine> _logger;
   private readonly AgentStateContext _context;
 
-  private readonly IStaticDataCollector<CpuInfoMessage> _cpuInfoCollector;
+  private readonly IStaticDataCollector<HardwareMessage> _cpuInfoCollector;
 
   public AgentSyncState CurrentState => _machine.State;
 
   public AgentSyncStateMachine(
     ILogger<AgentAuthStateMachine> logger,
-    IStaticDataCollector<CpuInfoMessage> cpuInfoCollector,
+    IStaticDataCollector<HardwareMessage> cpuInfoCollector,
     AgentStateContext context)
   {
     _cpuInfoCollector = cpuInfoCollector ?? throw new ArgumentNullException(nameof(cpuInfoCollector));
@@ -61,9 +62,11 @@ public class AgentSyncStateMachine
 
     try
     {
-      var message = new SyncMessage()
+      var message = new AgentSyncRequestMessage()
       {
-          Cpu = _cpuInfoCollector.Collect(),
+          Hardware = new HardwareMessage()
+          {
+          }
       };
 
       _logger.LogInformation("Synchronization successful.");

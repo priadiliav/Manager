@@ -8,7 +8,7 @@ using Server.Infrastructure.Configs;
 
 #nullable disable
 
-namespace Server.Infrastructure.Migrations.PostgresSql
+namespace Server.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -77,6 +77,66 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                     b.HasKey("Id");
 
                     b.ToTable("Configurations");
+                });
+
+            modelBuilder.Entity("Server.Domain.Models.Hardware", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CpuArchitecture")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("CpuCores")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CpuModel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("CpuSpeedGHz")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DiskModel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("GpuMemoryMB")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("GpuModel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RamModel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("TotalDiskMB")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TotalMemoryMB")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentId")
+                        .IsUnique();
+
+                    b.ToTable("Hardware");
                 });
 
             modelBuilder.Entity("Server.Domain.Models.Policy", b =>
@@ -238,6 +298,17 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                     b.Navigation("Configuration");
                 });
 
+            modelBuilder.Entity("Server.Domain.Models.Hardware", b =>
+                {
+                    b.HasOne("Server.Domain.Models.Agent", "Agent")
+                        .WithOne("Hardware")
+                        .HasForeignKey("Server.Domain.Models.Hardware", "AgentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+                });
+
             modelBuilder.Entity("Server.Domain.Models.PolicyInConfiguration", b =>
                 {
                     b.HasOne("Server.Domain.Models.Configuration", "Configuration")
@@ -274,6 +345,12 @@ namespace Server.Infrastructure.Migrations.PostgresSql
                     b.Navigation("Configuration");
 
                     b.Navigation("Process");
+                });
+
+            modelBuilder.Entity("Server.Domain.Models.Agent", b =>
+                {
+                    b.Navigation("Hardware")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Server.Domain.Models.Configuration", b =>
