@@ -10,16 +10,16 @@ public interface IMetricService
   /// Creates metrics for a specific agent.
   /// </summary>
   /// <param name="agentId"></param>
-  /// <param name="metricMessage"></param>
+  /// <param name="metricRequestMessage"></param>
   /// <returns></returns>
-  Task CreateMetricsAsync(Guid agentId, MetricMessage metricMessage);
+  Task<MetricResponseMessage?> CreateMetricsAsync(Guid agentId, MetricRequestMessage metricRequestMessage);
 }
 
 public class MetricService(IMetricRepository metricRepository) : IMetricService
 {
-  public async Task CreateMetricsAsync(Guid agentId, MetricMessage metricMessage)
+  public async Task<MetricResponseMessage?> CreateMetricsAsync(Guid agentId, MetricRequestMessage metricRequestMessage)
   {
-    var metric = metricMessage.ToDomain(agentId);
+    var metric = metricRequestMessage.ToDomain(agentId);
 
     Console.WriteLine(@$"Received metrics from agent {agentId}:
             CPU {metric.CpuUsage},
@@ -28,7 +28,8 @@ public class MetricService(IMetricRepository metricRepository) : IMetricService
             Network {metric.NetworkUsage},
             Uptime {metric.Uptime}
             at {metric.Timestamp}");
-
     //await metricRepository.CreateAsync(metric);
+
+    return new MetricResponseMessage();
   }
 }

@@ -67,7 +67,6 @@ public static class ProcessEndpoints
             return Results.Unauthorized();
 
           var update = await pollingService.WaitForUpdateAsync(agentIdGuid, ct);
-
           return update is null
               ? Results.NoContent()
               : Results.Ok(update);

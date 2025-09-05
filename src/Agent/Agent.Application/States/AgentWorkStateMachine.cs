@@ -26,25 +26,11 @@ public enum WorkTrigger
 public class AgentWorkStateMachine
 {
   private readonly StateMachine<AgentWorkState, WorkTrigger> _machine;
-  private readonly ILogger<AgentWorkStateMachine> _logger;
-
-  private readonly IEnumerable<IPublisherRunner> _publisherRunners;
-  private readonly IEnumerable<IReceiverRunner> _longPollingRunners;
-
-  private readonly List<RunnerStateMachine> _runnerMachines;
-
   public AgentWorkState CurrentState => _machine.State;
 
-  public AgentWorkStateMachine(
-    IEnumerable<IPublisherRunner> publisherRunners,
-    IEnumerable<IReceiverRunner> longPollingRunners,
-    ILogger<AgentWorkStateMachine> logger,
-    ILoggerFactory loggerFactory,
-    AgentStateContext context)
+  private readonly List<RunnerStateMachine> _runnerMachines;
+  public AgentWorkStateMachine(IEnumerable<IWorkerRunner> runners, AgentStateContext context)
   {
-    _publisherRunners = publisherRunners ?? throw new ArgumentNullException(nameof(publisherRunners));
-    _longPollingRunners = longPollingRunners ?? throw new ArgumentNullException(nameof(longPollingRunners));
-    _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     _machine = new StateMachine<AgentWorkState, WorkTrigger>(AgentWorkState.Start);
 
     _runnerMachines = [];
@@ -65,25 +51,9 @@ public class AgentWorkStateMachine
         .Permit(WorkTrigger.Pause, AgentWorkState.Paused)
         .Permit(WorkTrigger.Resume, AgentWorkState.Listening);
 
-    foreach (var runner in publisherRunners)
-    {
-      _runnerMachines.Add(new RunnerStateMachine(
-          logger: loggerFactory.CreateLogger<RunnerStateMachine>(),
-          () => runner.PublishAsync(context.CancellationTokenSource.Token),
-          TimeSpan.FromSeconds(10),
-          context.CancellationTokenSource.Token
-      ));
-    }
-
-    foreach (var runner in longPollingRunners)
-    {
-      _runnerMachines.Add(new RunnerStateMachine(
-          logger: loggerFactory.CreateLogger<RunnerStateMachine>(),
-          () => runner.ReceiveAsync(context.CancellationTokenSource.Token),
-          TimeSpan.FromSeconds(1),
-          context.CancellationTokenSource.Token
-      ));
-    }
+    foreach (var runner in runners)
+      _runnerMachines.Add(new RunnerStateMachine(runner,
+          context.CancellationTokenSource.Token));
   }
 
   public async Task StartAsync()

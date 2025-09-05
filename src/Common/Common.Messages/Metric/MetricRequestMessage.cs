@@ -1,7 +1,7 @@
 namespace Common.Messages.Metric;
 
 //todo: replace by record
-public class MetricMessage : IMessage
+public class MetricRequestMessage : IMessage
 {
     public DateTimeOffset Timestamp { get; init; } = DateTime.UtcNow;
     public double CpuUsage { get; set; }

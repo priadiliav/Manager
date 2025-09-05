@@ -2,7 +2,10 @@ using Common.Messages;
 
 namespace Agent.Application.Abstractions;
 
-public interface IPublisherClient<in TMessage> where TMessage : IMessage
+public interface IPublisherClient
 {
-  Task PublishAsync(TMessage message, CancellationToken cancellationToken = default);
+  Task<TResponse?> PublishAsync<TResponse, TRequest>(
+      string url, TRequest message, CancellationToken cancellationToken = default)
+      where TResponse : IMessage
+      where TRequest : IMessage;
 }

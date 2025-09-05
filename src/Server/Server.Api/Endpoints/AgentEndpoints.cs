@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Common.Messages.Agent;
+using Common.Messages.Agent.Sync;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
 
@@ -53,10 +54,9 @@ public static class AgentEndpoints
             return Results.Unauthorized();
 
           var result = await agentService.SyncAgentAsync(agentIdGuid, agentSyncRequestMessage);
-
           return result is null
               ? Results.NotFound()
-              : Results.Ok();
+              : Results.Ok(result);
         })
         .RequireAuthorization(policy => policy.RequireRole("Agent"))
         .WithName("SyncAgents");

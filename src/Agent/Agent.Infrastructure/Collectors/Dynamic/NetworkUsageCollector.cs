@@ -1,7 +1,7 @@
 using System.Net.NetworkInformation;
 using Agent.Application.Abstractions;
 
-namespace Agent.Infrastructure.Collectors;
+namespace Agent.Infrastructure.Collectors.Dynamic;
 
 public class NetworkUsageCollector(string interfaceName = null) : IDynamicDataCollector<double>
 {

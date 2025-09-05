@@ -13,7 +13,7 @@ public static class MetricEndpoint
         .WithTags("Metrics");
 
     group.MapPost("/publish",
-        async ([FromBody] MetricMessage metricsMessage, IMetricService metricService, HttpContext context) =>
+        async ([FromBody] MetricRequestMessage metricsMessage, IMetricService metricService, HttpContext context) =>
         {
           var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
 
@@ -22,9 +22,10 @@ public static class MetricEndpoint
           if (agentIdGuid == Guid.Empty)
             return Results.Unauthorized();
 
-          await metricService.CreateMetricsAsync(agentIdGuid, metricsMessage);
-
-          return Results.Ok();
+          var response = await metricService.CreateMetricsAsync(agentIdGuid, metricsMessage);
+          return response is not null
+              ? Results.Ok(response)
+              : Results.BadRequest();
         })
         .RequireAuthorization(policy => policy.RequireRole("Agent"))
         .WithName("PublishMetrics");

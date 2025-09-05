@@ -1,6 +1,6 @@
 using Agent.Application.Abstractions;
-using Agent.Application.Services;
 using Agent.Domain.Context;
+using Common.Messages.Agent;
 using Microsoft.Extensions.Logging;
 using Stateless;
 
@@ -25,19 +25,18 @@ public class AgentAuthStateMachine
 {
   private readonly StateMachine<AgentAuthenticationState, AuthenticationTrigger> _machine;
   private readonly ILogger<AgentAuthStateMachine> _logger;
-
-  private readonly  IAuthenticationService _authenticationService;
+  private readonly ICommunicationClient _communicationClient;
   private readonly AgentStateContext _context;
 
   public AgentAuthenticationState CurrentState => _machine.State;
 
   public AgentAuthStateMachine(
     ILogger<AgentAuthStateMachine> logger,
-    IAuthenticationService authenticationService,
+    ICommunicationClient communicationClient,
     AgentStateContext context)
   {
+    _communicationClient = communicationClient ?? throw new ArgumentNullException(nameof(communicationClient));
     _context = context ?? throw new ArgumentNullException(nameof(context));
-    _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     _machine = new StateMachine<AgentAuthenticationState, AuthenticationTrigger>(AgentAuthenticationState.Started);
 
@@ -58,7 +57,19 @@ public class AgentAuthStateMachine
 
     try
     {
-      await _authenticationService.AuthenticateAsync(_context.CancellationTokenSource.Token);
+      var authResponse = await _communicationClient.PostAsync<AgentLoginResponseMessage, AgentLoginRequestMessage>(
+          url: "auth/agent/login",
+          authenticate: false,
+          message: new AgentLoginRequestMessage
+          {
+            AgentId = Guid.Parse("01991990-52a4-7799-9596-98866fd3e132"),
+            Secret = "8c5db41e-6917-4acd-9d5f-051863755fe5"
+          }, cancellationToken: CancellationToken.None);
+
+      if (authResponse is null || string.IsNullOrWhiteSpace(authResponse.Token))
+        throw new UnauthorizedAccessException();
+
+      _context.AuthenticationToken = authResponse.Token;
 
       await _machine.FireAsync(AuthenticationTrigger.Success);
     }

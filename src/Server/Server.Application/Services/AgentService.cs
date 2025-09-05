@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Common.Messages.Agent;
+using Common.Messages.Agent.Sync;
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Agent;
@@ -43,7 +44,7 @@ public interface IAgentService
   /// <param name="agentId"></param>
   /// <param name="message"></param>
   /// <returns></returns>
-  Task<AgentDto?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message);
+  Task<AgentSyncResponseMessage?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message);
 }
 
 public class AgentService (
@@ -94,7 +95,7 @@ public class AgentService (
 		return updatedAgentDto;
 	}
 
-  public async Task<AgentDto?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message)
+  public async Task<AgentSyncResponseMessage?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message)
   {
     var existingAgentDomain = await unitOfWork.Agents.GetAsync(agentId);
     if (existingAgentDomain is null)
@@ -104,10 +105,8 @@ public class AgentService (
     var hardwareDomain = message.Hardware.ToDomain(agentId);
     existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
     await unitOfWork.Hardware.ModifyAsync(existingAgentDomain.Hardware);
-
     await unitOfWork.SaveChangesAsync();
 
-    var updatedAgentDto = await GetAgentAsync(agentId);
-    return updatedAgentDto;
+    return new AgentSyncResponseMessage();
   }
 }

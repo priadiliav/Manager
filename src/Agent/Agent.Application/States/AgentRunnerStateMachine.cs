@@ -24,30 +24,18 @@ public enum RunnerTrigger
 
 public class RunnerStateMachine
 {
-    private readonly ILogger<RunnerStateMachine> _logger;
-
-    private readonly Func<Task> _workAction;
-    private readonly TimeSpan _interval;
-    private readonly CancellationToken _token;
-
     private readonly StateMachine<RunnerState, RunnerTrigger> _machine;
-
     public RunnerState CurrentState => _machine.State;
 
-    public RunnerStateMachine(
-        ILogger<RunnerStateMachine> logger,
-        Func<Task> workAction,
-        TimeSpan interval,
-        CancellationToken token)
+    private readonly IWorkerRunner _workerRunner;
+    private readonly CancellationToken _token;
+
+    public RunnerStateMachine(IWorkerRunner workerRunner, CancellationToken token)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _workAction = workAction ?? throw new ArgumentNullException(nameof(workAction));
-        _interval = interval;
-        _token = token;
-
-        _machine = new StateMachine<RunnerState, RunnerTrigger>(RunnerState.Idle);
-
-        ConfigureStateMachine();
+      _token = token;
+      _workerRunner = workerRunner ?? throw new ArgumentNullException(nameof(workerRunner));
+      _machine = new StateMachine<RunnerState, RunnerTrigger>(RunnerState.Idle);
+      ConfigureStateMachine();
     }
 
     private void ConfigureStateMachine()
@@ -57,7 +45,7 @@ public class RunnerStateMachine
             .Permit(RunnerTrigger.Pause, RunnerState.Paused);
 
         _machine.Configure(RunnerState.Working)
-            .OnEntryAsync(DoWorkAsync)
+            .OnEntryAsync(WorkAsync)
             .Permit(RunnerTrigger.WorkDone, RunnerState.Idle)
             .Permit(RunnerTrigger.WorkFailed, RunnerState.Error)
             .Permit(RunnerTrigger.Pause, RunnerState.Paused);
@@ -66,8 +54,7 @@ public class RunnerStateMachine
             .Permit(RunnerTrigger.StartWork, RunnerState.Working)
             .OnEntryAsync(async () =>
             {
-              _logger.LogError("An error occurred while processing work. Retrying in 5 seconds...");
-              await Task.Delay(TimeSpan.FromSeconds(5), _token);
+              await Task.Delay(_workerRunner.Interval, _token);
               await _machine.FireAsync(RunnerTrigger.StartWork);
             });
 
@@ -82,22 +69,21 @@ public class RunnerStateMachine
             if (_machine.State == RunnerState.Idle)
                 await _machine.FireAsync(RunnerTrigger.StartWork);
 
-            await Task.Delay(_interval, _token);
+            await Task.Delay(_workerRunner.Interval, _token);
         }
     }
 
-    private async Task DoWorkAsync()
+  private async Task WorkAsync()
+  {
+    try
     {
-        _logger.LogInformation("Starting work in state: {State}", _machine.State);
+      await _workerRunner.RunAsync(_token);
 
-        try
-        {
-            await _workAction();
-            await _machine.FireAsync(RunnerTrigger.WorkDone);
-        }
-        catch (Exception ex)
-        {
-            await _machine.FireAsync(RunnerTrigger.WorkFailed);
-        }
+      await _machine.FireAsync(RunnerTrigger.WorkDone);
     }
+    catch (Exception ex)
+    {
+      await _machine.FireAsync(RunnerTrigger.WorkFailed);
+    }
+  }
 }

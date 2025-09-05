@@ -47,16 +47,16 @@ public static class ToDomainMapper
   public static Domain.Models.Hardware ToDomain(this HardwareMessage source, Guid agentId)
     => new()
     {
-      CpuCores      = source.CpuCores,
-      CpuModel      = source.CpuModel,
-      CpuSpeedGHz   = source.CpuSpeedGHz,
-      CpuArchitecture = source.CpuArchitecture,
-      GpuModel      = source.GpuModel,
-      GpuMemoryMB   = source.GpuMemoryMB,
-      RamModel      = source.RamModel,
-      TotalMemoryMB = source.TotalMemoryMB,
-      DiskModel     = source.DiskModel,
-      TotalDiskMB   = source.TotalDiskMB
+      CpuCores      = source.Cpu.CpuCores,
+      CpuModel      = source.Cpu.CpuModel,
+      CpuSpeedGHz   = source.Cpu.CpuSpeedGHz,
+      CpuArchitecture = source.Cpu.CpuArchitecture,
+      GpuModel      = source.Gpu.GpuModel,
+      GpuMemoryMB   = source.Gpu.GpuMemoryMB,
+      RamModel      = source.Ram.RamModel,
+      TotalMemoryMB = source.Ram.TotalMemoryMB,
+      DiskModel     = source.Disk.DiskModel,
+      TotalDiskMB   = source.Disk.TotalDiskMB
     };
   #endregion
 
@@ -203,7 +203,7 @@ public static class ToDomainMapper
 
   #region Metrics
 
-  public static Domain.Models.Metric ToDomain(this MetricMessage source, Guid agentId)
+  public static Domain.Models.Metric ToDomain(this MetricRequestMessage source, Guid agentId)
   {
     return new Domain.Models.Metric
     {
