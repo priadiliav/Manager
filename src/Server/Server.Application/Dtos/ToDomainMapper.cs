@@ -18,11 +18,11 @@ public static class ToDomainMapper
 		{
 			Id = source.Id,
 			Name = source.Name,
-			ConfigurationId = source.ConfigurationId,
+			ConfigurationId = source.ConfigurationId
 		};
 
 	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source,
-      Hardware hardware,
+      Domain.Models.Hardware hardware,
       byte[] secretHash,
       byte[] secretSalt)
 		=> new()
@@ -56,7 +56,8 @@ public static class ToDomainMapper
       RamModel      = source.Ram.RamModel,
       TotalMemoryMB = source.Ram.TotalMemoryMB,
       DiskModel     = source.Disk.DiskModel,
-      TotalDiskMB   = source.Disk.TotalDiskMB
+      TotalDiskMB   = source.Disk.TotalDiskMB,
+      AgentId       = agentId
     };
   #endregion
 
@@ -117,7 +118,7 @@ public static class ToDomainMapper
 				Name = source.Name
 		};
 
-	private static Domain.Models.ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source, long configurationId)
+	private static ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source, long configurationId)
 		=> new()
 		{
 				ProcessId = source.ProcessId,
@@ -125,11 +126,11 @@ public static class ToDomainMapper
 				ConfigurationId = configurationId
 		};
 
-	private static Domain.Models.ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source)
+	private static ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source)
 		=> new()
 		{
 				ProcessId = source.ProcessId,
-				ProcessState = source.ProcessState,
+				ProcessState = source.ProcessState
 		};
 	#endregion
 
@@ -169,7 +170,7 @@ public static class ToDomainMapper
 				RegistryKey = source.RegistryKey
 		};
 
-	private static Domain.Models.PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source, long configurationId)
+	private static PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source, long configurationId)
 		=> new()
 		{
 				PolicyId = source.PolicyId,
@@ -178,11 +179,11 @@ public static class ToDomainMapper
 		};
 
 
-	private static Domain.Models.PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source)
+	private static PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source)
 		=> new()
 		{
 				PolicyId = source.PolicyId,
-				RegistryValue = source.RegistryValue,
+				RegistryValue = source.RegistryValue
 		};
 	#endregion
 

@@ -5,8 +5,7 @@ CREATE TABLE metrics
   CpuUsage Float32,
   MemoryUsage Float32,
   DiskUsage Float32,
-  CpuCores UInt16,
-  MemoryTotal UInt64,
-  DiskTotal UInt64
+  NetworkUsage UInt16
 ) ENGINE = MergeTree
 ORDER BY (AgentId, Timestamp);
+

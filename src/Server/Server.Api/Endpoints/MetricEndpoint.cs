@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Common.Messages.Metric;
+using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
 using Server.Application.Services;
 
@@ -29,5 +30,11 @@ public static class MetricEndpoint
         })
         .RequireAuthorization(policy => policy.RequireRole("Agent"))
         .WithName("PublishMetrics");
+
+    group.MapGet("/", async (Guid agentId, DateTimeOffset from, DateTimeOffset to, IMetricService metricService) =>
+    {
+      var metrics = await metricService.GetMetricsAsync(agentId, from, to);
+      return Results.Ok(metrics);
+    }).WithName("GetMetrics");
   }
 }

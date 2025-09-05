@@ -2,6 +2,8 @@ using Common.Messages.Agent;
 using Common.Messages.Configuration;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
+using Server.Application.Dtos.Hardware;
+using Server.Application.Dtos.Metric;
 using Server.Application.Dtos.Policy;
 using Server.Application.Dtos.Process;
 using Server.Application.Dtos.User;
@@ -21,6 +23,16 @@ public static class ToDtoMapper
 		};
 	}
 
+  public static AgentDetailedDto ToDetailedDto(this Domain.Models.Agent source)
+    => new()
+    {
+        Id = source.Id,
+        Name = source.Name,
+        ConfigurationId = source.ConfigurationId,
+        Configuration = source.Configuration.ToDto(),
+        Hardware = source.Hardware.ToDto()
+    };
+
   public static AgentCreateResponse ToCreateResponse(this Domain.Models.Agent agent, string secret)
   {
     return new AgentCreateResponse
@@ -39,7 +51,36 @@ public static class ToDtoMapper
       Token = token
     };
   }
+
+  public static AgentModifyResponse ToModifyResponse(this Domain.Models.Agent agent)
+  {
+    return new AgentModifyResponse
+    {
+      Id = agent.Id,
+      Name = agent.Name,
+      ConfigurationId = agent.ConfigurationId
+    };
+  }
 	#endregion
+
+  #region Hardware
+  public static HardwareDto ToDto(this Domain.Models.Hardware hardware)
+    => new()
+    {
+        CpuCores = hardware.CpuCores,
+        CpuModel = hardware.CpuModel,
+        CpuSpeedGHz = hardware.CpuSpeedGHz,
+        CpuArchitecture = hardware.CpuArchitecture,
+        GpuModel = hardware.GpuModel,
+        GpuMemoryMB = hardware.GpuMemoryMB,
+        RamModel = hardware.RamModel,
+        TotalMemoryMB = hardware.TotalMemoryMB,
+        DiskModel = hardware.DiskModel,
+        TotalDiskMB = hardware.TotalDiskMB,
+        Id = hardware.Id,
+        AgentId = hardware.AgentId
+    };
+  #endregion
 
 	#region Configuration
 	public static ConfigurationDto ToDto(
@@ -118,6 +159,21 @@ public static class ToDtoMapper
       Username = user.Username,
       Role = user.Role,
       Token = token
+    };
+  }
+  #endregion
+
+  #region Metric
+  public static MetricDto ToDto(this Domain.Models.Metric metric)
+  {
+    return new MetricDto
+    {
+      AgentId = metric.AgentId,
+      CpuUsage = metric.CpuUsage,
+      MemoryUsage = metric.MemoryUsage,
+      DiskUsage= metric.DiskUsage,
+      NetworkUsage = metric.NetworkUsage,
+      Timestamp = metric.Timestamp
     };
   }
   #endregion

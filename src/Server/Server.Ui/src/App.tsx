@@ -2,8 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Layout from './components/base-layout/Lauout';
 import { DashboardPage } from './pages/DashboardPage';
-import { AgentPage } from './pages/AgentPage';
+import { AgentsPage } from './pages/AgentsPage';
 import { ClusterPage } from './pages/ClusterPage';
+import { AgentDetailPage } from './pages/AgentDetailPage';
 
 const demoTheme = createTheme({
   cssVariables: {
@@ -33,8 +34,9 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="agents" element={<AgentPage />} />
+            <Route path="agents" element={<AgentsPage />} />
             <Route path="cluster" element={<ClusterPage/>} />
+            <Route path="/agents/:id" element={<AgentDetailPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,8 +1,7 @@
-
 export const DashboardPage = () => {
   return (
     <>
-      Dashboard info  
+      Dashboard info
     </>
   );
 }

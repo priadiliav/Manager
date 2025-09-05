@@ -19,7 +19,7 @@ public static class AgentEndpoints
           var agents = await agentService.GetAgentsAsync();
           return Results.Ok(agents);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetAgents");
 
     group.MapGet("/{agentId:guid}",
@@ -30,7 +30,7 @@ public static class AgentEndpoints
               ? Results.NotFound()
               : Results.Ok(agent);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetAgentById");
 
     group.MapPost("/",
@@ -40,7 +40,7 @@ public static class AgentEndpoints
               ? Results.BadRequest("Failed to create agent.")
               : Results.Created($"/api/agents/{createdAgent.Id}", createdAgent);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateAgent");
 
     group.MapPut("/sync", async (AgentSyncRequestMessage agentSyncRequestMessage, IAgentService agentService, HttpContext context) =>
@@ -69,7 +69,7 @@ public static class AgentEndpoints
               ? Results.NotFound()
               : Results.Ok(updatedAgent);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdateAgent");
   }
 }

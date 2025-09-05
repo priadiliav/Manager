@@ -21,7 +21,7 @@ public interface IAgentService
 	/// </summary>
 	/// <param name="agentId"></param>
 	/// <returns></returns>
-	Task<AgentDto?> GetAgentAsync(Guid agentId);
+	Task<AgentDetailedDto?> GetAgentAsync(Guid agentId);
 
 	/// <summary>
 	/// Creates a new agent.
@@ -36,7 +36,7 @@ public interface IAgentService
 	/// <param name="agentId"></param>
 	/// <param name="request"></param>
 	/// <returns></returns>
-	Task<AgentDto?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request);
+	Task<AgentModifyResponse?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request);
 
   /// <summary>
   /// Syncs an agent with the provided static information, such as hardware details.
@@ -57,10 +57,10 @@ public class AgentService (
 		return agents.Select(x => x.ToDto());
 	}
 
-	public async Task<AgentDto?> GetAgentAsync(Guid agentId)
+	public async Task<AgentDetailedDto?> GetAgentAsync(Guid agentId)
 	{
 		var agent = await unitOfWork.Agents.GetAsync(agentId);
-		return agent?.ToDto();
+		return agent?.ToDetailedDto();
 	}
 
 	public async Task<AgentCreateResponse?> CreateAgentAsync(AgentCreateRequest request)
@@ -79,7 +79,7 @@ public class AgentService (
 		return createdAgentDto?.ToCreateResponse(randomGuidString);
 	}
 
-	public async Task<AgentDto?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request)
+	public async Task<AgentModifyResponse?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request)
 	{
 		var existingAgentDomain = await unitOfWork.Agents.GetAsync(agentId);
 		if (existingAgentDomain is null)
@@ -91,8 +91,8 @@ public class AgentService (
 		await unitOfWork.Agents.ModifyAsync(existingAgentDomain);
 		await unitOfWork.SaveChangesAsync();
 
-		var updatedAgentDto = await GetAgentAsync(agentId);
-		return updatedAgentDto;
+		var updatedAgentDto = await unitOfWork.Agents.GetAsync(agentId);
+		return updatedAgentDto?.ToModifyResponse();
 	}
 
   public async Task<AgentSyncResponseMessage?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message)

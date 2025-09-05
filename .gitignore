@@ -6,3 +6,7 @@ riderModule.iml
 /_ReSharper.Caches/
 Manager.sln.DotSettings.user
 .vs
+
+package-lock.json
+node_modules/
+dist/
