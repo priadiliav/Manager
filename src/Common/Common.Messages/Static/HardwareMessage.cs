@@ -2,8 +2,8 @@ namespace Common.Messages.Static;
 
 public class HardwareMessage : IMessage
 {
-  public CpuInfoMessage Cpu { get; set; }
-  public GpuInfoMessage Gpu { get; set; }
-  public RamInfoMessage Ram { get; set; }
-  public DiskInfoMessage Disk { get; set; }
+  public CpuInfoMessage Cpu { get; init; }
+  public GpuInfoMessage Gpu { get; init; }
+  public RamInfoMessage Ram { get; init; }
+  public DiskInfoMessage Disk { get; init; }
 }

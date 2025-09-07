@@ -9,9 +9,9 @@ public class Configuration : IEntity<long>
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
 
-	public virtual ICollection<Agent> Agents { get; set; } = new List<Agent>();
-	public virtual ICollection<PolicyInConfiguration> Policies { get; set; } = new List<PolicyInConfiguration>();
-	public virtual ICollection<ProcessInConfiguration> Processes { get; set; } = new List<ProcessInConfiguration>();
+	public virtual ICollection<Agent> Agents { get; init; } = new List<Agent>();
+	public virtual ICollection<PolicyInConfiguration> Policies { get; init; } = new List<PolicyInConfiguration>();
+	public virtual ICollection<ProcessInConfiguration> Processes { get; init; } = new List<ProcessInConfiguration>();
 
   /// <summary>
   /// Modifies the current configuration with the values from another configuration.

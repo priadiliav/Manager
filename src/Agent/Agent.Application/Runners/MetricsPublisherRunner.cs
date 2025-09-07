@@ -19,9 +19,9 @@ public class MetricsPublisherRunner(
 
     var message = new MetricRequestMessage
     {
-      CpuUsage = metrics.GetValueOrDefault("cpu_usage", 0),
-      MemoryUsage = metrics.GetValueOrDefault("memory_usage", 0),
-      DiskUsage = metrics.GetValueOrDefault("disk_usage", 0),
+      CpuUsage = metrics.GetValueOrDefault("cpu_usage", 0), // value in percentage
+      MemoryUsage = metrics.GetValueOrDefault("memory_usage", 0), // value in percentage
+      DiskUsage = metrics.GetValueOrDefault("disk_usage", 0), // value in percentage
       NetworkUsage = metrics.GetValueOrDefault("network_usage", 0),
       Uptime = metrics.GetValueOrDefault("uptime", 0),
       Timestamp = DateTimeOffset.UtcNow,

@@ -25,7 +25,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 export const AgentDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const [agent, setAgent] = React.useState<AgentDetailedDto | null>(null);
-    
+
     const [cpuUsageData, setCpuUsageData] = React.useState<number[]>([]);
     const [memoryUsageData, setMemoryUsageData] = React.useState<number[]>([]);
     const [diskUsageData, setDiskUsageData] = React.useState<number[]>([]);
@@ -36,11 +36,11 @@ export const AgentDetailPage = () => {
         setAgent(null);
         fetchAgentById(id).then(data => {
             setAgent(data);
-            
+
             fetchMetrics(
-                data.id, 
+                data.id,
                 new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                new Date().toISOString() 
+                new Date().toISOString()
             ).then(metricsData => {
                 setCpuUsageData(metricsData.map(m => m.cpuUsage));
                 setMemoryUsageData(metricsData.map(m => m.memoryUsage));
@@ -69,7 +69,7 @@ export const AgentDetailPage = () => {
               <Grid size={8}>
                <Card sx={{  height: '100%' }}>
                 <Typography variant="h6" gutterBottom sx={{padding: 2}}>
-                 Resource Usage (Last 7 days)
+                 Resource Usage
                 </Typography>
                 <Box >
                 <LineChart
@@ -81,11 +81,11 @@ export const AgentDetailPage = () => {
                         area: true,
                         showMark: false
                     },
-                    { 
+                    {
                         data: memoryUsageData,
                         showMark: false
                     },
-                    { 
+                    {
                         data: diskUsageData,
                         showMark: false
                     },

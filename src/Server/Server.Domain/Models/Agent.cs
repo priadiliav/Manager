@@ -12,8 +12,8 @@ public class Agent : IEntity<Guid>
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
 
-	public virtual Configuration Configuration { get; set; } = null!;
-  public virtual Hardware Hardware { get; set; } = null!;
+	public virtual Configuration Configuration { get; init; } = null!;
+  public virtual Hardware Hardware { get; init; } = null!;
 
   /// <summary>
   /// Modifies the current agent with the values from another agent.

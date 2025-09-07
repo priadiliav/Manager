@@ -30,7 +30,7 @@ public class Hardware : IEntity<long>
   public long TotalDiskMB { get; set; }
   #endregion
 
-  public virtual Agent Agent { get; set; } = null!;
+  public virtual Agent Agent { get; init; } = null!;
 
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
