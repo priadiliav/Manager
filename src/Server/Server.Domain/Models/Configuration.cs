@@ -24,5 +24,17 @@ public class Configuration : IEntity<long>
 			throw new ArgumentNullException(nameof(configuration));
 
 		Name = configuration.Name;
+
+    Policies.Clear();
+    foreach (var policy in configuration.Policies)
+    {
+      Policies.Add(policy);
+    }
+
+    Processes.Clear();
+    foreach (var process in configuration.Processes)
+    {
+      Processes.Add(process);
+    }
 	}
 }

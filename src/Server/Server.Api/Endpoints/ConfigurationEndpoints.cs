@@ -19,7 +19,7 @@ public static class ConfigurationEndpoints
           var configurations = await service.GetConfigurationsAsync();
           return Results.Ok(configurations);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetConfigurations");
 
     group.MapGet("/{id:long}",
@@ -30,7 +30,7 @@ public static class ConfigurationEndpoints
               ? Results.Ok(configuration)
               : Results.NotFound();
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetConfigurationById");
 
     group.MapPost("/",
@@ -41,7 +41,7 @@ public static class ConfigurationEndpoints
               ? Results.Created($"/api/configurations/{createdConfiguration.Id}", createdConfiguration)
               : Results.BadRequest("Failed to create configuration.");
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateConfiguration");
 
     group.MapPut("/{id:long}",
@@ -52,7 +52,7 @@ public static class ConfigurationEndpoints
               ? Results.Ok(updatedConfiguration)
               : Results.NotFound();
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdateConfiguration");
 
     group.MapGet("/subscribe",

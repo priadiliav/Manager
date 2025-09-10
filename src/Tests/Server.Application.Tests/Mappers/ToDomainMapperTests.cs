@@ -81,17 +81,6 @@ public class ToDomainMapperTests
         {
             Id = 123,
             Name = "TestConfig",
-            AgentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() },
-            Processes = new List<ProcessInConfigurationDto>
-            {
-                new() { ProcessId = 1, ProcessState = ProcessState.Active },
-                new() { ProcessId = 2, ProcessState = ProcessState.Banned }
-            },
-            Policies = new List<PolicyInConfigurationDto>
-            {
-                new() { PolicyId = 1, RegistryValue = "Value1" },
-                new() { PolicyId = 2, RegistryValue = "Value2" }
-            }
         };
 
         // Act
@@ -358,9 +347,6 @@ public class ToDomainMapperTests
         {
             Id = 123,
             Name = "TestConfig",
-            AgentIds = new List<Guid>(),
-            Processes = new List<ProcessInConfigurationDto>(),
-            Policies = new List<PolicyInConfigurationDto>()
         };
 
         // Act

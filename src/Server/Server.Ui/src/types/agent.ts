@@ -1,9 +1,16 @@
 import { ConfigurationDto } from "./configuration";
 import { HardwareDto } from "./hardware";
 
+export enum AgentState {
+  Online,
+  Offline,
+  Unknown
+}
+
 export interface AgentDto {
   id: string;
   name: string;
+  state: AgentState;
   configurationId: string;
 }
 
@@ -24,6 +31,8 @@ export interface AgentModifyRequest {
 export interface AgentDetailedDto {
   id: string;
   name: string;
+  state: AgentState;
+  configurationId: string;
   configuration: ConfigurationDto;
   hardware: HardwareDto;
 }

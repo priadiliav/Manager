@@ -1,5 +1,5 @@
 namespace Server.Application.Dtos.Agent;
-
+//todo: add status enum 'Online', 'Offline'
 public class AgentDto
 {
 	public Guid Id { get; init; }

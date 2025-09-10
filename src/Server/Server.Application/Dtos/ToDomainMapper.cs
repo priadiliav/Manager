@@ -67,12 +67,6 @@ public static class ToDomainMapper
 		{
 				Id = source.Id,
 				Name = source.Name,
-				Agents = source.AgentIds
-						.Select(id => new Domain.Models.Agent { Id = id }).ToList(),
-				Processes = source.Processes
-						.Select(p => p.ToDomain(source.Id)).ToList(),
-				Policies = source.Policies
-						.Select(p => p.ToDomain(source.Id)).ToList()
 		};
 
 	public static Domain.Models.Configuration ToDomain(this ConfigurationCreateRequest source)

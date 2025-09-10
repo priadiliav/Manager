@@ -1,10 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Layout from './components/base-layout/Lauout';
-import { DashboardPage } from './pages/DashboardPage';
-import { AgentsPage } from './pages/AgentsPage';
-import { ClusterPage } from './pages/ClusterPage';
-import { AgentDetailPage } from './pages/AgentDetailPage';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { ClusterPage } from './pages/cluster/ClusterPage';
+import { AgentsPage } from './pages/agent/AgentsPage';
+import { ConfigurationsPage } from './pages/configuration/ConfigurationsPage';
+import { PoliciesPage } from './pages/policies/PoliciesPage';
+import Layout from './components/layout/Layout';
+import { ProcessesPage } from './pages/process/ProcessesPage';
+import { AgentPage } from './pages/agent/AgentPage';
+import { PolicyPage } from './pages/policies/PolicyPage';
+import { ProcessPage } from './pages/process/ProcessPage';
+import { ConfigurationPage } from './pages/configuration/ConfigurationPage';
+
 
 const demoTheme = createTheme({
   cssVariables: {
@@ -34,9 +41,24 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
+
             <Route path="agents" element={<AgentsPage />} />
-            <Route path="cluster" element={<ClusterPage/>} />
-            <Route path="/agents/:id" element={<AgentDetailPage />} />
+            <Route path="agents/:id" element={<AgentPage />} />
+
+            <Route path="configurations" element={<ConfigurationsPage />} />
+            <Route path="configurations/:id" element={<ConfigurationPage />} />
+
+            <Route path="policies" element={<PoliciesPage />} />
+            <Route path="policies/:id" element={<PolicyPage />} />
+
+            <Route path="processes" element={<ProcessesPage />} />
+            <Route path="processes/:id" element={<ProcessPage />} />
+
+            {/* <Route path="/agents/:id" element={<AgentDetailPage />} />
+
+            <Route path="configurations/:id" element={<ConfigurationDetailPage />} /> */}
+
+            <Route path="cluster" element={<ClusterPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -19,7 +19,7 @@ public static class PolicyEndpoints
           var policies = await policyService.GetPoliciesAsync();
           return Results.Ok(policies);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetPolicies");
 
     group.MapGet("/{id:long}",
@@ -30,7 +30,7 @@ public static class PolicyEndpoints
               ? Results.Ok(policy)
               : Results.NotFound();
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetPolicyById");
 
     group.MapPost("/",
@@ -41,7 +41,7 @@ public static class PolicyEndpoints
               ? Results.Created($"/api/policies/{createdPolicy.Id}", createdPolicy)
               : Results.BadRequest("Failed to create policy.");
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreatePolicy");
 
     group.MapPut("/api/policies/{id:long}",
@@ -52,7 +52,7 @@ public static class PolicyEndpoints
               ? Results.Ok(updatedPolicy)
               : Results.NotFound();
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdatePolicy");
 
     group.MapGet("/subscribe",

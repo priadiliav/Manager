@@ -90,11 +90,21 @@ public static class ToDtoMapper
 		{
 			Id = configuration.Id,
 			Name = configuration.Name,
-			AgentIds = configuration.Agents.Select(a => a.Id).ToList(),
-			Processes = configuration.Processes.Select(p => p.ToDto()).ToList(),
-			Policies = configuration.Policies.Select(p => p.ToDto()).ToList()
 		};
 	}
+
+  public static ConfigurationDetailedDto ToDetailedDto(
+    this Domain.Models.Configuration configuration)
+  {
+    return new ConfigurationDetailedDto
+    {
+      Id = configuration.Id,
+      Name = configuration.Name,
+      AgentIds = configuration.Agents.Select(a => a.Id).ToList(),
+      Processes = configuration.Processes.Select(p => p.ToDto()).ToList(),
+      Policies = configuration.Policies.Select(p => p.ToDto()).ToList()
+    };
+  }
 
   public static ConfigurationMessage ToMessage(this Domain.Models.Configuration configuration)
   {

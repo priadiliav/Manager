@@ -19,7 +19,7 @@ public static class ProcessEndpoints
           var processes = await processService.GetProcessesAsync();
           return Results.Ok(processes);
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetProcesses");
 
     group.MapGet("/{id:long}",
@@ -30,7 +30,7 @@ public static class ProcessEndpoints
               ? Results.Ok(process)
               : Results.NotFound();
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("GetProcessById");
 
     group.MapPost("/",
@@ -41,7 +41,7 @@ public static class ProcessEndpoints
               ? Results.Created($"/processes/{createdProcess.Id}", createdProcess)
               : Results.BadRequest("Failed to create process.");
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateProcess");
 
     group.MapPut("/{id:long}",
@@ -52,7 +52,7 @@ public static class ProcessEndpoints
               ? Results.Ok(updatedProcess)
               : Results.NotFound();
         })
-        .RequireAuthorization(policy => policy.RequireRole("User"))
+        // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdateProcess");
 
     group.MapGet("/subscribe",

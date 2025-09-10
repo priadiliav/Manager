@@ -1,0 +1,17 @@
+import api from './axios';
+import { ConfigurationCreateRequest, ConfigurationDetailedDto, ConfigurationDto } from '../types/configuration';
+
+export const fetchConfigurations = async (): Promise<ConfigurationDto[]> => {
+    const response = await api.get<ConfigurationDto[]>('/configurations');
+    return response.data;
+}
+
+export const fetchConfigurationById = async (id: string): Promise<ConfigurationDetailedDto> => {
+    const response = await api.get<ConfigurationDetailedDto>(`/configurations/${id}`);
+    return response.data;
+}
+
+export const createConfiguration = async (configuration: ConfigurationCreateRequest): Promise<ConfigurationDetailedDto> => {
+    const response = await api.post<ConfigurationDetailedDto>('/configurations', configuration);
+    return response.data;
+}

@@ -10,7 +10,11 @@ import ListItemText from '@mui/material/ListItemText';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { Icon } from '@mui/material';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
-import PodcastsIcon from '@mui/icons-material/Podcasts';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';//policy
+import SettingsRemoteIcon from '@mui/icons-material/SettingsRemote';
+import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
+import TryIcon from '@mui/icons-material/Try';
+
 interface DrawerMenuProps {
   drawerWidth: number;
 }
@@ -19,17 +23,38 @@ const firstList = [
   {
     text: 'Dashboard',
     path: '/dashboard',
-    icon: <Icon component={SpaceDashboardIcon} />
+    icon: <Icon component={SpaceDashboardIcon} />,
+    disabled: false
   },
   {
     text: 'Agents',
     path: '/agents',
-    icon: <Icon component={SupportAgentIcon} />
+    icon: <Icon component={SupportAgentIcon} />,
+    disabled: false
   },
   {
-    text: 'Cluster',
-    path: '/cluster',
-    icon: <Icon component={PodcastsIcon} />
+    text: 'Configurations',
+    path: '/configurations',
+    icon: <Icon component={SettingsRemoteIcon} />,
+    disabled: false
+  },
+  {
+    text: 'Policies',
+    path: '/policies',
+    icon: <Icon component={AdminPanelSettingsIcon} />,
+    disabled: false
+  },
+  {
+    text: 'Processes',
+    path: '/processes',
+    icon: <Icon component={DeveloperBoardIcon} />,
+    disabled: false
+  },
+  {
+    text: 'Chat',
+    path: '/chat',
+    icon: <Icon component={TryIcon} />,
+    disabled: true
   },
 ];
 
@@ -51,9 +76,9 @@ export default function DrawerMenu({ drawerWidth }: DrawerMenuProps) {
       <Toolbar />
       <Divider />
       <List>
-        {firstList.map(({ text, path, icon }, index) => (
+        {firstList.map(({ text, path, icon, disabled }, index) => (
           <ListItem key={index} disablePadding>
-            <ListItemButton component={RouterLink} to={path}>
+            <ListItemButton component={RouterLink} to={path} disabled={disabled}>
               <ListItemIcon>
                 {icon}
               </ListItemIcon>

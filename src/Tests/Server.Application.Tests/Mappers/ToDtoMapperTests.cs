@@ -61,9 +61,6 @@ public class ToDtoMapperTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(456));
         Assert.That(result.Name, Is.EqualTo("TestConfig"));
-        Assert.That(result.AgentIds.ToList(), Has.Count.EqualTo(2));
-        Assert.That(result.Processes.ToList(), Has.Count.EqualTo(2));
-        Assert.That(result.Policies.ToList(), Has.Count.EqualTo(2));
     }
 
     [Test]
@@ -86,9 +83,6 @@ public class ToDtoMapperTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(789));
         Assert.That(result.Name, Is.EqualTo("EmptyConfig"));
-        Assert.That(result.AgentIds, Is.Empty);
-        Assert.That(result.Processes, Is.Empty);
-        Assert.That(result.Policies, Is.Empty);
     }
 
     [Test]
@@ -284,4 +278,4 @@ public class ToDtoMapperTests
         Assert.That(result.PolicyId, Is.EqualTo(0));
         Assert.That(result.RegistryValue, Is.EqualTo(""));
     }
-} 
+}

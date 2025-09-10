@@ -8,4 +8,14 @@ const api = axios.create({
   }
 });
 
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.message === "Network Error") {
+      console.error("Backend unreachable:", error);
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

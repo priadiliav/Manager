@@ -11,7 +11,7 @@ public interface IConfigurationService
 	/// </summary>
 	/// <param name="configurationId"></param>
 	/// <returns></returns>
-	Task<ConfigurationDto?> GetConfigurationAsync(long configurationId);
+	Task<ConfigurationDetailedDto?> GetConfigurationAsync(long configurationId);
 
 	/// <summary>
 	/// Gets all configurations.
@@ -24,7 +24,7 @@ public interface IConfigurationService
 	/// </summary>
 	/// <param name="request"></param>
 	/// <returns></returns>
-	Task<ConfigurationDto?> CreateConfigurationAsync(ConfigurationCreateRequest request);
+	Task<ConfigurationDetailedDto?> CreateConfigurationAsync(ConfigurationCreateRequest request);
 
 	/// <summary>
 	/// Updates an existing configuration.
@@ -32,15 +32,15 @@ public interface IConfigurationService
 	/// <param name="configurationId"></param>
 	/// <param name="request"></param>
 	/// <returns></returns>
-	Task<ConfigurationDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request);
+	Task<ConfigurationDetailedDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request);
 }
 
 public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationService
 {
-	public async Task<ConfigurationDto?> GetConfigurationAsync(long configurationId)
+	public async Task<ConfigurationDetailedDto?> GetConfigurationAsync(long configurationId)
 	{
 		var configuration = await unitOfWork.Configurations.GetAsync(configurationId);
-		return configuration?.ToDto();
+		return configuration?.ToDetailedDto();
 	}
 
 	public async Task<IEnumerable<ConfigurationDto>> GetConfigurationsAsync()
@@ -49,7 +49,7 @@ public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationServi
 		return configurations.Select(x => x.ToDto());
 	}
 
-	public async Task<ConfigurationDto?> CreateConfigurationAsync(ConfigurationCreateRequest request)
+	public async Task<ConfigurationDetailedDto?> CreateConfigurationAsync(ConfigurationCreateRequest request)
 	{
 		var configurationDomain = request.ToDomain();
 		await unitOfWork.Configurations.CreateAsync(configurationDomain);
@@ -59,7 +59,7 @@ public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationServi
 		return createdConfigurationDto;
 	}
 
-	public async Task<ConfigurationDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request)
+	public async Task<ConfigurationDetailedDto?> UpdateConfigurationAsync(long configurationId, ConfigurationModifyRequest request)
 	{
 		var existingConfigurationDomain = await unitOfWork.Configurations.GetAsync(configurationId);
 		if (existingConfigurationDomain is null)
