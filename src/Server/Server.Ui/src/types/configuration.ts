@@ -15,6 +15,8 @@ export interface ConfigurationDetailedDto {
 
 export interface ConfigurationCreateRequest {
   name: string;
+  policies: PolicyInConfigurationDto[];
+  processes: ProcessInConfigurationDto[];
 }
 
 export interface ConfigurationModifyRequest {
