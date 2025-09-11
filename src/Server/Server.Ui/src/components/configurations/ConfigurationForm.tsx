@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Grid, IconButton, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Collapse, Grid, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ConfigurationCreateRequest, ConfigurationDetailedDto, ConfigurationModifyRequest } from "../../types/configuration";
 import { PolicyDto } from "../../types/policy";
@@ -82,16 +82,20 @@ export const ConfigurationForm = ({ initialData, initialPolicies, initialProcess
                         </Box>
                     </Box>
                     <Collapse in={generalOpen} timeout="auto" unmountOnExit>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-                            <TextField
-                                label="Name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                fullWidth
-                                size="small"
-                            />
-                        </Box>
+                        <Card>
+                            <CardContent>
+                                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+                                    <TextField
+                                        label="Name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        fullWidth
+                                        size="small"
+                                    />
+                                </Box>
+                            </CardContent>
+                        </Card>
                     </Collapse>
                 </Grid>
                 <Grid size={{ xs: 12, md: 12 }}>
@@ -108,28 +112,32 @@ export const ConfigurationForm = ({ initialData, initialPolicies, initialProcess
                             </IconButton>
                         </Box>
                         <Collapse in={policiesOpen} timeout="auto" unmountOnExit>
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                {formData.policies.map((policy, index) => (
-                                    <PolicyInConfigurationForm
-                                        key={`${policy.policyId}-${index}`}
-                                        policy={policy}
-                                        index={index}
-                                        allPolicies={initialPolicies}
-                                        onPolicyChange={handlePolicyChange}
-                                        onRegistryValueChange={handleRegistryValueChange}
-                                    />
-                                ))}
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => setFormData({
-                                        ...formData,
-                                        policies: [...formData.policies, { policyId: "", registryValue: "" }]
-                                    })}
-                                >
-                                    Add Policy
-                                </Button>
-                            </Box>
+                            <Card>
+                                <CardContent>
+                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                        {formData.policies.map((policy, index) => (
+                                            <PolicyInConfigurationForm
+                                                key={`${policy.policyId}-${index}`}
+                                                policy={policy}
+                                                index={index}
+                                                allPolicies={initialPolicies}
+                                                onPolicyChange={handlePolicyChange}
+                                                onRegistryValueChange={handleRegistryValueChange}
+                                            />
+                                        ))}
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => setFormData({
+                                                ...formData,
+                                                policies: [...formData.policies, { policyId: "", registryValue: "" }]
+                                            })}
+                                        >
+                                            Add Policy
+                                        </Button>
+                                    </Box>
+                                </CardContent>
+                            </Card>
                         </Collapse>
                     </Box>
                 </Grid>
@@ -148,29 +156,33 @@ export const ConfigurationForm = ({ initialData, initialPolicies, initialProcess
                             </IconButton>
                         </Box>
                         <Collapse in={processesOpen}>
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                {formData.processes.map((process, index) => (
-                                    <ProcessInConfigurationForm
-                                        key={`${process.processId}-${index}`}
-                                        process={process}
-                                        index={index}
-                                        allProcesses={initialProcesses}
-                                        valueTypeOptions={valueTypeOptions}
-                                        onProcessChange={handleProcessChange}
-                                        onProcessStateChange={handleProcessStateChange}
-                                    />
-                                ))}
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => setFormData({
-                                        ...formData,
-                                        processes: [...formData.processes, { processId: "", processState: ProcessState.Banned }]
-                                    })}
-                                >
-                                    Add Process
-                                </Button>
-                            </Box>
+                            <Card>
+                                <CardContent>
+                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                        {formData.processes.map((process, index) => (
+                                            <ProcessInConfigurationForm
+                                                key={`${process.processId}-${index}`}
+                                                process={process}
+                                                index={index}
+                                                allProcesses={initialProcesses}
+                                                valueTypeOptions={valueTypeOptions}
+                                                onProcessChange={handleProcessChange}
+                                                onProcessStateChange={handleProcessStateChange}
+                                            />
+                                        ))}
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => setFormData({
+                                                ...formData,
+                                                processes: [...formData.processes, { processId: "", processState: ProcessState.Banned }]
+                                            })}
+                                        >
+                                            Add Process
+                                        </Button>
+                                    </Box>
+                                </CardContent>
+                            </Card>
                         </Collapse>
                     </Box>
                 </Grid>

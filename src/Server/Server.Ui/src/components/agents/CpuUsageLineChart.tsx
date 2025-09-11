@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const CpuUsageLineChart = ({ data, labels }: Props) => {
-    const [isVisible, saveIsVisible] = useState(false);
+    const [isVisible, saveIsVisible] = useState(true);
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }} >

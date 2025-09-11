@@ -6,12 +6,20 @@ import {
     LineElement,
     Tooltip,
     Legend,
+    Filler,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { useRef, useEffect, useState } from "react";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
-
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Tooltip,
+    Legend,
+    Filler
+);
 
 interface Props {
     data: number[];
@@ -20,7 +28,7 @@ interface Props {
 
 export const CustomLineChart = ({ data, labels }: Props) => {
     const chartRef = useRef<any>(null);
-    const [gradient, setGradient] = useState<string>("rgba(75,192,192,0.3)");
+    const [gradient, setGradient] = useState<string | CanvasGradient>("rgba(75,192,192,0.3)");
 
     useEffect(() => {
         if (chartRef.current) {
@@ -51,6 +59,7 @@ export const CustomLineChart = ({ data, labels }: Props) => {
         maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
+            filler: { propagate: true },
         },
         scales: {
             y: { beginAtZero: true },

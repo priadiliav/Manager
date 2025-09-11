@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, TextField, Autocomplete, Typography, IconButton, Collapse } from "@mui/material";
+import { Box, TextField, Autocomplete, Typography, IconButton, Collapse, Card, CardContent } from "@mui/material";
 import { AgentCreateRequest, AgentDetailedDto } from "../../types/agent";
 import { ConfigurationDto } from "../../types/configuration";
 import { fetchConfigurations } from "../../api/configuration";
@@ -53,28 +53,32 @@ export const AgentForm = ({ initialData, mode, onSubmit }: Props) => {
                 </IconButton>
             </Box>
             <Collapse in={generalOpen} timeout="auto" unmountOnExit>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <TextField
-                        size="small"
-                        name="name"
-                        label="Agent Name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                    <Autocomplete
-                        size="small"
-                        options={configurations}
-                        getOptionLabel={(option) => option.name}
-                        value={configurations.find((c) => c.id === formData.configurationId) || null}
-                        onChange={(event, newValue) => {
-                            const newData = { ...formData, configurationId: newValue?.id || "" };
-                            setFormData(newData);
-                            onSubmit(newData);
-                        }}
-                        renderInput={(params) => <TextField {...params} label="Configuration" required />}
-                    />
-                </Box>
+                <Card>
+                    <CardContent>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <TextField
+                                size="small"
+                                name="name"
+                                label="Agent Name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                            />
+                            <Autocomplete
+                                size="small"
+                                options={configurations}
+                                getOptionLabel={(option) => option.name}
+                                value={configurations.find((c) => c.id === formData.configurationId) || null}
+                                onChange={(event, newValue) => {
+                                    const newData = { ...formData, configurationId: newValue?.id || "" };
+                                    setFormData(newData);
+                                    onSubmit(newData);
+                                }}
+                                renderInput={(params) => <TextField {...params} label="Configuration" required />}
+                            />
+                        </Box>
+                    </CardContent>
+                </Card>
             </Collapse>
         </Box>
     );
