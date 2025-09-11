@@ -28,7 +28,10 @@ jobs:
           dotnet restore src/Tests/Server.Application.Tests/Server.Application.Tests.csproj
 
       - name: Build solution
-        run: dotnet build --no-restore --configuration Release
+        run: |
+          dotnet build src/Tests/Server.Domain.Tests/Server.Domain.Tests.csproj --no-restore -c Release
+          dotnet build src/Tests/Server.Infrastructure.Tests/Server.Infrastructure.Tests.csproj --no-restore -c Release
+          dotnet build src/Tests/Server.Application.Tests/Server.Application.Tests.csproj --no-restore -c Release
 
       - name: Test Server.Domain.Tests
         run: dotnet test src/Tests/Server.Domain.Tests/Server.Domain.Tests.csproj --verbosity normal
