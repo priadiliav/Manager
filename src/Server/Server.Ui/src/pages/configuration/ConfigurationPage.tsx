@@ -4,7 +4,7 @@ import { createConfiguration, fetchConfigurationById } from "../../api/configura
 import { ConfigurationCreateRequest, ConfigurationModifyRequest, ConfigurationDetailedDto } from "../../types/configuration";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { ConfigurationForm } from "../../components/configurations/ConfigurationForm";
-import { Button } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import { PolicyDto } from "../../types/policy";
 import { fetchProcesses } from "../../api/process";
 import { ProcessDto } from "../../types/process";
@@ -78,22 +78,29 @@ export const ConfigurationPage = () => {
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
-            <ConfigurationForm
-                initialData={configuration || { id: "", name: "", policies: [], processes: [] }}
-                initialPolicies={policies}
-                initialProcesses={processes}
-                mode={isEdit ? "edit" : "create"}
-                onChange={setFormData}
-            />
             <Button
                 variant="contained"
                 color="primary"
                 size="small"
-                sx={{ mt: 2 }}
+                sx={{ alignSelf: "flex-end", mb: 2 }}
                 onClick={handleSubmit}
             >
                 {isEdit ? "Save Changes" : "Create"}
             </Button>
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <ConfigurationForm
+                        initialData={configuration || { id: "", name: "", policies: [], processes: [] }}
+                        initialPolicies={policies}
+                        initialProcesses={processes}
+                        mode={isEdit ? "edit" : "create"}
+                        onChange={setFormData}
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                    charts and stats here
+                </Grid>
+            </Grid>
         </FetchContentWrapper>
     );
 };

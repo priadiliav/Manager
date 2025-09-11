@@ -34,6 +34,7 @@ export const ProcessInConfigurationForm = ({
                 value={valueTypeOptions.find(v => v === process.processState) || null}
                 onChange={(event, newValue) => onProcessStateChange(index, newValue || ProcessState.Banned)}
                 renderInput={(params) => <TextField {...params} label="Process State" size="small" />}
+                sx={{ flex: 1 }}
             />
         </Box>
     );

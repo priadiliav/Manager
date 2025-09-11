@@ -31,6 +31,7 @@ export const PolicyInConfigurationForm = ({
                 label="Registry Value"
                 value={policy.registryValue}
                 onChange={(e) => onRegistryValueChange(index, e.target.value)}
+                sx={{ flex: 1 }}
             />
         </Box>
     );

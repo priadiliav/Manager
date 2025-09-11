@@ -4,6 +4,7 @@ import { createAgent, fetchAgentById } from "../../api/agent";
 import { AgentCreateRequest, AgentDetailedDto } from "../../types/agent";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { AgentForm } from "../../components/agents/AgentForm";
+import { Button, Grid } from "@mui/material";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -13,6 +14,10 @@ export const AgentPage = () => {
     const [loading, setLoading] = useState(isEdit);
     const [error, setError] = useState<string | null>(null);
     const [agent, setAgent] = useState<AgentDetailedDto | null>(null);
+    const [formData, setFormData] = useState<AgentCreateRequest>({
+        name: "",
+        configurationId: ""
+    });
 
     useEffect(() => {
         if (isEdit && id) {
@@ -20,6 +25,7 @@ export const AgentPage = () => {
                 try {
                     const data = await fetchAgentById(id);
                     setAgent(data);
+                    setFormData({ name: data.name, configurationId: data.configurationId });
                 } catch (err) {
                     console.error("Failed to load agent", err);
                     setError("Failed to load agent");
@@ -31,12 +37,13 @@ export const AgentPage = () => {
         }
     }, [id, isEdit]);
 
-    const handleSubmit = async (data: AgentCreateRequest) => {
+    const handleSubmit = async () => {
         try {
             if (isEdit && id) {
-                // await updateAgent(id, data);
+                // await updateAgent(id, formData);
+                console.log("Update agent", id, formData);
             } else {
-                await createAgent(data);
+                await createAgent(formData);
             }
             navigate("/agents");
         } catch (err) {
@@ -47,11 +54,28 @@ export const AgentPage = () => {
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
-            <AgentForm
-                initialData={agent || { name: "", configurationId: "" }}
-                mode={isEdit ? "edit" : "create"}
-                onSubmit={handleSubmit}
-            />
+            <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                sx={{ alignSelf: "flex-end", mb: 2 }}
+                onClick={handleSubmit}
+            >
+                {isEdit ? "Save Changes" : "Create Agent"}
+            </Button>
+
+            <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                    <AgentForm
+                        initialData={agent || { name: "", configurationId: "" }}
+                        mode={isEdit ? "edit" : "create"}
+                        onSubmit={setFormData}
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, md: 8 }}>
+                    charts and stats here
+                </Grid>
+            </Grid>
         </FetchContentWrapper>
     );
 };

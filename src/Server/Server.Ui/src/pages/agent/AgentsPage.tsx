@@ -63,6 +63,7 @@ export const AgentsPage = () => {
     return (
         <FetchContentWrapper loading={loading} error={error} onRetry={loadAgents}>
             <Button
+                size="small"
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("/agents/new")}

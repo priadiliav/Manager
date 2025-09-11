@@ -50,6 +50,7 @@ export const ConfigurationsPage = () => {
     return (
         <FetchContentWrapper loading={loading} error={error}>
             <Button
+                size="small"
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("/configurations/new")}
