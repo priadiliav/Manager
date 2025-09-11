@@ -1,27 +1,17 @@
-import { useState } from "react";
-import { Box, Button, TextField, Autocomplete } from "@mui/material";
-import {
-    PolicyCreateRequest,
-    PolicyDto,
-    RegistryKeyType,
-    RegistryValueType,
-} from "../../types/policy";
+import { useState, useEffect } from "react";
+import { Box, TextField, Autocomplete } from "@mui/material";
+import { PolicyCreateRequest, PolicyDto, RegistryKeyType, RegistryValueType } from "../../types/policy";
 
 type PolicyFormProps = {
     initialData: PolicyCreateRequest | PolicyDto;
     mode: "create" | "edit";
-    onSubmit: (data: PolicyCreateRequest) => void;
+    onChange: (data: PolicyCreateRequest) => void;
 };
 
-const keyTypeOptions = Object.values(RegistryKeyType).filter(
-    (v) => typeof v === "number"
-) as RegistryKeyType[];
+const keyTypeOptions = Object.values(RegistryKeyType).filter((v) => typeof v === "number") as RegistryKeyType[];
+const valueTypeOptions = Object.values(RegistryValueType).filter((v) => typeof v === "number") as RegistryValueType[];
 
-const valueTypeOptions = Object.values(RegistryValueType).filter(
-    (v) => typeof v === "number"
-) as RegistryValueType[];
-
-export const PolicyForm = ({ initialData, mode, onSubmit }: PolicyFormProps) => {
+export const PolicyForm = ({ initialData, mode, onChange }: PolicyFormProps) => {
     const [formData, setFormData] = useState<PolicyCreateRequest>({
         name: initialData.name ?? "",
         description: initialData.description ?? "",
@@ -31,21 +21,16 @@ export const PolicyForm = ({ initialData, mode, onSubmit }: PolicyFormProps) => 
         registryValueType: initialData.registryValueType ?? RegistryValueType.Qword,
     });
 
+    useEffect(() => {
+        onChange(formData);
+    }, [formData, onChange]);
+
     const handleChange = (field: keyof PolicyCreateRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSubmit(formData);
-    };
-
     return (
-        <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-        >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
                 size="small"
                 label="Policy Name"
@@ -80,12 +65,7 @@ export const PolicyForm = ({ initialData, mode, onSubmit }: PolicyFormProps) => 
                 options={keyTypeOptions}
                 getOptionLabel={(option) => RegistryKeyType[option]}
                 value={formData.registryKeyType}
-                onChange={(_, newValue) =>
-                    handleChange(
-                        "registryKeyType",
-                        (newValue as RegistryKeyType) ?? RegistryKeyType.Hklm
-                    )
-                }
+                onChange={(_, newValue) => handleChange("registryKeyType", newValue ?? RegistryKeyType.Hklm)}
                 renderInput={(params) => <TextField {...params} label="Registry Key Type" />}
             />
             <Autocomplete
@@ -93,17 +73,9 @@ export const PolicyForm = ({ initialData, mode, onSubmit }: PolicyFormProps) => 
                 options={valueTypeOptions}
                 getOptionLabel={(option) => RegistryValueType[option]}
                 value={formData.registryValueType}
-                onChange={(_, newValue) =>
-                    handleChange(
-                        "registryValueType",
-                        (newValue as RegistryValueType) ?? RegistryValueType.Qword
-                    )
-                }
+                onChange={(_, newValue) => handleChange("registryValueType", newValue ?? RegistryValueType.Qword)}
                 renderInput={(params) => <TextField {...params} label="Registry Value Type" />}
             />
-            <Button type="submit" variant="contained" color="primary">
-                {mode === "edit" ? "Save Changes" : "Create Policy"}
-            </Button>
         </Box>
     );
 };

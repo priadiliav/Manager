@@ -1,9 +1,10 @@
-import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { createPolicy, fetchPolicyById } from "../../api/policy";
 import { PolicyCreateRequest, PolicyDto, RegistryKeyType, RegistryValueType } from "../../types/policy";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { PolicyForm } from "../../components/policies/PolicyForm";
+import { Button } from "@mui/material";
 
 export const PolicyPage = () => {
     const navigate = useNavigate();
@@ -13,6 +14,14 @@ export const PolicyPage = () => {
     const [loading, setLoading] = useState(isEdit);
     const [error, setError] = useState<string | null>(null);
     const [policy, setPolicy] = useState<PolicyDto | null>(null);
+    const [formData, setFormData] = useState<PolicyCreateRequest>({
+        name: "",
+        description: "",
+        registryPath: "",
+        registryKey: "",
+        registryKeyType: RegistryKeyType.Hklm,
+        registryValueType: RegistryValueType.Qword,
+    });
 
     useEffect(() => {
         if (isEdit && id) {
@@ -20,6 +29,14 @@ export const PolicyPage = () => {
                 try {
                     const data = await fetchPolicyById(id);
                     setPolicy(data);
+                    setFormData({
+                        name: data.name,
+                        description: data.description,
+                        registryPath: data.registryPath,
+                        registryKey: data.registryKey,
+                        registryKeyType: data.registryKeyType,
+                        registryValueType: data.registryValueType,
+                    });
                 } catch (err) {
                     console.error("Failed to load policy", err);
                     setError("Failed to load policy");
@@ -31,12 +48,13 @@ export const PolicyPage = () => {
         }
     }, [id, isEdit]);
 
-    const handleSubmit = async (data: PolicyCreateRequest) => {
+    const handleSubmit = async () => {
         try {
             if (isEdit && id) {
-                // await updatePolicy(id, data);
+                // await updatePolicy(id, formData);
+                console.log("Update policy", id, formData);
             } else {
-                await createPolicy(data);
+                await createPolicy(formData);
             }
             navigate("/policies");
         } catch (err) {
@@ -47,6 +65,16 @@ export const PolicyPage = () => {
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
+            <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                sx={{ alignSelf: "flex-end", mb: 2 }}
+                onClick={handleSubmit}
+            >
+                {isEdit ? "Save Changes" : "Create Policy"}
+            </Button>
+
             <PolicyForm
                 initialData={
                     policy || {
@@ -59,7 +87,7 @@ export const PolicyPage = () => {
                     }
                 }
                 mode={isEdit ? "edit" : "create"}
-                onSubmit={handleSubmit}
+                onChange={setFormData}
             />
         </FetchContentWrapper>
     );

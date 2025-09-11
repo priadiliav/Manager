@@ -4,6 +4,7 @@ import { createProcess, fetchProcessById /* , updateProcess */ } from "../../api
 import { ProcessCreateRequest, ProcessDto } from "../../types/process";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { ProcessForm } from "../../components/processes/ProcessForm";
+import { Button } from "@mui/material";
 
 export const ProcessPage = () => {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ export const ProcessPage = () => {
     const [loading, setLoading] = useState(isEdit);
     const [error, setError] = useState<string | null>(null);
     const [process, setProcess] = useState<ProcessDto | null>(null);
+    const [formData, setFormData] = useState<ProcessCreateRequest>({ name: "" });
 
     useEffect(() => {
         if (isEdit && id) {
@@ -20,6 +22,7 @@ export const ProcessPage = () => {
                 try {
                     const data = await fetchProcessById(id);
                     setProcess(data);
+                    setFormData({ name: data.name });
                 } catch (err) {
                     console.error("Failed to load process", err);
                     setError("Failed to load process");
@@ -31,12 +34,13 @@ export const ProcessPage = () => {
         }
     }, [id, isEdit]);
 
-    const handleSubmit = async (data: ProcessCreateRequest) => {
+    const handleSubmit = async () => {
         try {
             if (isEdit && id) {
-                // await updateProcess(id, data);
+                // await updateProcess(id, formData);
+                console.log("Update process", id, formData);
             } else {
-                await createProcess(data);
+                await createProcess(formData);
             }
             navigate("/processes");
         } catch (err) {
@@ -47,10 +51,20 @@ export const ProcessPage = () => {
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
+            <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                sx={{ alignSelf: "flex-end", mb: 2 }}
+                onClick={handleSubmit}
+            >
+                {isEdit ? "Save Changes" : "Create Process"}
+            </Button>
+
             <ProcessForm
                 initialData={process || { name: "" }}
                 mode={isEdit ? "edit" : "create"}
-                onSubmit={handleSubmit}
+                onChange={setFormData}
             />
         </FetchContentWrapper>
     );

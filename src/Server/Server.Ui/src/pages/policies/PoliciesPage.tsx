@@ -56,6 +56,7 @@ export const PoliciesPage = () => {
     return (
         <FetchContentWrapper loading={loading} error={error} onRetry={loadPolicies}>
             <Button
+                size="small"
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("/policies/new")}

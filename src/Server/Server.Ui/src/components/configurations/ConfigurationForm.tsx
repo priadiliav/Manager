@@ -26,9 +26,9 @@ export const ConfigurationForm = ({ initialData, initialPolicies, initialProcess
         processes: initialData.processes
     });
 
-    const [policiesOpen, setPoliciesOpen] = useState(true);
-    const [processesOpen, setProcessesOpen] = useState(true);
-    const [generalOpen, setGeneralOpen] = useState(true);
+    const [policiesOpen, setPoliciesOpen] = useState(false);
+    const [processesOpen, setProcessesOpen] = useState(false);
+    const [generalOpen, setGeneralOpen] = useState(false);
 
     useEffect(() => {
         onChange(formData);

@@ -51,6 +51,7 @@ export const ProcessesPage = () => {
     return (
         <FetchContentWrapper loading={loading} error={error} onRetry={loadProcesses}>
             <Button
+                size="small"
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("/processes/new")}
