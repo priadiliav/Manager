@@ -6,7 +6,7 @@
 
 ### Example of Server UI
 
-<img width="2559" height="1297" alt="image" src="https://github.com/user-attachments/assets/0dd83b34-60f4-43af-b0ce-90889d2df004" />
+<img width="2559" height="1302" alt="image" src="https://github.com/user-attachments/assets/7a998765-52ce-495b-84ce-9c51d3fc940b" />
 
 <img width="2557" height="1302" alt="image" src="https://github.com/user-attachments/assets/c0742496-bb39-4946-a4d5-f728fdc5488a" />
 
