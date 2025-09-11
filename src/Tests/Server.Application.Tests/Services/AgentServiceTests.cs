@@ -68,7 +68,13 @@ public class AgentServiceTests
     {
         // Arrange
         var agentId = Guid.NewGuid();
-        var agent = new Agent { Id = agentId, Name = "TestAgent", ConfigurationId = 1 };
+        var agent = new Agent
+        {
+            Id = agentId, Name = "TestAgent",
+            ConfigurationId = 1,
+            Configuration = new Configuration { Id = 1, Name = "Default" },
+            Hardware = new Hardware()
+        };
 
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(agent);
 

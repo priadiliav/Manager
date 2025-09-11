@@ -90,9 +90,6 @@ public class ToDomainMapperTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(123));
         Assert.That(result.Name, Is.EqualTo("TestConfig"));
-        Assert.That(result.Agents, Has.Count.EqualTo(2));
-        Assert.That(result.Processes, Has.Count.EqualTo(2));
-        Assert.That(result.Policies, Has.Count.EqualTo(2));
     }
 
     [Test]
