@@ -6,7 +6,6 @@ namespace Server.Application.Dtos.Configuration;
 public class ConfigurationModifyRequest
 {
 	public string Name { get; init; } = string.Empty;
-	
 	public IEnumerable<PolicyInConfigurationDto> Policies { get; init; } = [];
 	public IEnumerable<ProcessInConfigurationDto> Processes { get; init; } = [];
 }
