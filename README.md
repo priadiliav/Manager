@@ -8,4 +8,4 @@
 
 <img width="100%" alt="Server UI" src="https://github.com/user-attachments/assets/464a5f8d-adb9-4ecf-88de-1c544fdfd379" />
 
-<img width="2559" height="1311" alt="image" src="https://github.com/user-attachments/assets/7983b2be-32a0-446d-a54c-66358b5a4da9" />
+<img width="2559" height="1196" alt="image" src="https://github.com/user-attachments/assets/3aa9bbf0-e667-42ac-8864-97998463232b" />
