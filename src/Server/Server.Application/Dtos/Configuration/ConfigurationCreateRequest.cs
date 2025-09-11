@@ -7,6 +7,8 @@ public class ConfigurationCreateRequest
 {
 	public string Name { get; init; } = string.Empty;
 
-	public IEnumerable<PolicyInConfigurationDto> Policies { get; init; } = [];
+
+
+  public IEnumerable<PolicyInConfigurationDto> Policies { get; init; } = [];
 	public IEnumerable<ProcessInConfigurationDto> Processes { get; init; } = [];
 }
