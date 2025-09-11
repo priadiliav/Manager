@@ -5,6 +5,8 @@ import { AgentCreateRequest, AgentDetailedDto } from "../../types/agent";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { AgentForm } from "../../components/agents/AgentForm";
 import { Button, Grid } from "@mui/material";
+import { AgentCharts } from "../../components/agents/AgentCharts";
+import { HardwareInformation } from "../../components/agents/HardwareInformation";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -66,16 +68,55 @@ export const AgentPage = () => {
 
             <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <AgentForm
-                        initialData={agent || { name: "", configurationId: "" }}
-                        mode={isEdit ? "edit" : "create"}
-                        onSubmit={setFormData}
-                    />
+                    <Grid size={{ xs: 12 }}>
+                        <AgentForm
+                            initialData={agent || {
+                                name: "",
+                                configurationId: ""
+                            }}
+                            mode={isEdit ? "edit" : "create"}
+                            onSubmit={setFormData}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        <HardwareInformation
+                            initialData={agent?.hardware || {
+                                id: "",
+                                cpuModel: "",
+                                cpuCores: 0,
+                                cpuSpeedGHz: 0,
+                                cpuArchitecture: "",
+                                gpuModel: "",
+                                gpuMemoryMB: 0,
+                                ramModel: "",
+                                totalMemoryMB: 0,
+                                diskModel: "",
+                                totalDiskMB: 0,
+                                agentId: ""
+                            }}
+                        />
+                    </Grid>
                 </Grid>
                 <Grid size={{ xs: 12, md: 8 }}>
-                    charts and stats here
+                    <AgentCharts
+                        agentId={id || ""}
+                    />
                 </Grid>
             </Grid>
         </FetchContentWrapper>
     );
 };
+// export interface HardwareDto {
+//   id: string;
+//   agentId: string;
+//   cpuModel: string;
+//   cpuCores: number;
+//   cpuSpeedGHz: number;
+//   cpuArchitecture: string;
+//   gpuModel: string;
+//   gpuMemoryMB: number;
+//   ramModel: string;
+//   totalMemoryMB: number;
+//   diskModel: string;
+//   totalDiskMB: number;
+// }
