@@ -20,7 +20,8 @@ const columns = [
                 default: return <span style={{ color: 'gray' }}>Unknown</span>;
             }
         }
-    }
+    },
+    { id: 'requireSynchronization', label: 'Requires Sync', minWidth: 150, render: (row: AgentDto) => row.requireSynchronization ? "Yes" : "No" },
 ];
 
 export const AgentsPage = () => {

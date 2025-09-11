@@ -11,6 +11,7 @@ export interface AgentDto {
   id: string;
   name: string;
   state: AgentState;
+  requireSynchronization: boolean;
   configurationId: string;
 }
 
@@ -20,6 +21,7 @@ export interface AgentCreateRequest {
 }
 
 export interface AgentCreateResponse {
+  id: string;
   secret: string;
 }
 
@@ -33,6 +35,7 @@ export interface AgentDetailedDto {
   name: string;
   state: AgentState;
   configurationId: string;
+  requireSynchronization: boolean;
   configuration: ConfigurationDto;
   hardware: HardwareDto;
 }

@@ -1,12 +1,15 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { createAgent, fetchAgentById } from "../../api/agent";
-import { AgentCreateRequest, AgentDetailedDto } from "../../types/agent";
+import { AgentCreateRequest, AgentCreateResponse, AgentDetailedDto } from "../../types/agent";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { AgentForm } from "../../components/agents/AgentForm";
-import { Button, Grid } from "@mui/material";
+import { Box, Button, Grid, IconButton, TextField, Typography } from "@mui/material";
 import { AgentCharts } from "../../components/agents/AgentCharts";
 import { HardwareInformation } from "../../components/agents/HardwareInformation";
+import CustomDialog from "../../components/dialogs/CustomDialog";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import SyncIcon from '@mui/icons-material/Sync';
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -20,6 +23,9 @@ export const AgentPage = () => {
         name: "",
         configurationId: ""
     });
+
+    const [secretWindowOpen, setSecretWindowOpen] = useState(false);
+    const [createdAgentResponse, setCreatedAgentResponse] = useState<AgentCreateResponse | null>(null);
 
     useEffect(() => {
         if (isEdit && id) {
@@ -45,26 +51,44 @@ export const AgentPage = () => {
                 // await updateAgent(id, formData);
                 console.log("Update agent", id, formData);
             } else {
-                await createAgent(formData);
+                const createdAgent = await createAgent(formData);
+                setCreatedAgentResponse(createdAgent);
+                setSecretWindowOpen(true);
             }
-            navigate("/agents");
         } catch (err) {
             console.error("Failed to save agent", err);
             setError("Failed to save agent");
         }
     };
 
+    const handleSecretWindowClose = () => {
+        setSecretWindowOpen(false);
+        navigate(`/agents/${createdAgentResponse?.id}`);
+    };
+
+    const handleCopySecret = () => {
+        if (createdAgentResponse) {
+            navigator.clipboard.writeText(createdAgentResponse.secret || "");
+        }
+    };
+
     return (
         <FetchContentWrapper loading={loading} error={error}>
-            <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                sx={{ alignSelf: "flex-end", mb: 2 }}
-                onClick={handleSubmit}
-            >
-                {isEdit ? "Save Changes" : "Create Agent"}
-            </Button>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={handleSubmit}
+                >
+                    {isEdit ? "Save Changes" : "Create Agent"}
+                </Button>
+                {isEdit && !agent?.requireSynchronization && (
+                    <IconButton title="This agent requires synchronization" color="warning">
+                        <SyncIcon />
+                    </IconButton>
+                )}
+            </Box>
 
             <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 4 }}>
@@ -79,30 +103,67 @@ export const AgentPage = () => {
                         />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                        <HardwareInformation
-                            initialData={agent?.hardware || {
-                                id: "",
-                                cpuModel: "",
-                                cpuCores: 0,
-                                cpuSpeedGHz: 0,
-                                cpuArchitecture: "",
-                                gpuModel: "",
-                                gpuMemoryMB: 0,
-                                ramModel: "",
-                                totalMemoryMB: 0,
-                                diskModel: "",
-                                totalDiskMB: 0,
-                                agentId: ""
-                            }}
-                        />
+                        {isEdit && (
+                            <HardwareInformation
+                                initialData={agent?.hardware || {
+                                    id: "",
+                                    cpuModel: "",
+                                    cpuCores: 0,
+                                    cpuSpeedGHz: 0,
+                                    cpuArchitecture: "",
+                                    gpuModel: "",
+                                    gpuMemoryMB: 0,
+                                    ramModel: "",
+                                    totalMemoryMB: 0,
+                                    diskModel: "",
+                                    totalDiskMB: 0,
+                                    agentId: ""
+                                }}
+                            />)}
                     </Grid>
                 </Grid>
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <AgentCharts
-                        agentId={id || ""}
-                    />
+                    {isEdit && (
+                        <AgentCharts
+                            agentId={id || ""}
+                        />)}
                 </Grid>
             </Grid>
+
+            <CustomDialog
+                open={secretWindowOpen}
+                title="Agent Secret"
+                onClose={handleSecretWindowClose}
+                submitLabel="OK"
+                onSubmit={handleSecretWindowClose}
+            >
+                <Typography gutterBottom>
+                    Agent id
+                </Typography>
+                <TextField
+                    fullWidth
+                    value={createdAgentResponse?.secret || ""}
+                    InputProps={{
+                        readOnly: true,
+                        value: createdAgentResponse?.id || ""
+                    }}
+                />
+                <Typography gutterBottom>
+                    Please copy this secret. You will not be able to see it again:
+                </Typography>
+                <TextField
+                    fullWidth
+                    value={createdAgentResponse?.secret || ""}
+                    InputProps={{
+                        readOnly: true,
+                        endAdornment: (
+                            <IconButton onClick={handleCopySecret}>
+                                <ContentCopyIcon />
+                            </IconButton>
+                        ),
+                    }}
+                />
+            </CustomDialog>
         </FetchContentWrapper>
     );
 };

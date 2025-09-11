@@ -8,9 +8,7 @@ interface Props {
 }
 
 export const HardwareInformation = ({ initialData }: Props) => {
-    const [isVisible, setIsVisible] = useState<boolean>(false);
-
-
+    const [isVisible, setIsVisible] = useState<boolean>(true);
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
