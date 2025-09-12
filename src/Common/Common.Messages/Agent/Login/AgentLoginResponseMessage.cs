@@ -1,4 +1,4 @@
-namespace Common.Messages.Agent;
+namespace Common.Messages.Agent.Login;
 
 public class AgentLoginResponseMessage : IMessage
 {

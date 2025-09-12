@@ -1,4 +1,4 @@
-using Common.Messages.Agent;
+using Common.Messages.Agent.Login;
 using Microsoft.AspNetCore.Mvc;
 using Server.Application.Dtos.User;
 using Server.Application.Services;

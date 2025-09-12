@@ -1,4 +1,4 @@
-using Common.Messages.Agent;
+using Common.Messages.Agent.Login;
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.User;

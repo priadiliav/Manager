@@ -1,6 +1,6 @@
 using Agent.Application.Abstractions;
 using Agent.Domain.Context;
-using Common.Messages.Agent;
+using Common.Messages.Agent.Login;
 using Microsoft.Extensions.Logging;
 using Stateless;
 
