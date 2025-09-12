@@ -21,7 +21,7 @@ const columns = [
             }
         }
     },
-    { id: 'requireSynchronization', label: 'Requires Sync', minWidth: 150, render: (row: AgentDto) => row.requireSynchronization ? "Yes" : "No" },
+    { id: 'isSynchronized', label: 'Is Synchronized', minWidth: 150, render: (row: AgentDto) => row.isSynchronized ? "Yes" : "No" },
 ];
 
 export const AgentsPage = () => {

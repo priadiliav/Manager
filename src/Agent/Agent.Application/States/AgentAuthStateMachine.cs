@@ -62,8 +62,8 @@ public class AgentAuthStateMachine
           authenticate: false,
           message: new AgentLoginRequestMessage
           {
-            AgentId = Guid.Parse("01991990-52a4-7799-9596-98866fd3e132"),
-            Secret = "8c5db41e-6917-4acd-9d5f-051863755fe5"
+            AgentId = Guid.Parse("01993df8-fef4-784d-a677-d51ee89c7e6d"),
+            Secret = "88692b37-bb69-4513-a02b-583b62c5df88"
           }, cancellationToken: CancellationToken.None);
 
       if (authResponse is null || string.IsNullOrWhiteSpace(authResponse.Token))

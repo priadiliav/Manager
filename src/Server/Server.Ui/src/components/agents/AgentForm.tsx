@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Box, TextField, Autocomplete, Typography, IconButton, Collapse, Card, CardContent } from "@mui/material";
+import { Box, TextField, Autocomplete } from "@mui/material";
 import { AgentCreateRequest, AgentDetailedDto } from "../../types/agent";
 import { ConfigurationDto } from "../../types/configuration";
 import { fetchConfigurations } from "../../api/configuration";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CollapsibleSection } from "../wrappers/CollapsibleSection";
 
 interface Props {
     initialData: AgentCreateRequest | AgentDetailedDto;
@@ -18,7 +18,7 @@ export const AgentForm = ({ initialData, mode, onSubmit }: Props) => {
     });
 
     const [configurations, setConfigurations] = useState<ConfigurationDto[]>([]);
-    const [generalOpen, setGeneralOpen] = useState(true);
+
     useEffect(() => {
         const loadConfigs = async () => {
             try {
@@ -38,48 +38,30 @@ export const AgentForm = ({ initialData, mode, onSubmit }: Props) => {
     };
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="h6">
-                    General Information
-                </Typography>
-                <IconButton size="small" onClick={() => setGeneralOpen(!generalOpen)}>
-                    <ExpandMoreIcon
-                        sx={{
-                            transform: generalOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s'
-                        }}
-                    />
-                </IconButton>
+        <CollapsibleSection title="General Information">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <TextField
+                    size="small"
+                    name="name"
+                    label="Agent Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                />
+                <Autocomplete
+                    size="small"
+                    options={configurations}
+                    getOptionLabel={(option) => option.name}
+                    value={configurations.find((c) => c.id === formData.configurationId) || null}
+                    onChange={(event, newValue) => {
+                        const newData = { ...formData, configurationId: newValue?.id || "" };
+                        setFormData(newData);
+                        onSubmit(newData);
+                    }}
+                    renderInput={(params) => <TextField {...params} label="Configuration" required />}
+                />
             </Box>
-            <Collapse in={generalOpen} timeout="auto" unmountOnExit>
-                <Card>
-                    <CardContent>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <TextField
-                                size="small"
-                                name="name"
-                                label="Agent Name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                            />
-                            <Autocomplete
-                                size="small"
-                                options={configurations}
-                                getOptionLabel={(option) => option.name}
-                                value={configurations.find((c) => c.id === formData.configurationId) || null}
-                                onChange={(event, newValue) => {
-                                    const newData = { ...formData, configurationId: newValue?.id || "" };
-                                    setFormData(newData);
-                                    onSubmit(newData);
-                                }}
-                                renderInput={(params) => <TextField {...params} label="Configuration" required />}
-                            />
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Collapse>
-        </Box>
+        </CollapsibleSection>
+
     );
 };

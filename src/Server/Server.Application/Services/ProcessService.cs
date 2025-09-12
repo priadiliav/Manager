@@ -1,6 +1,7 @@
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Process;
+using Server.Domain.Models;
 
 namespace Server.Application.Services;
 
@@ -55,6 +56,7 @@ public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
 		await unitOfWork.Processes.CreateAsync(processDomain);
 		await unitOfWork.SaveChangesAsync();
 
+
 		var createdProcessDto = await GetProcessAsync(processDomain.Id);
 		return createdProcessDto;
 	}
@@ -68,10 +70,20 @@ public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
 		var processDomain = request.ToDomain(processId);
 		existingProcess.ModifyFrom(processDomain);
 
-		await unitOfWork.Processes.ModifyAsync(existingProcess);
+    // Mark all agents in configurations that use this process as not synchronized
+    var configurationIds = existingProcess.Configurations.Select(c => c.ConfigurationId).ToList();
+    var agentsInConfigurations = await unitOfWork.Agents.GetByConfigurationIdsAsync(configurationIds);
+    MarkAgentsAsNotSynchronizedAsync(agentsInConfigurations);
+
 		await unitOfWork.SaveChangesAsync();
 
 		var updatedProcessDto = await GetProcessAsync(processId);
 		return updatedProcessDto;
 	}
+
+  private void MarkAgentsAsNotSynchronizedAsync(IEnumerable<Agent> agentsInConfigurations)
+  {
+    foreach (var agent in agentsInConfigurations)
+      agent.MarkAsUnsynchronized();
+  }
 }

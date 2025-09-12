@@ -18,6 +18,7 @@ public static class ToDomainMapper
 		{
 			Id = source.Id,
 			Name = source.Name,
+      IsSynchronized = source.IsSynchronized,
 			ConfigurationId = source.ConfigurationId
 		};
 

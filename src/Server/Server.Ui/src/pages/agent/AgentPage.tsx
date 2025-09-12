@@ -9,7 +9,7 @@ import { AgentCharts } from "../../components/agents/AgentCharts";
 import { HardwareInformation } from "../../components/agents/HardwareInformation";
 import CustomDialog from "../../components/dialogs/CustomDialog";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import SyncIcon from '@mui/icons-material/Sync';
+import { SynchronizationInformation } from "../../components/agents/SynchronizationInformation";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -83,11 +83,6 @@ export const AgentPage = () => {
                 >
                     {isEdit ? "Save Changes" : "Create Agent"}
                 </Button>
-                {isEdit && !agent?.requireSynchronization && (
-                    <IconButton title="This agent requires synchronization" color="warning">
-                        <SyncIcon />
-                    </IconButton>
-                )}
             </Box>
 
             <Grid container spacing={2}>
@@ -120,6 +115,15 @@ export const AgentPage = () => {
                                     agentId: ""
                                 }}
                             />)}
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        {isEdit && (
+                            <SynchronizationInformation
+                                lastSyncAt={agent?.lastSynchronizedAt || null}
+                                lastUnsyncAt={agent?.lastUnsynchronizedAt || null}
+                                isSynchronized={agent?.isSynchronized || false}
+                            />
+                        )}
                     </Grid>
                 </Grid>
                 <Grid size={{ xs: 12, md: 8 }}>

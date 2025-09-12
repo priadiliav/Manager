@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createPolicy, fetchPolicyById } from "../../api/policy";
+import { createPolicy, fetchPolicyById, modifyPolicy } from "../../api/policy";
 import { PolicyCreateRequest, PolicyDto, RegistryKeyType, RegistryValueType } from "../../types/policy";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { PolicyForm } from "../../components/policies/PolicyForm";
@@ -51,8 +51,7 @@ export const PolicyPage = () => {
     const handleSubmit = async () => {
         try {
             if (isEdit && id) {
-                // await updatePolicy(id, formData);
-                console.log("Update policy", id, formData);
+                await modifyPolicy(id, formData);
             } else {
                 await createPolicy(formData);
             }

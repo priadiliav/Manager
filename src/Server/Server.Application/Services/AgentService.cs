@@ -88,7 +88,7 @@ public class AgentService (
 		var agentDomain = request.ToDomain(agentId);
 		existingAgentDomain.ModifyFrom(agentDomain);
 
-		await unitOfWork.Agents.ModifyAsync(existingAgentDomain);
+		await unitOfWork.Agents.ModifyAsync(existingAgentDomain); // todo: remove, tracked entity
 		await unitOfWork.SaveChangesAsync();
 
 		var updatedAgentDto = await unitOfWork.Agents.GetAsync(agentId);
@@ -104,7 +104,8 @@ public class AgentService (
     // Software updates and another static agent information can be handled here in the future
     var hardwareDomain = message.Hardware.ToDomain(agentId);
     existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
-    await unitOfWork.Hardware.ModifyAsync(existingAgentDomain.Hardware);
+    existingAgentDomain.MarkAsSynchronized();
+
     await unitOfWork.SaveChangesAsync();
 
     return new AgentSyncResponseMessage();

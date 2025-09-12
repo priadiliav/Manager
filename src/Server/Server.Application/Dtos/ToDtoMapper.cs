@@ -19,6 +19,7 @@ public static class ToDtoMapper
 		{
 			Id = agent.Id,
 			Name = agent.Name,
+      IsSynchronized = agent.IsSynchronized,
 			ConfigurationId = agent.ConfigurationId
 		};
 	}
@@ -29,6 +30,9 @@ public static class ToDtoMapper
         Id = source.Id,
         Name = source.Name,
         ConfigurationId = source.ConfigurationId,
+        IsSynchronized = source.IsSynchronized,
+        LastSynchronizedAt = source.LastSynchronizedAt,
+        LastUnsynchronizedAt = source.LastUnsynchronizedAt,
         Configuration = source.Configuration.ToDto(),
         Hardware = source.Hardware.ToDto()
     };
@@ -39,6 +43,7 @@ public static class ToDtoMapper
     {
       Id = agent.Id,
       Name = agent.Name,
+      IsSynchronized = agent.IsSynchronized,
       ConfigurationId = agent.ConfigurationId,
       Secret = secret
     };

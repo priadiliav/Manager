@@ -11,6 +11,10 @@ public class Agent : IEntity<Guid>
   public byte[] SecretSalt { get; init; } = default!;
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
+  public bool IsSynchronized { get; set; }
+
+  public DateTimeOffset? LastSynchronizedAt { get; set; }
+  public DateTimeOffset? LastUnsynchronizedAt { get; set; }
 
 	public virtual Configuration Configuration { get; init; } = null!;
   public virtual Hardware Hardware { get; init; } = null!;
@@ -28,4 +32,23 @@ public class Agent : IEntity<Guid>
 		Name = agent.Name;
 		ConfigurationId = agent.ConfigurationId;
 	}
+
+
+  /// <summary>
+  /// Mark the agent as synchronized and updates the modification timestamp.
+  /// </summary>
+  public void MarkAsSynchronized()
+  {
+    IsSynchronized = true;
+    LastSynchronizedAt = DateTimeOffset.UtcNow;
+  }
+
+  /// <summary>
+  /// Mark the agent as not synchronized.
+  /// </summary>
+  public void MarkAsUnsynchronized()
+  {
+    IsSynchronized = false;
+    LastUnsynchronizedAt = DateTimeOffset.UtcNow;
+  }
 }

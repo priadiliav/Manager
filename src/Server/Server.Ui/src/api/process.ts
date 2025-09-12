@@ -1,5 +1,5 @@
 import api from './axios';
-import { ProcessCreateRequest, ProcessDto } from "../types/process";
+import { ProcessCreateRequest, ProcessDto, ProcessModifyRequest } from "../types/process";
 
 export const fetchProcesses = async (): Promise<ProcessDto[]> => {
   const response = await api.get<ProcessDto[]>('/processes');
@@ -15,3 +15,8 @@ export const createProcess = async (process: ProcessCreateRequest): Promise<Proc
   const response = await api.post<ProcessDto>('/processes', process);
   return response.data;
 };
+
+export const modifyProcess = async (id: string, process: ProcessModifyRequest): Promise<ProcessDto> => {
+  const response = await api.put<ProcessDto>(`/processes/${id}`, process);
+  return response.data;
+}

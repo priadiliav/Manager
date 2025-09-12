@@ -1,11 +1,11 @@
-import { Box, Button, Card, CardContent, Collapse, Grid, IconButton, TextField, Typography } from "@mui/material";
+import { Box, Button, Grid, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ConfigurationCreateRequest, ConfigurationDetailedDto, ConfigurationModifyRequest } from "../../types/configuration";
 import { PolicyDto } from "../../types/policy";
 import { ProcessDto, ProcessState } from "../../types/process";
 import { PolicyInConfigurationForm } from "./PolicyInConfigurationForm";
 import { ProcessInConfigurationForm } from "./ProcessInConfigurationForm";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { CollapsibleSection } from "../wrappers/CollapsibleSection";
 
 interface Props {
     initialData: ConfigurationDetailedDto;
@@ -25,10 +25,6 @@ export const ConfigurationForm = ({ initialData, initialPolicies, initialProcess
         policies: initialData.policies,
         processes: initialData.processes
     });
-
-    const [policiesOpen, setPoliciesOpen] = useState(false);
-    const [processesOpen, setProcessesOpen] = useState(false);
-    const [generalOpen, setGeneralOpen] = useState(false);
 
     useEffect(() => {
         onChange(formData);
@@ -68,123 +64,77 @@ export const ConfigurationForm = ({ initialData, initialPolicies, initialProcess
         <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 12 }}>
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }} >
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <Typography variant="h6">General Information</Typography>
-                            <IconButton size="small" onClick={() => setGeneralOpen(!generalOpen)}>
-                                <ExpandMoreIcon
-                                    sx={{
-                                        transform: generalOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                        transition: 'transform 0.3s'
-                                    }}
-                                />
-                            </IconButton>
+                    <CollapsibleSection title="General Information">
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+                            <TextField
+                                label="Name"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                fullWidth
+                                size="small"
+                            />
                         </Box>
-                    </Box>
-                    <Collapse in={generalOpen} timeout="auto" unmountOnExit>
-                        <Card>
-                            <CardContent>
-                                <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-                                    <TextField
-                                        label="Name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        fullWidth
-                                        size="small"
-                                    />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Collapse>
-                </Grid>
-                <Grid size={{ xs: 12, md: 12 }}>
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <Typography variant="h6">Policies</Typography>
-                            <IconButton size="small" onClick={() => setPoliciesOpen(!policiesOpen)}>
-                                <ExpandMoreIcon
-                                    sx={{
-                                        transform: policiesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                        transition: 'transform 0.3s'
-                                    }}
-                                />
-                            </IconButton>
-                        </Box>
-                        <Collapse in={policiesOpen} timeout="auto" unmountOnExit>
-                            <Card>
-                                <CardContent>
-                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                        {formData.policies.map((policy, index) => (
-                                            <PolicyInConfigurationForm
-                                                key={`${policy.policyId}-${index}`}
-                                                policy={policy}
-                                                index={index}
-                                                allPolicies={initialPolicies}
-                                                onPolicyChange={handlePolicyChange}
-                                                onRegistryValueChange={handleRegistryValueChange}
-                                            />
-                                        ))}
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            onClick={() => setFormData({
-                                                ...formData,
-                                                policies: [...formData.policies, { policyId: "", registryValue: "" }]
-                                            })}
-                                        >
-                                            Add Policy
-                                        </Button>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Collapse>
-                    </Box>
+                    </CollapsibleSection>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 12 }}>
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <Typography variant="h6">Processes</Typography>
-                            <IconButton size="small" onClick={() => setProcessesOpen(!processesOpen)}>
-                                <ExpandMoreIcon
-                                    sx={{
-                                        transform: processesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                        transition: 'transform 0.3s'
-                                    }}
+                    <CollapsibleSection title="Policies">
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            {formData.policies.map((policy, index) => (
+                                <PolicyInConfigurationForm
+                                    key={`${policy.policyId}-${index}`}
+                                    policy={policy}
+                                    index={index}
+                                    allPolicies={initialPolicies}
+                                    onPolicyChange={handlePolicyChange}
+                                    onRegistryValueChange={handleRegistryValueChange}
                                 />
-                            </IconButton>
+                            ))}
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() =>
+                                    setFormData({
+                                        ...formData,
+                                        policies: [...formData.policies, { policyId: "", registryValue: "" }]
+                                    })
+                                }
+                            >
+                                Add Policy
+                            </Button>
                         </Box>
-                        <Collapse in={processesOpen}>
-                            <Card>
-                                <CardContent>
-                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                        {formData.processes.map((process, index) => (
-                                            <ProcessInConfigurationForm
-                                                key={`${process.processId}-${index}`}
-                                                process={process}
-                                                index={index}
-                                                allProcesses={initialProcesses}
-                                                valueTypeOptions={valueTypeOptions}
-                                                onProcessChange={handleProcessChange}
-                                                onProcessStateChange={handleProcessStateChange}
-                                            />
-                                        ))}
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            onClick={() => setFormData({
-                                                ...formData,
-                                                processes: [...formData.processes, { processId: "", processState: ProcessState.Banned }]
-                                            })}
-                                        >
-                                            Add Process
-                                        </Button>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Collapse>
-                    </Box>
+                    </CollapsibleSection>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 12 }}>
+                    <CollapsibleSection title="Processes">
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            {formData.processes.map((process, index) => (
+                                <ProcessInConfigurationForm
+                                    key={`${process.processId}-${index}`}
+                                    process={process}
+                                    index={index}
+                                    allProcesses={initialProcesses}
+                                    valueTypeOptions={valueTypeOptions}
+                                    onProcessChange={handleProcessChange}
+                                    onProcessStateChange={handleProcessStateChange}
+                                />
+                            ))}
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() =>
+                                    setFormData({
+                                        ...formData,
+                                        processes: [...formData.processes, { processId: "", processState: ProcessState.Banned }]
+                                    })
+                                }
+                            >
+                                Add Process
+                            </Button>
+                        </Box>
+                    </CollapsibleSection>
                 </Grid>
             </Grid>
         </Box>

@@ -1,6 +1,7 @@
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Configuration;
+using Server.Domain.Models;
 
 namespace Server.Application.Services;
 
@@ -68,10 +69,19 @@ public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationServi
 		var configurationDomain = request.ToDomain(configurationId);
 		existingConfigurationDomain.ModifyFrom(configurationDomain);
 
-		await unitOfWork.Configurations.ModifyAsync(existingConfigurationDomain);
+    // Mark all associated agents as not synchronized
+    MarkAgentsAsNotSynchronized(existingConfigurationDomain.Agents);
+
+		await unitOfWork.Configurations.ModifyAsync(existingConfigurationDomain);// todo: remove, tracked entity
 		await unitOfWork.SaveChangesAsync();
 
 		var updatedConfigurationDto = await GetConfigurationAsync(configurationId);
 		return updatedConfigurationDto;
 	}
+
+  private static void MarkAgentsAsNotSynchronized(IEnumerable<Agent> agents)
+  {
+    foreach (var agent in agents)
+      agent.MarkAsUnsynchronized();
+  }
 }

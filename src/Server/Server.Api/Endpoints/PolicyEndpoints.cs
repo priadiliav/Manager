@@ -44,7 +44,7 @@ public static class PolicyEndpoints
         // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreatePolicy");
 
-    group.MapPut("/api/policies/{id:long}",
+    group.MapPut("/{id:long}",
         async (IPolicyService policyService, long id, PolicyModifyRequest modifyRequest) =>
         {
           var updatedPolicy = await policyService.UpdatePolicyAsync(id, modifyRequest);

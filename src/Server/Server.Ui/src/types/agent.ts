@@ -11,7 +11,7 @@ export interface AgentDto {
   id: string;
   name: string;
   state: AgentState;
-  requireSynchronization: boolean;
+  isSynchronized: boolean;
   configurationId: string;
 }
 
@@ -35,7 +35,9 @@ export interface AgentDetailedDto {
   name: string;
   state: AgentState;
   configurationId: string;
-  requireSynchronization: boolean;
+  isSynchronized: boolean;
+  lastSynchronizedAt: string | null;
+  lastUnsynchronizedAt: string | null;
   configuration: ConfigurationDto;
   hardware: HardwareDto;
 }

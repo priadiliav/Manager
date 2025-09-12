@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { createConfiguration, fetchConfigurationById } from "../../api/configuration";
+import { createConfiguration, fetchConfigurationById, modifyConfiguration } from "../../api/configuration";
 import { ConfigurationCreateRequest, ConfigurationModifyRequest, ConfigurationDetailedDto } from "../../types/configuration";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { ConfigurationForm } from "../../components/configurations/ConfigurationForm";
@@ -9,6 +9,7 @@ import { PolicyDto } from "../../types/policy";
 import { fetchProcesses } from "../../api/process";
 import { ProcessDto } from "../../types/process";
 import { fetchPolicies } from "../../api/policy";
+import { MetricsConfigurationForm } from "../../components/configurations/MetricsConfigurationForm";
 
 export const ConfigurationPage = () => {
     const navigate = useNavigate();
@@ -63,13 +64,13 @@ export const ConfigurationPage = () => {
 
     const handleSubmit = async () => {
         try {
+            let configuration: ConfigurationDetailedDto;
             if (isEdit && id) {
-                // await updateConfiguration(id, formData);
-                console.log("Update configuration", id, formData);
+                configuration = await modifyConfiguration(id, formData);
             } else {
-                await createConfiguration(formData);
+                configuration = await createConfiguration(formData);
             }
-            navigate("/configurations");
+            navigate(`/configurations/${configuration.id}`);
         } catch (err) {
             console.error("Failed to save configuration", err);
             setError("Failed to save configuration");
@@ -88,7 +89,7 @@ export const ConfigurationPage = () => {
                 {isEdit ? "Save Changes" : "Create"}
             </Button>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <ConfigurationForm
                         initialData={configuration || { id: "", name: "", policies: [], processes: [] }}
                         initialPolicies={policies}
@@ -97,8 +98,8 @@ export const ConfigurationPage = () => {
                         onChange={setFormData}
                     />
                 </Grid>
-                <Grid size={{ xs: 12, md: 8 }}>
-                    charts and stats here
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <MetricsConfigurationForm />
                 </Grid>
             </Grid>
         </FetchContentWrapper>

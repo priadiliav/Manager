@@ -16,6 +16,11 @@ public class AgentRepository(AppDbContext dbContext) : IAgentRepository
         .Include(x => x.Hardware)
 				.FirstOrDefaultAsync(x => x.Id == id);
 
+  public async Task<IEnumerable<Agent>> GetByConfigurationIdsAsync(IEnumerable<long> configurationIds)
+    => await dbContext.Agents
+        .Where(x => configurationIds.Contains(x.ConfigurationId))
+        .ToListAsync();
+
 	public Task CreateAsync(Agent agent)
 	{
 		dbContext.Agents.Add(agent);

@@ -1,6 +1,7 @@
 using Server.Application.Abstractions;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Policy;
+using Server.Domain.Models;
 
 namespace Server.Application.Services;
 
@@ -69,10 +70,20 @@ public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
 		var policyDomain = request.ToDomain(policyId);
 		existingPolicyDomain.ModifyFrom(policyDomain);
 
-		await unitOfWork.Policies.ModifyAsync(existingPolicyDomain);
-		await unitOfWork.SaveChangesAsync();
+    // Mark agents in associated configurations as not synchronized
+    var configurationIds = existingPolicyDomain.Configurations.Select(c => c.ConfigurationId).ToList();
+    var agentsInConfigurations = await unitOfWork.Agents.GetByConfigurationIdsAsync(configurationIds);
+    MarkAgentsAsNotSynchronizedAsync(agentsInConfigurations);
+
+    await unitOfWork.SaveChangesAsync();
 
 		var updatedPolicyDto = await GetPolicyAsync(policyId);
 		return updatedPolicyDto;
 	}
+
+  private void MarkAgentsAsNotSynchronizedAsync(IEnumerable<Agent> agentsInConfigurations) //todo: move to utility class
+  {
+    foreach (var agent in agentsInConfigurations)
+      agent.MarkAsUnsynchronized();
+  }
 }

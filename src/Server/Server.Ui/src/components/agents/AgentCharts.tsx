@@ -1,16 +1,14 @@
-import { Box, Collapse, FormControlLabel, Grid, IconButton, Switch, TextField, Typography } from "@mui/material";
+import { Box, FormControlLabel, Grid, Switch, TextField, Typography } from "@mui/material";
 import { CpuUsageLineChart } from "./CpuUsageLineChart";
 import { MemoryUsageLineChart } from "./MemoryUsageLineChart";
 import { DiskUsageLineChart } from "./DiskUsageLineChart";
 import { NetworkUsageLineChart } from "./NetworkUsageLineChart";
 import { useEffect, useState } from "react";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { fetchMetrics } from "../../api/metric";
 import FetchContentWrapper from "../wrappers/FetchContentWrapper";
+import { CollapsibleSection } from "../wrappers/CollapsibleSection";
 
 export const AgentCharts = ({ agentId }: { agentId: string }) => {
-    const [isVisible, setIsVisible] = useState(true);
-
     const [cpuUsageLineChartData, setCpuUsageLineChartData] = useState<number[]>([]);
     const [memoryUsageLineChartData, setMemoryUsageLineChartData] = useState<number[]>([]);
     const [diskUsageLineChartData, setDiskUsageLineChartData] = useState<number[]>([]);
@@ -63,99 +61,72 @@ export const AgentCharts = ({ agentId }: { agentId: string }) => {
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <CollapsibleSection title="Resource Usage Charts">
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <Typography variant="h6">
-                        Resource Usage Charts
-                    </Typography>
-                    <IconButton size="small" onClick={() => setIsVisible(!isVisible)}>
-                        <ExpandMoreIcon
-                            sx={{
-                                transform: isVisible ? 'rotate(180deg)' : 'rotate(0deg)',
-                                transition: 'transform 0.3s'
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                name="isActive"
+                                color="primary"
+                                checked={isRealTimeMonitoring}
+                                onChange={() => setIsRealTimeMonitoring(!isRealTimeMonitoring)}
+                            />
+                        }
+                        label={<Typography>Real time monitoring</Typography>}
+                        labelPlacement="end"
+                    />
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                        <TextField
+                            size="small"
+                            label="From"
+                            type="datetime-local"
+                            disabled={isRealTimeMonitoring}
+                            value={from ? from.toISOString().slice(0, 16) : ""}
+                            onChange={(e) => setFrom(e.target.value ? new Date(e.target.value) : new Date())}
+                            InputLabelProps={{
+                                shrink: true,
                             }}
                         />
-                    </IconButton>
-                </Box>
-                <Collapse in={isVisible} timeout="auto" unmountOnExit>
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    name="isActive"
-                                    color="primary"
-                                    checked={isRealTimeMonitoring}
-                                    onChange={() => setIsRealTimeMonitoring(!isRealTimeMonitoring)}
-                                />
-                            }
-                            label={<Typography>Real time monitoring</Typography>}
-                            labelPlacement="end"
+                        <TextField
+                            size="small"
+                            label="To"
+                            type="datetime-local"
+                            disabled={isRealTimeMonitoring}
+                            value={to ? to.toISOString().slice(0, 16) : ""}
+                            onChange={(e) => setTo(e.target.value ? new Date(e.target.value) : new Date())}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
                         />
-                        <Box sx={{ display: "flex", gap: 2 }}>
-                            <TextField
-                                size="small"
-                                label="From"
-                                type="datetime-local"
-                                disabled={isRealTimeMonitoring}
-                                value={from ? from.toISOString().slice(0, 16) : ""}
-                                onChange={(e) => setFrom(e.target.value ? new Date(e.target.value) : new Date())}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                            <TextField
-                                size="small"
-                                label="To"
-                                type="datetime-local"
-                                disabled={isRealTimeMonitoring}
-                                value={to ? to.toISOString().slice(0, 16) : ""}
-                                onChange={(e) => setTo(e.target.value ? new Date(e.target.value) : new Date())}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                            <TextField
-                                size="small"
-                                label="Data Points Limit"
-                                type="number"
-                                disabled={isRealTimeMonitoring}
-                                value={limit}
-                                onChange={(e) => setLimit(Number(e.target.value))}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                inputProps={{ min: 1, max: 500 }}
-                            />
-                        </Box>
+                        <TextField
+                            size="small"
+                            label="Data Points Limit"
+                            type="number"
+                            disabled={isRealTimeMonitoring}
+                            value={limit}
+                            onChange={(e) => setLimit(Number(e.target.value))}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            inputProps={{ min: 1, max: 500 }}
+                        />
                     </Box>
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <Grid sx={{ md: 12 }} >
-                            <CpuUsageLineChart
-                                data={cpuUsageLineChartData}
-                                labels={labels}
-                            />
-                        </Grid>
-                        <Grid sx={{ md: 12 }}>
-                            <MemoryUsageLineChart
-                                data={memoryUsageLineChartData}
-                                labels={labels}
-                            />
-                        </Grid>
-                        <Grid sx={{ md: 12 }}>
-                            <DiskUsageLineChart
-                                data={diskUsageLineChartData}
-                                labels={labels}
-                            />
-                        </Grid>
-                        <Grid sx={{ md: 12 }}>
-                            <NetworkUsageLineChart
-                                data={networkUsageLineChartData}
-                                labels={labels}
-                            />
-                        </Grid>
-                    </Box>
-                </Collapse>
-            </Box >
-        </FetchContentWrapper >
+                </Box>
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Grid sx={{ md: 12 }} >
+                        <CpuUsageLineChart data={cpuUsageLineChartData} labels={labels} />
+                    </Grid>
+                    <Grid sx={{ md: 12 }}>
+                        <MemoryUsageLineChart data={memoryUsageLineChartData} labels={labels} />
+                    </Grid>
+                    <Grid sx={{ md: 12 }}>
+                        <DiskUsageLineChart data={diskUsageLineChartData} labels={labels} />
+                    </Grid>
+                    <Grid sx={{ md: 12 }}>
+                        <NetworkUsageLineChart data={networkUsageLineChartData} labels={labels} />
+                    </Grid>
+                </Box>
+            </CollapsibleSection>
+        </FetchContentWrapper>
     );
-} 
+};

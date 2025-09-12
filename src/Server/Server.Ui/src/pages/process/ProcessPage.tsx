@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createProcess, fetchProcessById /* , updateProcess */ } from "../../api/process";
+import {
+    createProcess, fetchProcessById, /* , updateProcess */
+    modifyProcess
+} from "../../api/process";
 import { ProcessCreateRequest, ProcessDto } from "../../types/process";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { ProcessForm } from "../../components/processes/ProcessForm";
@@ -36,13 +39,13 @@ export const ProcessPage = () => {
 
     const handleSubmit = async () => {
         try {
+            let process: ProcessDto;
             if (isEdit && id) {
-                // await updateProcess(id, formData);
-                console.log("Update process", id, formData);
+                process = await modifyProcess(id, formData);
             } else {
-                await createProcess(formData);
+                process = await createProcess(formData);
             }
-            navigate("/processes");
+            navigate(`/processes/${process.id}`);
         } catch (err) {
             console.error("Failed to save process", err);
             setError("Failed to save process");
