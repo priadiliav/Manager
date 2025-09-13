@@ -2,7 +2,7 @@ using Agent.Application.States;
 
 namespace Agent.Worker;
 
-public class Worker(AgentOverallStateMachine overallStateMachine) : BackgroundService
+public class Worker(OverallStateMachine overallStateMachine) : BackgroundService
 {
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {

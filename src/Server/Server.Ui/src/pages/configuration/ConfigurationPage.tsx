@@ -89,7 +89,7 @@ export const ConfigurationPage = () => {
                 {isEdit ? "Save Changes" : "Create"}
             </Button>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 5 }}>
                     <ConfigurationForm
                         initialData={configuration || { id: "", name: "", policies: [], processes: [] }}
                         initialPolicies={policies}
@@ -98,7 +98,7 @@ export const ConfigurationPage = () => {
                         onChange={setFormData}
                     />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 7 }}>
                     <MetricsConfigurationForm />
                 </Grid>
             </Grid>

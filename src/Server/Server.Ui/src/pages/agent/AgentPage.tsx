@@ -10,6 +10,7 @@ import { HardwareInformation } from "../../components/agents/HardwareInformation
 import CustomDialog from "../../components/dialogs/CustomDialog";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { SynchronizationInformation } from "../../components/agents/SynchronizationInformation";
+import { StateInformation } from "../../components/agents/StateInformation";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -123,6 +124,11 @@ export const AgentPage = () => {
                                 lastUnsyncAt={agent?.lastUnsynchronizedAt || null}
                                 isSynchronized={agent?.isSynchronized || false}
                             />
+                        )}
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        {isEdit && (
+                            <StateInformation />
                         )}
                     </Grid>
                 </Grid>

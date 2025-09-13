@@ -10,10 +10,10 @@ namespace Agent.Application.States;
 
 public enum AgentSyncState
 {
-  Started,
-  Synchronizing,
-  Synchronized,
-  Error,
+  Idle,
+  Processing,
+  Finished,
+  Error
 }
 
 public enum SyncTrigger
@@ -23,10 +23,10 @@ public enum SyncTrigger
   ErrorOccurred
 }
 
-public class AgentSyncStateMachine
+public class SyncStateMachine
 {
   private readonly StateMachine<AgentSyncState, SyncTrigger> _machine;
-  private readonly ILogger<AgentAuthStateMachine> _logger;
+  private readonly StateMachineWrapper _wrapper;
   private readonly AgentStateContext _context;
 
   private readonly IStaticDataCollector<CpuInfoMessage> _cpuCollector;
@@ -37,8 +37,8 @@ public class AgentSyncStateMachine
 
   public AgentSyncState CurrentState => _machine.State;
 
-  public AgentSyncStateMachine(
-    ILogger<AgentAuthStateMachine> logger,
+  public SyncStateMachine(
+    StateMachineWrapper wrapper,
     IStaticDataCollector<CpuInfoMessage> cpuCollector,
     IStaticDataCollector<RamInfoMessage> memoryCollector,
     IStaticDataCollector<DiskInfoMessage> diskCollector,
@@ -47,35 +47,35 @@ public class AgentSyncStateMachine
     AgentStateContext context)
   {
     _context = context ?? throw new ArgumentNullException(nameof(context));
-    _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    _machine = new StateMachine<AgentSyncState, SyncTrigger>(AgentSyncState.Started);
+    _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
+    _machine = new StateMachine<AgentSyncState, SyncTrigger>(AgentSyncState.Idle);
     _cpuCollector = cpuCollector ?? throw new ArgumentNullException(nameof(cpuCollector));
     _memoryCollector = memoryCollector ?? throw new ArgumentNullException(nameof(memoryCollector));
     _diskCollector = diskCollector ?? throw new ArgumentNullException(nameof(diskCollector));
     _gpuCollector = gpuCollector ?? throw new ArgumentNullException(nameof(gpuCollector));
     _communicationClient = communicationClient ?? throw new ArgumentNullException(nameof(communicationClient));
 
-    _machine.Configure(AgentSyncState.Started)
-        .Permit(SyncTrigger.Start, AgentSyncState.Synchronizing);
+    _machine.Configure(AgentSyncState.Idle)
+        .Permit(SyncTrigger.Start, AgentSyncState.Processing);
 
-    _machine.Configure(AgentSyncState.Synchronizing)
-        .Permit(SyncTrigger.Success, AgentSyncState.Synchronized)
+    _machine.Configure(AgentSyncState.Processing)
+        .Permit(SyncTrigger.Success, AgentSyncState.Finished)
         .Permit(SyncTrigger.ErrorOccurred, AgentSyncState.Error);
 
     _machine.Configure(AgentSyncState.Error)
-        .Permit(SyncTrigger.Start, AgentSyncState.Synchronizing);
+        .Permit(SyncTrigger.Start, AgentSyncState.Processing);
   }
 
 
   public async Task StartAsync()
   {
-    await _machine.FireAsync(SyncTrigger.Start);
+    await _wrapper.FireAsync(_machine, SyncTrigger.Start);
 
     try
     {
-      var message = new AgentSyncRequestMessage()
+      var message = new AgentSyncRequestMessage
       {
-          Hardware = new HardwareMessage()
+          Hardware = new HardwareMessage
           {
               Cpu = _cpuCollector.Collect(),
               Ram = _memoryCollector.Collect(),
@@ -88,12 +88,10 @@ public class AgentSyncStateMachine
           url: "agents/sync",
           authenticate: true,
           message, _context.CancellationTokenSource.Token);
-
-      _logger.LogInformation("Synchronization successful.");
     }
-    catch (Exception ex)
+    catch (Exception)
     {
-      await _machine.FireAsync(SyncTrigger.ErrorOccurred);
+      await _wrapper.FireAsync(_machine, SyncTrigger.ErrorOccurred);
     }
   }
 }

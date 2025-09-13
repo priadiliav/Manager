@@ -13,10 +13,11 @@ builder.Services.AddWindowsService();
 
 #region Finite state machine configurations
 builder.Services.AddSingleton<AgentStateContext>();
-builder.Services.AddSingleton<AgentOverallStateMachine>();
-builder.Services.AddSingleton<AgentAuthStateMachine>();
-builder.Services.AddSingleton<AgentSyncStateMachine>();
-builder.Services.AddSingleton<AgentWorkStateMachine>();
+builder.Services.AddSingleton<OverallStateMachine>();
+builder.Services.AddSingleton<AuthStateMachine>();
+builder.Services.AddSingleton<SyncStateMachine>();
+builder.Services.AddSingleton<WorkStateMachine>();
+builder.Services.AddSingleton<StateMachineWrapper>();
 #endregion
 
 #region Infrastructure layer configurations

@@ -1,65 +1,59 @@
 using Agent.Application.Abstractions;
 
 namespace Agent.Application.States;
-
-using Microsoft.Extensions.Logging;
 using Stateless;
 
 public enum RunnerState
 {
     Idle,
     Working,
-    Error,
-    Paused
+    Error
 }
 
 public enum RunnerTrigger
 {
-    StartWork,
-    WorkDone,
-    WorkFailed,
-    Pause,
-    Resume
+    Start,
+    Success,
+    ErrorOccured
 }
 
 public class RunnerStateMachine
 {
     private readonly StateMachine<RunnerState, RunnerTrigger> _machine;
-    public RunnerState CurrentState => _machine.State;
-
     private readonly IWorkerRunner _workerRunner;
     private readonly CancellationToken _token;
+    private readonly StateMachineWrapper _wrapper;
 
-    public RunnerStateMachine(IWorkerRunner workerRunner, CancellationToken token)
+    public RunnerStateMachine(
+        StateMachineWrapper wrapper,
+        IWorkerRunner workerRunner,
+        CancellationToken token)
     {
       _token = token;
+      _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
       _workerRunner = workerRunner ?? throw new ArgumentNullException(nameof(workerRunner));
       _machine = new StateMachine<RunnerState, RunnerTrigger>(RunnerState.Idle);
+
       ConfigureStateMachine();
     }
 
     private void ConfigureStateMachine()
     {
-        _machine.Configure(RunnerState.Idle)
-            .Permit(RunnerTrigger.StartWork, RunnerState.Working)
-            .Permit(RunnerTrigger.Pause, RunnerState.Paused);
+      _machine.Configure(RunnerState.Idle)
+          .Permit(RunnerTrigger.Start, RunnerState.Working);
 
-        _machine.Configure(RunnerState.Working)
-            .OnEntryAsync(WorkAsync)
-            .Permit(RunnerTrigger.WorkDone, RunnerState.Idle)
-            .Permit(RunnerTrigger.WorkFailed, RunnerState.Error)
-            .Permit(RunnerTrigger.Pause, RunnerState.Paused);
+      _machine.Configure(RunnerState.Working)
+          .OnEntryAsync(WorkAsync)
+          .Permit(RunnerTrigger.Success, RunnerState.Idle)
+          .Permit(RunnerTrigger.ErrorOccured, RunnerState.Error);
 
         _machine.Configure(RunnerState.Error)
-            .Permit(RunnerTrigger.StartWork, RunnerState.Working)
+            .Permit(RunnerTrigger.Start, RunnerState.Working)
             .OnEntryAsync(async () =>
             {
               await Task.Delay(_workerRunner.Interval, _token);
-              await _machine.FireAsync(RunnerTrigger.StartWork);
+              await _machine.FireAsync(RunnerTrigger.Start);
             });
-
-        _machine.Configure(RunnerState.Paused)
-            .Permit(RunnerTrigger.Resume, RunnerState.Idle);
     }
 
     public async Task RunAsync()
@@ -67,7 +61,7 @@ public class RunnerStateMachine
         while (!_token.IsCancellationRequested)
         {
             if (_machine.State == RunnerState.Idle)
-                await _machine.FireAsync(RunnerTrigger.StartWork);
+                await _wrapper.FireAsync(_machine, RunnerTrigger.Start);
 
             await Task.Delay(_workerRunner.Interval, _token);
         }
@@ -79,11 +73,11 @@ public class RunnerStateMachine
     {
       await _workerRunner.RunAsync(_token);
 
-      await _machine.FireAsync(RunnerTrigger.WorkDone);
+      await _wrapper.FireAsync(_machine, RunnerTrigger.Success);
     }
     catch (Exception ex)
     {
-      await _machine.FireAsync(RunnerTrigger.WorkFailed);
+      await _wrapper.FireAsync(_machine, RunnerTrigger.ErrorOccured);
     }
   }
 }
