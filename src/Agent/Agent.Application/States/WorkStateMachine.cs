@@ -21,9 +21,8 @@ public enum WorkTrigger
 
 public class WorkStateMachine
 {
-  private readonly StateMachine<AgentWorkState, WorkTrigger> _machine;
-  private readonly StateMachineWrapper _wrapper;
-  public AgentWorkState CurrentState => _machine.State;
+  public StateMachine<AgentWorkState, WorkTrigger> Machine { get; }
+  public AgentWorkState CurrentState => Machine.State;
 
   private readonly List<RunnerStateMachine> _runnerMachines = [];
 
@@ -32,21 +31,22 @@ public class WorkStateMachine
       IEnumerable<IWorkerRunner> runners,
       AgentStateContext context)
   {
-    _machine = new StateMachine<AgentWorkState, WorkTrigger>(AgentWorkState.Idle);
-    _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
-    _machine.Configure(AgentWorkState.Idle)
+    Machine = new StateMachine<AgentWorkState, WorkTrigger>(AgentWorkState.Idle);
+    Machine.Configure(AgentWorkState.Idle)
         .Permit(WorkTrigger.Start, AgentWorkState.Processing);
-
-    _machine.Configure(AgentWorkState.Processing)
+    Machine.Configure(AgentWorkState.Processing)
         .Permit(WorkTrigger.Success, AgentWorkState.Finished)
         .Permit(WorkTrigger.ErrorOccurred, AgentWorkState.Error);
-
-    _machine.Configure(AgentWorkState.Processing)
+    Machine.Configure(AgentWorkState.Processing)
         .Permit(WorkTrigger.ErrorOccurred, AgentWorkState.Error);
 
     foreach (var runner in runners)
-      _runnerMachines.Add(new RunnerStateMachine(wrapper, runner,
-          context.CancellationTokenSource.Token));
+    {
+      var runnerMachine = new RunnerStateMachine(wrapper, runner, context.CancellationTokenSource.Token);
+
+      _runnerMachines.Add(runnerMachine);
+      wrapper.RegisterMachine(runnerMachine.Machine);
+    }
   }
 
   public async Task StartAsync()

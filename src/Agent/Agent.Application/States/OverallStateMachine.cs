@@ -22,7 +22,8 @@ public enum AgentOverallTrigger
 
 public class OverallStateMachine
 {
-  private readonly StateMachine<AgentOverallState, AgentOverallTrigger> _machine;
+  public StateMachine<AgentOverallState, AgentOverallTrigger> Machine { get; }
+
   private readonly ILogger<OverallStateMachine> _logger;
   private readonly StateMachineWrapper _wrapper;
 
@@ -43,36 +44,36 @@ public class OverallStateMachine
     _workMachine = workMachine ?? throw new ArgumentNullException(nameof(workMachine));
     _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
 
-    _machine = new StateMachine<AgentOverallState, AgentOverallTrigger>(AgentOverallState.Idle);
+    Machine = new StateMachine<AgentOverallState, AgentOverallTrigger>(AgentOverallState.Idle);
     ConfigureAsync();
   }
 
   private void ConfigureAsync()
   {
-    _machine.Configure(AgentOverallState.Idle)
+    Machine.Configure(AgentOverallState.Idle)
         .Permit(AgentOverallTrigger.Start, AgentOverallState.Authenticating);
 
-    _machine.Configure(AgentOverallState.Authenticating)
+    Machine.Configure(AgentOverallState.Authenticating)
         .OnEntryAsync(HandleAuthenticationStateChangeAsync)
         .Permit(AgentOverallTrigger.Synchronize, AgentOverallState.Synchronizing)
         .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error);
 
-    _machine.Configure(AgentOverallState.Synchronizing)
+    Machine.Configure(AgentOverallState.Synchronizing)
         .OnEntryAsync(HandleSynchronizingStateChangeAsync)
         .Permit(AgentOverallTrigger.Run, AgentOverallState.Running)
         .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error);
 
-    _machine.Configure(AgentOverallState.Running)
+    Machine.Configure(AgentOverallState.Running)
         .OnEntryAsync(HandleRunningStateChangeAsync)
         .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error);
 
-    _machine.Configure(AgentOverallState.Error)
+    Machine.Configure(AgentOverallState.Error)
         .OnEntryAsync(HandleErrorStateChangeAsync);
   }
 
   public async Task StartAsync()
   {
-    await _wrapper.FireAsync(_machine, AgentOverallTrigger.Start);
+    await _wrapper.FireAsync(Machine, AgentOverallTrigger.Start);
   }
 
   private async Task HandleSynchronizingStateChangeAsync()
@@ -81,11 +82,11 @@ public class OverallStateMachine
 
     if (_syncMachine.CurrentState is AgentSyncState.Error)
     {
-      await _machine.FireAsync(AgentOverallTrigger.ErrorOccurred);
+      await Machine.FireAsync(AgentOverallTrigger.ErrorOccurred);
     }
     else
     {
-      await _machine.FireAsync(AgentOverallTrigger.Run);
+      await Machine.FireAsync(AgentOverallTrigger.Run);
     }
   }
 
@@ -93,13 +94,13 @@ public class OverallStateMachine
   {
     await _authMachine.StartAsync();
 
-    if (_authMachine.CurrentState is AgentAuthenticationState.Processing)
+    if (_authMachine.CurrentState is AgentAuthenticationState.Finished)
     {
-      await _wrapper.FireAsync(_machine, AgentOverallTrigger.Synchronize);
+      await _wrapper.FireAsync(Machine, AgentOverallTrigger.Synchronize);
     }
     else
     {
-      await _wrapper.FireAsync(_machine, AgentOverallTrigger.ErrorOccurred);
+      await _wrapper.FireAsync(Machine, AgentOverallTrigger.ErrorOccurred);
     }
   }
 
@@ -109,7 +110,7 @@ public class OverallStateMachine
 
     if (_workMachine.CurrentState is AgentWorkState.Error)
     {
-      await _wrapper.FireAsync(_machine, AgentOverallTrigger.ErrorOccurred);
+      await _wrapper.FireAsync(Machine, AgentOverallTrigger.ErrorOccurred);
     }
   }
 

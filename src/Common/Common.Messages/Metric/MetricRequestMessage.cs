@@ -9,4 +9,7 @@ public class MetricRequestMessage : IMessage
     public double DiskUsage { get; set; }
     public double NetworkUsage { get; set; }
     public double Uptime { get; set; }
+
+    public override string ToString()
+        => $"Timestamp: {Timestamp}, CPU: {CpuUsage}%, Memory: {MemoryUsage}%, Disk: {DiskUsage}%, Network: {NetworkUsage} B/s, Uptime: {Uptime}s";
 }

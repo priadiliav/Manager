@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Common.Messages.Agent;
+using Common.Messages.Agent.State;
 using Common.Messages.Agent.Sync;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
@@ -60,6 +60,22 @@ public static class AgentEndpoints
         })
         .RequireAuthorization(policy => policy.RequireRole("Agent"))
         .WithName("SyncAgents");
+
+    group.MapPut("/state", async (AgentStateChangeRequestMessage agentStateChangeRequestMessage, IAgentService agentService, HttpContext context) =>
+        {
+          var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
+
+          Guid.TryParse(agentId, out var agentIdGuid);
+
+          if (agentIdGuid == Guid.Empty)
+            return Results.Unauthorized();
+
+          Console.WriteLine($"AgentId: {agentIdGuid}, Changed State: {agentStateChangeRequestMessage}");
+
+          return Results.Ok(new AgentStateChangeResponseMessage());
+        })
+        .RequireAuthorization(policy => policy.RequireRole("Agent"))
+        .WithName("UpdateAgentState");
 
     group.MapPut("/{agentId:guid}",
         async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>

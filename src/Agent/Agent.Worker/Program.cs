@@ -13,12 +13,40 @@ builder.Services.AddWindowsService();
 
 #region Finite state machine configurations
 builder.Services.AddSingleton<AgentStateContext>();
-builder.Services.AddSingleton<OverallStateMachine>();
-builder.Services.AddSingleton<AuthStateMachine>();
+builder.Services.AddSingleton<StateMachineWrapper>(sp =>
+{
+  var logger = sp.GetRequiredService<ILogger<StateMachineWrapper>>();
+  var client = sp.GetRequiredService<ICommunicationClient>();
+  return new StateMachineWrapper(logger, client);
+});
+builder.Services.AddSingleton<AuthStateMachine>(sp =>
+{
+  var wrapper = sp.GetRequiredService<StateMachineWrapper>();
+  var context = sp.GetRequiredService<AgentStateContext>();
+  var client = sp.GetRequiredService<ICommunicationClient>();
+  return new AuthStateMachine(wrapper,client, context);
+});
 builder.Services.AddSingleton<SyncStateMachine>();
 builder.Services.AddSingleton<WorkStateMachine>();
-builder.Services.AddSingleton<StateMachineWrapper>();
+builder.Services.AddSingleton<OverallStateMachine>(sp =>
+{
+  var wrapper = sp.GetRequiredService<StateMachineWrapper>();
+  var authMachine = sp.GetRequiredService<AuthStateMachine>();
+  var syncMachine = sp.GetRequiredService<SyncStateMachine>();
+  var workMachine = sp.GetRequiredService<WorkStateMachine>();
+  var logger = sp.GetRequiredService<ILogger<OverallStateMachine>>();
+
+  var overall = new OverallStateMachine(logger, wrapper, authMachine, syncMachine, workMachine);
+
+  wrapper.RegisterMachine(overall.Machine);
+  wrapper.RegisterMachine(authMachine.Machine);
+  wrapper.RegisterMachine(syncMachine.Machine);
+  wrapper.RegisterMachine(workMachine.Machine);
+
+  return overall;
+});
 #endregion
+
 
 #region Infrastructure layer configurations
 builder.Services.AddSingleton<HttpClient>(_ => new HttpClient

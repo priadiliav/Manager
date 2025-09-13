@@ -1,7 +1,7 @@
 using Agent.Application.Abstractions;
+using Stateless;
 
 namespace Agent.Application.States;
-using Stateless;
 
 public enum RunnerState
 {
@@ -19,7 +19,8 @@ public enum RunnerTrigger
 
 public class RunnerStateMachine
 {
-    private readonly StateMachine<RunnerState, RunnerTrigger> _machine;
+    public StateMachine<RunnerState, RunnerTrigger> Machine { get; }
+
     private readonly IWorkerRunner _workerRunner;
     private readonly CancellationToken _token;
     private readonly StateMachineWrapper _wrapper;
@@ -32,27 +33,28 @@ public class RunnerStateMachine
       _token = token;
       _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
       _workerRunner = workerRunner ?? throw new ArgumentNullException(nameof(workerRunner));
-      _machine = new StateMachine<RunnerState, RunnerTrigger>(RunnerState.Idle);
+
+      Machine = new StateMachine<RunnerState, RunnerTrigger>(RunnerState.Idle);
 
       ConfigureStateMachine();
     }
 
     private void ConfigureStateMachine()
     {
-      _machine.Configure(RunnerState.Idle)
+      Machine.Configure(RunnerState.Idle)
           .Permit(RunnerTrigger.Start, RunnerState.Working);
 
-      _machine.Configure(RunnerState.Working)
+      Machine.Configure(RunnerState.Working)
           .OnEntryAsync(WorkAsync)
           .Permit(RunnerTrigger.Success, RunnerState.Idle)
           .Permit(RunnerTrigger.ErrorOccured, RunnerState.Error);
 
-        _machine.Configure(RunnerState.Error)
+        Machine.Configure(RunnerState.Error)
             .Permit(RunnerTrigger.Start, RunnerState.Working)
             .OnEntryAsync(async () =>
             {
               await Task.Delay(_workerRunner.Interval, _token);
-              await _machine.FireAsync(RunnerTrigger.Start);
+              await Machine.FireAsync(RunnerTrigger.Start);
             });
     }
 
@@ -60,8 +62,8 @@ public class RunnerStateMachine
     {
         while (!_token.IsCancellationRequested)
         {
-            if (_machine.State == RunnerState.Idle)
-                await _wrapper.FireAsync(_machine, RunnerTrigger.Start);
+            if (Machine.State == RunnerState.Idle)
+                await _wrapper.FireAsync(Machine, RunnerTrigger.Start);
 
             await Task.Delay(_workerRunner.Interval, _token);
         }
@@ -73,11 +75,11 @@ public class RunnerStateMachine
     {
       await _workerRunner.RunAsync(_token);
 
-      await _wrapper.FireAsync(_machine, RunnerTrigger.Success);
+      await _wrapper.FireAsync(Machine, RunnerTrigger.Success);
     }
     catch (Exception ex)
     {
-      await _wrapper.FireAsync(_machine, RunnerTrigger.ErrorOccured);
+      await _wrapper.FireAsync(Machine, RunnerTrigger.ErrorOccured);
     }
   }
 }

@@ -22,14 +22,14 @@ public class MetricsPublisherRunner(
       CpuUsage = metrics.GetValueOrDefault("cpu_usage", 0), // value in percentage
       MemoryUsage = metrics.GetValueOrDefault("memory_usage", 0), // value in percentage
       DiskUsage = metrics.GetValueOrDefault("disk_usage", 0), // value in percentage
-      NetworkUsage = metrics.GetValueOrDefault("network_usage", 0),
-      Uptime = metrics.GetValueOrDefault("uptime", 0),
-      Timestamp = DateTimeOffset.UtcNow,
+      NetworkUsage = metrics.GetValueOrDefault("network_usage", 0), // value in bytes per second
+      Uptime = metrics.GetValueOrDefault("uptime", 0), // value in seconds
+      Timestamp = DateTimeOffset.UtcNow, // current timestamp
     };
 
     await publisherClient.PublishAsync<MetricResponseMessage, MetricRequestMessage>(
         Url, message, cancellationToken);
 
-    logger.LogInformation("Published metrics: {Message}", message);
+    logger.LogInformation("Published metrics: {Message}", message.ToString());
   }
 }

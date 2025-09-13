@@ -22,12 +22,13 @@ public enum AuthenticationTrigger
 
 public class AuthStateMachine
 {
-    private readonly StateMachine<AgentAuthenticationState, AuthenticationTrigger> _machine;
+    public StateMachine<AgentAuthenticationState, AuthenticationTrigger> Machine { get; }
+
     private readonly ICommunicationClient _communicationClient;
     private readonly StateMachineWrapper _wrapper;
     private readonly AgentStateContext _context;
 
-    public AgentAuthenticationState CurrentState => _machine.State;
+    public AgentAuthenticationState CurrentState => Machine.State;
 
     public AuthStateMachine(
         StateMachineWrapper wrapper,
@@ -38,32 +39,32 @@ public class AuthStateMachine
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
 
-        _machine = new StateMachine<AgentAuthenticationState, AuthenticationTrigger>(AgentAuthenticationState.Idle);
+        Machine = new StateMachine<AgentAuthenticationState, AuthenticationTrigger>(AgentAuthenticationState.Idle);
 
         ConfigureStateMachine();
     }
 
     private void ConfigureStateMachine()
     {
-        _machine.Configure(AgentAuthenticationState.Idle)
+        Machine.Configure(AgentAuthenticationState.Idle)
             .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Processing)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
 
-        _machine.Configure(AgentAuthenticationState.Processing)
+        Machine.Configure(AgentAuthenticationState.Processing)
             .OnEntryAsync(HandleProcessingAsync)
             .Permit(AuthenticationTrigger.Success, AgentAuthenticationState.Finished)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
 
-        _machine.Configure(AgentAuthenticationState.Finished)
+        Machine.Configure(AgentAuthenticationState.Finished)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
 
-        _machine.Configure(AgentAuthenticationState.Error)
+        Machine.Configure(AgentAuthenticationState.Error)
             .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Processing);
     }
 
     public async Task StartAsync()
     {
-        await _wrapper.FireAsync(_machine, AuthenticationTrigger.Start);
+        await _wrapper.FireAsync(Machine, AuthenticationTrigger.Start);
     }
 
     private async Task HandleProcessingAsync()
@@ -85,11 +86,11 @@ public class AuthStateMachine
 
             _context.AuthenticationToken = authResponse.Token;
 
-            await _wrapper.FireAsync(_machine, AuthenticationTrigger.Success);
+            await _wrapper.FireAsync(Machine, AuthenticationTrigger.Success);
         }
         catch (Exception)
         {
-            await _wrapper.FireAsync(_machine, AuthenticationTrigger.ErrorOccurred);
+            await _wrapper.FireAsync(Machine, AuthenticationTrigger.ErrorOccurred);
         }
     }
 }
