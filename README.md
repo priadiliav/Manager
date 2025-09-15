@@ -5,8 +5,9 @@
 
 ### Server UI
 
-<img width="2559" height="1371" alt="image" src="https://github.com/user-attachments/assets/6b3e3c9f-2448-494b-a335-96cf3fde8ffb" />
+<img width="2556" height="1307" alt="image" src="https://github.com/user-attachments/assets/252a6c8f-cbf8-4ea7-9318-51e884cff8f7" />
 
+<img width="2559" height="1302" alt="image" src="https://github.com/user-attachments/assets/ec9e0994-7d2c-4433-8b9f-d957ac549062" />
 
 
 
