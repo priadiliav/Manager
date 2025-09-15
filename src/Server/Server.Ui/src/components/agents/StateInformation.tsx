@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { CustomTable } from "../table/CustomTable";
 import { CollapsibleSection } from "../wrappers/CollapsibleSection";
 import { useNavigate } from "react-router-dom";
-import * as signalR from "@microsoft/signalr";
 import { SignalRClient } from "../../api/signalRClient";
-
+import { AgentStateDto } from "../../types/state";
 
 interface Props {
     agentId?: string;
+    signalRClient?: SignalRClient
 }
 
 const columns = [
@@ -18,51 +18,24 @@ const columns = [
     { id: 'timestamp', label: 'Timestamp', minWidth: 170 },
 ];
 
-export const StateInformation = ({ agentId }: Props) => {
+export const StateInformation = ({ agentId, signalRClient }: Props) => {
     const navigate = useNavigate();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [rows, setRows] = useState<any[]>([]);
+    const [rows, setRows] = useState<AgentStateDto[]>([]);
 
     useEffect(() => {
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5267/agentHub")
-            .withAutomaticReconnect()
-            .build();
+        if (!signalRClient) return;
 
-        const startConnection = async () => {
-            try {
-                await connection.start();
-                console.log("SignalR connected");
+        signalRClient.on("ReceiveAgentState", handleStateChange);
 
-                if (agentId) {
-                    await connection.invoke("SubscribeToAgent", agentId);
-                    console.log("Subscribed to agent", agentId);
-                }
-            } catch (err) {
-                console.error("SignalR connection error: ", err);
-                setTimeout(startConnection, 2000);
-            }
-        };
-
-        startConnection();
-
-        connection.on("ReceiveAgentStateChange", (message: any) => {
-            setRows(prev => [message, ...prev]);
-        });
-
-        return () => {
-            if (agentId) {
-                connection.invoke("UnsubscribeFromAgent", agentId).catch(() => { });
-            }
-            connection.stop();
-        };
-    }, [agentId]);
-
+        return () => signalRClient.off("ReceiveAgentState", handleStateChange);
+    }, [signalRClient]);
 
 
     //#region Handlers
     const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
+    const handleStateChange = (message: AgentStateDto) => setRows(prev => [message, ...prev]);
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);

@@ -7,8 +7,15 @@ import { useEffect, useState } from "react";
 import { fetchMetrics } from "../../api/metric";
 import FetchContentWrapper from "../wrappers/FetchContentWrapper";
 import { CollapsibleSection } from "../wrappers/CollapsibleSection";
+import { SignalRClient } from "../../api/signalRClient";
+import { AgentMetricDto } from "../../types/metric";
 
-export const AgentCharts = ({ agentId }: { agentId: string }) => {
+interface Props {
+    agentId: string;
+    signalRClient?: SignalRClient
+}
+
+export const AgentCharts = ({ agentId, signalRClient }: Props) => {
     const [cpuUsageLineChartData, setCpuUsageLineChartData] = useState<number[]>([]);
     const [memoryUsageLineChartData, setMemoryUsageLineChartData] = useState<number[]>([]);
     const [diskUsageLineChartData, setDiskUsageLineChartData] = useState<number[]>([]);
@@ -28,8 +35,17 @@ export const AgentCharts = ({ agentId }: { agentId: string }) => {
 
     useEffect(() => {
         fetchMetricsData(from, to);
+
+        if (isRealTimeMonitoring) {
+            if (!signalRClient) return;
+            signalRClient.on("ReceiveAgentMetric", handleMetric);
+
+            return () => signalRClient.off("ReceiveAgentMetric", handleMetric);
+        }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [from, to, limit]);
+    }, [from, to, limit, isRealTimeMonitoring, agentId, signalRClient]);
+
 
     //#region API calls
     const fetchMetricsData = async (from: Date, to: Date) => {
@@ -39,23 +55,27 @@ export const AgentCharts = ({ agentId }: { agentId: string }) => {
 
             setLoading(true);
             const data = await fetchMetrics(agentId, fromIso, toIso, limit);
-
-            const cpuData = data.map(d => d.cpuUsage);
-            const memoryData = data.map(d => d.memoryUsage);
-            const diskData = data.map(d => d.diskUsage);
-            const networkData = data.map(d => d.networkUsage);
-
-            setCpuUsageLineChartData(cpuData);
-            setMemoryUsageLineChartData(memoryData);
-            setDiskUsageLineChartData(diskData);
-            setNetworkUsageLineChartData(networkData);
-            setLabels(data.map(d => new Date(d.timestamp).toLocaleString()));
+            handleMetrics(data);
         } catch (error) {
             console.error("Error fetching metrics:", error);
             setError("Failed to load metrics data");
         } finally {
             setLoading(false);
         }
+    }
+    //#endregion
+
+    //#region Handlers
+    const handleMetric = (message: AgentMetricDto) => {
+        setCpuUsageLineChartData(prev => [...prev.slice(-limit + 1), message.cpuUsage]);
+        setMemoryUsageLineChartData(prev => [...prev.slice(-limit + 1), message.memoryUsage]);
+        setDiskUsageLineChartData(prev => [...prev.slice(-limit + 1), message.diskUsage]);
+        setNetworkUsageLineChartData(prev => [...prev.slice(-limit + 1), message.networkUsage]);
+        setLabels(prev => [...prev.slice(-limit + 1), new Date(message.timestamp).toLocaleString()]);
+    }
+
+    const handleMetrics = (metrics: AgentMetricDto[]) => {
+        metrics.forEach(handleMetric);
     }
     //#endregion
 

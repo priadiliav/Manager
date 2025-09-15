@@ -44,8 +44,13 @@ public class WorkStateMachine
         .Permit(WorkTrigger.ErrorOccurred, AgentWorkState.Error);
 
     foreach (var runner in runners)
-      _runnerMachines.Add(new RunnerStateMachine(
-          wrapper, runner, context.CancellationTokenSource.Token));
+    {
+      var runnerStateMachine = new RunnerStateMachine(
+          wrapper, runner, context.CancellationTokenSource.Token);
+      _runnerMachines.Add(runnerStateMachine);
+
+      wrapper.RegisterMachine(runnerStateMachine.Machine);
+    }
   }
 
   public async Task StartAsync() =>

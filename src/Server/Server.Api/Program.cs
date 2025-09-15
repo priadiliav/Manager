@@ -113,8 +113,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
 // SignalR notifier
-builder.Services.AddScoped<IAgentStateNotifier, AgentStateNotifier>();
-builder.Services.AddScoped<IAgentMetricNotifier, AgentMetricNotifier>();
+builder.Services.AddScoped<IAgentStateNotifier, AgentNotifier>();
+builder.Services.AddScoped<IAgentMetricNotifier, AgentNotifier>();
 
 // Time-series repositories
 builder.Services.AddScoped<IAgentMetricRepository, AgentMetricRepository>();
@@ -158,6 +158,7 @@ using (var scope = app.Services.CreateScope())
 }
 #endregion
 
+#region Development configuration
 if (app.Environment.IsDevelopment())
 {
 	app.MapOpenApi();
@@ -168,6 +169,7 @@ if (app.Environment.IsDevelopment())
 		c.RoutePrefix = string.Empty;
 	});
 }
+#endregion
 
 app.UseCors();
 

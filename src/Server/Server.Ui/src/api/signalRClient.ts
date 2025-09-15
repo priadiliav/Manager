@@ -34,7 +34,7 @@ export class SignalRClient {
                 console.log("SignalR connected to", this.connection.baseUrl);
             } catch (err) {
                 console.error("SignalR start error:", err);
-                setTimeout(() => this.start(), 2000); 
+                setTimeout(() => this.start(), 2000);
             }
         }
     }
@@ -73,13 +73,5 @@ export class SignalRClient {
             if (!callbacks) return;
             this.eventMap.set(event, callbacks.filter(cb => cb !== callback));
         }
-    }
-
-    public async subscribeToGroup(groupName: string): Promise<void> {
-        await this.invoke("SubscribeToAgent", groupName);
-    }
-
-    public async unsubscribeFromGroup(groupName: string): Promise<void> {
-        await this.invoke("UnsubscribeFromAgent", groupName);
     }
 }

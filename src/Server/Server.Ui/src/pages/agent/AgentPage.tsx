@@ -11,6 +11,7 @@ import CustomDialog from "../../components/dialogs/CustomDialog";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { SynchronizationInformation } from "../../components/agents/SynchronizationInformation";
 import { StateInformation } from "../../components/agents/StateInformation";
+import { SignalRClient } from "../../api/signalRClient";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -27,7 +28,9 @@ export const AgentPage = () => {
 
     const [secretWindowOpen, setSecretWindowOpen] = useState(false);
     const [createdAgentResponse, setCreatedAgentResponse] = useState<AgentCreateResponse | null>(null);
+    const [signalRClient] = useState(() => new SignalRClient("agentHub"));
 
+    //#region Effects
     useEffect(() => {
         if (isEdit && id) {
             const loadAgent = async () => {
@@ -46,6 +49,31 @@ export const AgentPage = () => {
         }
     }, [id, isEdit]);
 
+    useEffect(() => {
+        if (!isEdit || !id) return;
+
+        const startConnection = async () => {
+            try {
+                await signalRClient.start();
+                console.log("SignalR connected");
+
+                await signalRClient.invoke("SubscribeToAgent", id);
+                console.log("Subscribed to agent", id);
+            } catch (err) {
+                console.error("SignalR start/invoke error:", err);
+            }
+        };
+
+        startConnection();
+
+        return () => {
+            signalRClient.invoke("UnsubscribeFromAgent", id).catch(() => { });
+            signalRClient.stop();
+        };
+    }, [id, isEdit, signalRClient]);
+    //#endregion
+
+    //#region Handlers
     const handleSubmit = async () => {
         try {
             if (isEdit && id) {
@@ -72,6 +100,7 @@ export const AgentPage = () => {
             navigator.clipboard.writeText(createdAgentResponse.secret || "");
         }
     };
+    //#endregion
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
@@ -132,12 +161,14 @@ export const AgentPage = () => {
                         {isEdit && (
                             <AgentCharts
                                 agentId={id || ""}
+                                signalRClient={signalRClient}
                             />)}
                     </Grid>
                     <Grid size={{ xs: 12, md: 12 }}>
                         {isEdit && (
                             <StateInformation
                                 agentId={id || ""}
+                                signalRClient={signalRClient}
                             />
                         )}
                     </Grid>

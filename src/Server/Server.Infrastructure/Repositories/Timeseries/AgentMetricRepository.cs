@@ -42,7 +42,7 @@ public class AgentMetricRepository(ClickHouseConnection connection) : IAgentMetr
       SELECT AgentId, Timestamp, CpuUsage, MemoryUsage, DiskUsage, NetworkUsage
       FROM metrics
       WHERE AgentId = @AgentId AND Timestamp >= @From AND Timestamp <= @To
-      ORDER BY Timestamp DESC
+      ORDER BY Timestamp ASC
       LIMIT @Limit
     """;
 
@@ -69,5 +69,4 @@ public class AgentMetricRepository(ClickHouseConnection connection) : IAgentMetr
 
     return metrics;
   }
-
 }
