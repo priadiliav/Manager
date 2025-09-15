@@ -11,9 +11,8 @@ public class AgentDetailedDto
   public long ConfigurationId { get; init; }
   public bool IsSynchronized { get; init; }
 
-  public AgentState State { get; init; }
-  public DateTimeOffset? LastSynchronizedAt { get; init; }
-  public DateTimeOffset? LastUnsynchronizedAt { get; init; }
+  public AgentStatus Status { get; init; }
+  public DateTimeOffset? LastStatusChangeAt { get; init; }
   public ConfigurationDto Configuration { get; init; } = null!;
   public HardwareDto Hardware { get; init; } = null!;
 }

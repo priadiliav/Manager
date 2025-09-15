@@ -11,28 +11,6 @@ namespace Server.Application.Tests.Mappers;
 public class ToDomainMapperTests
 {
     [Test]
-    public void ToDomain_AgentDto_ShouldMapCorrectly()
-    {
-        // Arrange
-        var agentId = Guid.NewGuid();
-        var agentDto = new AgentDto
-        {
-            Id = agentId,
-            Name = "TestAgent",
-            ConfigurationId = 123
-        };
-
-        // Act
-        var result = agentDto.ToDomain();
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Id, Is.EqualTo(agentId));
-        Assert.That(result.Name, Is.EqualTo("TestAgent"));
-        Assert.That(result.ConfigurationId, Is.EqualTo(123));
-    }
-
-    [Test]
     public void ToDomain_AgentCreateRequest_ShouldMapCorrectly()
     {
         // Arrange

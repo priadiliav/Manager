@@ -2,6 +2,12 @@ using Server.Domain.Abstractions;
 
 namespace Server.Domain.Models;
 
+public enum AgentStatus
+{
+  Ok,
+  NotSynchronized
+}
+
 public class Agent : IEntity<Guid>
 {
   public Guid Id { get; init; }
@@ -11,9 +17,10 @@ public class Agent : IEntity<Guid>
   public byte[] SecretSalt { get; init; } = default!;
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
-  public bool IsSynchronized { get; set; }
-  public DateTimeOffset? LastSynchronizedAt { get; set; }
-  public DateTimeOffset? LastUnsynchronizedAt { get; set; }
+
+  public AgentStatus Status { get; set; } = AgentStatus.Ok;
+  public DateTimeOffset? LastStatusChangeAt { get; set; }
+
 	public virtual Configuration Configuration { get; init; } = null!;
   public virtual Hardware Hardware { get; init; } = null!;
 
@@ -31,22 +38,16 @@ public class Agent : IEntity<Guid>
 		ConfigurationId = agent.ConfigurationId;
 	}
 
-
   /// <summary>
-  /// Mark the agent as synchronized and updates the modification timestamp.
+  /// Update the agent status and set the LastStatusChangeAt if the status has changed.
   /// </summary>
-  public void MarkAsSynchronized()
+  /// <param name="newStatus"></param>
+  public void UpdateStatus(AgentStatus newStatus)
   {
-    IsSynchronized = true;
-    LastSynchronizedAt = DateTimeOffset.UtcNow;
-  }
+    if (Status == newStatus)
+      return;
 
-  /// <summary>
-  /// Mark the agent as not synchronized.
-  /// </summary>
-  public void MarkAsUnsynchronized()
-  {
-    IsSynchronized = false;
-    LastUnsynchronizedAt = DateTimeOffset.UtcNow;
+    Status = newStatus;
+    LastStatusChangeAt = DateTimeOffset.UtcNow;
   }
 }

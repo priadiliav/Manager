@@ -104,7 +104,7 @@ public class AgentService (
     // Another static agent information can be handled here in the future
     var hardwareDomain = message.Hardware.ToDomain(agentId);
     existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
-    existingAgentDomain.MarkAsSynchronized();
+    existingAgentDomain.UpdateStatus(AgentStatus.Ok);
 
     await unitOfWork.SaveChangesAsync();
 

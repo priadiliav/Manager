@@ -82,6 +82,6 @@ public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationServi
   private static void MarkAgentsAsNotSynchronized(IEnumerable<Agent> agents)
   {
     foreach (var agent in agents)
-      agent.MarkAsUnsynchronized();
+      agent.UpdateStatus(AgentStatus.NotSynchronized);
   }
 }

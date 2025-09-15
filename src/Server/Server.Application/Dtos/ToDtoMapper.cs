@@ -22,7 +22,8 @@ public static class ToDtoMapper
 		{
 			Id = agent.Id,
 			Name = agent.Name,
-      IsSynchronized = agent.IsSynchronized,
+      Status = agent.Status,
+      LastStatusChangeAt = agent.LastStatusChangeAt,
 			ConfigurationId = agent.ConfigurationId
 		};
 	}
@@ -33,9 +34,8 @@ public static class ToDtoMapper
         Id = source.Id,
         Name = source.Name,
         ConfigurationId = source.ConfigurationId,
-        IsSynchronized = source.IsSynchronized,
-        LastSynchronizedAt = source.LastSynchronizedAt,
-        LastUnsynchronizedAt = source.LastUnsynchronizedAt,
+        Status = source.Status,
+        LastStatusChangeAt = source.LastStatusChangeAt,
         Configuration = source.Configuration.ToDto(),
         Hardware = source.Hardware.ToDto()
     };
@@ -45,9 +45,6 @@ public static class ToDtoMapper
     return new AgentCreateResponse
     {
       Id = agent.Id,
-      Name = agent.Name,
-      IsSynchronized = agent.IsSynchronized,
-      ConfigurationId = agent.ConfigurationId,
       Secret = secret
     };
   }
@@ -93,7 +90,6 @@ public static class ToDtoMapper
   #endregion
 
   #region Agent State
-
   public static AgentStateDto ToDto(this Domain.Models.AgentState agentState)
     => new()
     {
@@ -112,7 +108,7 @@ public static class ToDtoMapper
   #endregion
 
   #region Hardware
-  public static HardwareDto ToDto(this Domain.Models.Hardware hardware)
+  private static HardwareDto ToDto(this Domain.Models.Hardware hardware)
     => new()
     {
         CpuCores = hardware.CpuCores,

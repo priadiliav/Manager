@@ -84,6 +84,6 @@ public class PolicyService (IUnitOfWork unitOfWork) : IPolicyService
   private void MarkAgentsAsNotSynchronizedAsync(IEnumerable<Agent> agentsInConfigurations) //todo: move to utility class
   {
     foreach (var agent in agentsInConfigurations)
-      agent.MarkAsUnsynchronized();
+      agent.UpdateStatus(AgentStatus.NotSynchronized);
   }
 }

@@ -84,6 +84,6 @@ public class ProcessService (IUnitOfWork unitOfWork) : IProcessService
   private void MarkAgentsAsNotSynchronizedAsync(IEnumerable<Agent> agentsInConfigurations)
   {
     foreach (var agent in agentsInConfigurations)
-      agent.MarkAsUnsynchronized();
+      agent.UpdateStatus(AgentStatus.NotSynchronized);
   }
 }

@@ -13,15 +13,6 @@ namespace Server.Application.Dtos;
 public static class ToDomainMapper
 {
 	#region Agent
-	public static Domain.Models.Agent ToDomain(this AgentDto source)
-		=> new()
-		{
-			Id = source.Id,
-			Name = source.Name,
-      IsSynchronized = source.IsSynchronized,
-			ConfigurationId = source.ConfigurationId
-		};
-
 	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source,
       Domain.Models.Hardware hardware,
       byte[] secretHash,

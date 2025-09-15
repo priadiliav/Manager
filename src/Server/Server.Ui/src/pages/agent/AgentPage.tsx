@@ -9,7 +9,7 @@ import { AgentCharts } from "../../components/agents/AgentCharts";
 import { HardwareInformation } from "../../components/agents/HardwareInformation";
 import CustomDialog from "../../components/dialogs/CustomDialog";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { SynchronizationInformation } from "../../components/agents/SynchronizationInformation";
+import { AgentStatusInfo } from "../../components/agents/AgentStatusInfo";
 import { StateInformation } from "../../components/agents/StateInformation";
 import { SignalRClient } from "../../api/signalRClient";
 
@@ -148,10 +148,9 @@ export const AgentPage = () => {
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                         {isEdit && (
-                            <SynchronizationInformation
-                                lastSyncAt={agent?.lastSynchronizedAt || null}
-                                lastUnsyncAt={agent?.lastUnsynchronizedAt || null}
-                                isSynchronized={agent?.isSynchronized || false}
+                            <AgentStatusInfo
+                                status={agent?.status || 0}
+                                lastStatusChangeAt={agent?.lastStatusChangeAt || null}
                             />
                         )}
                     </Grid>
