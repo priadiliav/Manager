@@ -1,6 +1,6 @@
 namespace Server.Domain.Models;
 
-public class Metric
+public class AgentMetric
 {
   public Guid AgentId { get; set; }
   public DateTimeOffset Timestamp { get; set; }

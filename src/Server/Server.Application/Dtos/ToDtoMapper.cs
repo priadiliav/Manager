@@ -1,9 +1,12 @@
 using Common.Messages.Agent.Login;
+using Common.Messages.Agent.State;
 using Common.Messages.Configuration;
+using Common.Messages.Metric;
 using Server.Application.Dtos.Agent;
+using Server.Application.Dtos.Agent.Metric;
+using Server.Application.Dtos.Agent.State;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Hardware;
-using Server.Application.Dtos.Metric;
 using Server.Application.Dtos.Policy;
 using Server.Application.Dtos.Process;
 using Server.Application.Dtos.User;
@@ -67,6 +70,46 @@ public static class ToDtoMapper
     };
   }
 	#endregion
+
+  #region Agent Metric
+  public static AgentMetricDto ToDto(this Domain.Models.AgentMetric agentMetric)
+  {
+    return new AgentMetricDto
+    {
+        AgentId = agentMetric.AgentId,
+        CpuUsage = agentMetric.CpuUsage,
+        MemoryUsage = agentMetric.MemoryUsage,
+        DiskUsage= agentMetric.DiskUsage,
+        NetworkUsage = agentMetric.NetworkUsage,
+        Timestamp = agentMetric.Timestamp
+    };
+  }
+
+  public static AgentMetricResponseMessage ToMessage(this Domain.Models.AgentMetric agentMetric)
+    => new()
+    {
+        // to be expanded
+    };
+  #endregion
+
+  #region Agent State
+
+  public static AgentStateDto ToDto(this Domain.Models.AgentState agentState)
+    => new()
+    {
+        Timestamp = agentState.Timestamp,
+        FromState = agentState.FromState,
+        ToState = agentState.ToState,
+        Machine = agentState.Machine,
+        Trigger = agentState.Trigger
+    };
+
+  public static AgentStateChangeResponseMessage ToMessage(this Domain.Models.AgentState agentState)
+    => new()
+    {
+        // to be expanded
+    };
+  #endregion
 
   #region Hardware
   public static HardwareDto ToDto(this Domain.Models.Hardware hardware)
@@ -174,21 +217,6 @@ public static class ToDtoMapper
       Username = user.Username,
       Role = user.Role,
       Token = token
-    };
-  }
-  #endregion
-
-  #region Metric
-  public static MetricDto ToDto(this Domain.Models.Metric metric)
-  {
-    return new MetricDto
-    {
-      AgentId = metric.AgentId,
-      CpuUsage = metric.CpuUsage,
-      MemoryUsage = metric.MemoryUsage,
-      DiskUsage= metric.DiskUsage,
-      NetworkUsage = metric.NetworkUsage,
-      Timestamp = metric.Timestamp
     };
   }
   #endregion

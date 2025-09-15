@@ -8,7 +8,8 @@ public enum AgentWorkState
 {
   Idle,
   Processing,
-  Finished,
+  Finishing,
+  Stopping,
   Error
 }
 
@@ -16,6 +17,7 @@ public enum WorkTrigger
 {
   Start,
   Success,
+  Stop,
   ErrorOccurred
 }
 
@@ -32,26 +34,20 @@ public class WorkStateMachine
       AgentStateContext context)
   {
     Machine = new StateMachine<AgentWorkState, WorkTrigger>(AgentWorkState.Idle);
+
     Machine.Configure(AgentWorkState.Idle)
         .Permit(WorkTrigger.Start, AgentWorkState.Processing);
+
     Machine.Configure(AgentWorkState.Processing)
-        .Permit(WorkTrigger.Success, AgentWorkState.Finished)
-        .Permit(WorkTrigger.ErrorOccurred, AgentWorkState.Error);
-    Machine.Configure(AgentWorkState.Processing)
+        .Permit(WorkTrigger.Success, AgentWorkState.Finishing)
+        .Permit(WorkTrigger.Stop, AgentWorkState.Stopping)
         .Permit(WorkTrigger.ErrorOccurred, AgentWorkState.Error);
 
     foreach (var runner in runners)
-    {
-      var runnerMachine = new RunnerStateMachine(wrapper, runner, context.CancellationTokenSource.Token);
-
-      _runnerMachines.Add(runnerMachine);
-      wrapper.RegisterMachine(runnerMachine.Machine);
-    }
+      _runnerMachines.Add(new RunnerStateMachine(
+          wrapper, runner, context.CancellationTokenSource.Token));
   }
 
-  public async Task StartAsync()
-  {
-    var tasks = _runnerMachines.Select(rm => rm.RunAsync()).ToList();
-    await Task.WhenAll(tasks);
-  }
+  public async Task StartAsync() =>
+      await Task.WhenAll(_runnerMachines.Select(rm => rm.RunAsync()));
 }

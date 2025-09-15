@@ -126,18 +126,23 @@ export const AgentPage = () => {
                             />
                         )}
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Grid size={{ xs: 12, md: 12 }}>
                         {isEdit && (
-                            <StateInformation />
+                            <AgentCharts
+                                agentId={id || ""}
+                            />)}
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 12 }}>
+                        {isEdit && (
+                            <StateInformation
+                                agentId={id || ""}
+                            />
                         )}
                     </Grid>
                 </Grid>
-                <Grid size={{ xs: 12, md: 8 }}>
-                    {isEdit && (
-                        <AgentCharts
-                            agentId={id || ""}
-                        />)}
-                </Grid>
+
             </Grid>
 
             <CustomDialog

@@ -101,7 +101,7 @@ public class AgentService (
     if (existingAgentDomain is null)
       return null;
 
-    // Software updates and another static agent information can be handled here in the future
+    // Another static agent information can be handled here in the future
     var hardwareDomain = message.Hardware.ToDomain(agentId);
     existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
     existingAgentDomain.MarkAsSynchronized();

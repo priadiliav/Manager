@@ -1,3 +1,6 @@
+--todo: change to agent_metric
+
+-- Table for storing agent metrics
 CREATE TABLE metrics
 (
   AgentId UUID,
@@ -9,3 +12,19 @@ CREATE TABLE metrics
 ) ENGINE = MergeTree
 ORDER BY (AgentId, Timestamp);
 
+-- Table for storing agent state transitions
+CREATE TABLE agent_state
+(
+  AgentId UUID,
+  Timestamp DateTime,
+  Machine String,
+  FromState String,
+  ToState String,
+  Trigger String
+) ENGINE = MergeTree
+ORDER BY (AgentId, Timestamp);
+
+
+-- Cleanup old data older than 30 days
+DELETE FROM agent_state
+WHERE Timestamp < '2025-09-15 14:00:01'

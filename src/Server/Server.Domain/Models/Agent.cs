@@ -12,10 +12,8 @@ public class Agent : IEntity<Guid>
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
   public bool IsSynchronized { get; set; }
-
   public DateTimeOffset? LastSynchronizedAt { get; set; }
   public DateTimeOffset? LastUnsynchronizedAt { get; set; }
-
 	public virtual Configuration Configuration { get; init; } = null!;
   public virtual Hardware Hardware { get; init; } = null!;
 

@@ -1,6 +1,6 @@
-namespace Server.Application.Dtos.Metric;
+namespace Server.Application.Dtos.Agent.Metric;
 
-public class MetricDto
+public class AgentMetricDto
 {
   public Guid AgentId { get; init; }
   public DateTimeOffset Timestamp { get; init; }

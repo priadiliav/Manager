@@ -13,11 +13,17 @@ using Server.Application.Abstractions;
 using Server.Application.Services;
 using Server.Infrastructure.Communication;
 using Server.Infrastructure.Configs;
+using Server.Infrastructure.Hubs;
+using Server.Infrastructure.Notifiers;
 using Server.Infrastructure.Repositories.Relational;
 using Server.Infrastructure.Repositories.TimeSeries;
 using Server.Infrastructure.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
+
+#region SignalR configuration
+builder.Services.AddSignalR();
+#endregion
 
 #region OpenAPI/Swagger configuration
 builder.Services.AddOpenApi();
@@ -84,11 +90,15 @@ builder.Services.AddAuthorization();
 #region CORS configuration
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowAllOrigins",
-    corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin()
-      .AllowAnyMethod()
-      .AllowAnyHeader());
+  options.AddDefaultPolicy(policy =>
+  {
+    policy.WithOrigins("http://localhost:3000")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+  });
 });
+
 #endregion
 
 #region Infrastructure configuration
@@ -102,19 +112,24 @@ builder.Services.AddScoped<IHardwareRepository, HardwareRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
+// SignalR notifier
+builder.Services.AddScoped<IAgentStateNotifier, AgentStateNotifier>();
+builder.Services.AddScoped<IAgentMetricNotifier, AgentMetricNotifier>();
+
 // Time-series repositories
-builder.Services.AddScoped<IMetricRepository, MetricRepository>();
+builder.Services.AddScoped<IAgentMetricRepository, AgentMetricRepository>();
+builder.Services.AddScoped<IAgentStateRepository, AgentStateRepository>();
 
 // Long polling services
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ProcessesMessage>, InMemoryLongPollingDispatcher<Guid, ProcessesMessage>>();
 
-// PostgreSQL database configuration
+// Postgres SQL database configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresSqlConnection")));
 
-//Clickhose client configuration
+//Clickhouse client configuration
 builder.Services.AddSingleton<ClickHouseConnection>(sp =>
 {
   var connectionString = builder.Configuration.GetConnectionString("ClickHouseConnection");
@@ -129,7 +144,8 @@ builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IMetricService, MetricService>();
+builder.Services.AddScoped<IAgentMetricService, AgentMetricService>();
+builder.Services.AddScoped<IAgentStateService, AgentStateService>();
 #endregion
 
 var app = builder.Build();
@@ -153,18 +169,21 @@ if (app.Environment.IsDevelopment())
 	});
 }
 
-app.UseCors("AllowAllOrigins");
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapAuthEndpoints();
 app.MapAgentEndpoints();
+app.MapAgentStateEndpoints();
+app.MapAgentMetricEndpoints();
+app.MapAuthEndpoints();
 app.MapProcessEndpoints();
 app.MapPolicyEndpoints();
 app.MapConfigurationEndpoints();
-app.MapMetricEndpoints();
 app.MapUserEndpoints();
-
 app.UseHttpsRedirection();
+
+app.MapHub<AgentHub>("/agentHub");
+
 app.Run();

@@ -1,4 +1,4 @@
-using Common.Messages.Agent;
+using Common.Messages.Agent.State;
 using Common.Messages.Metric;
 using Common.Messages.Static;
 using Server.Application.Dtos.Agent;
@@ -43,6 +43,39 @@ public static class ToDomainMapper
 				ConfigurationId = source.ConfigurationId
 		};
 	#endregion
+
+  #region Agent Metrics
+
+  public static AgentMetric ToDomain(this AgentMetricRequestMessage source, Guid agentId)
+  {
+    return new AgentMetric
+    {
+        AgentId = agentId,
+        Timestamp = source.Timestamp,
+        CpuUsage = source.CpuUsage,
+        MemoryUsage = source.MemoryUsage,
+        NetworkUsage = source.NetworkUsage,
+        Uptime = source.Uptime,
+        DiskUsage = source.DiskUsage
+    };
+  }
+
+  #endregion
+
+  #region Agent State
+
+  public static AgentState ToDomain(this AgentStateChangeRequestMessage source, Guid agentId)
+    => new()
+    {
+      AgentId = agentId,
+      Timestamp = source.Timestamp,
+      Machine = source.Machine,
+      FromState = source.From,
+      ToState = source.To,
+      Trigger = source.Trigger
+    };
+
+  #endregion
 
   #region Hardware
   public static Domain.Models.Hardware ToDomain(this HardwareMessage source, Guid agentId)
@@ -192,24 +225,6 @@ public static class ToDomainMapper
       Role = "User",
       PasswordHash = passwordHash,
       PasswordSalt = passwordSalt
-    };
-  }
-
-  #endregion
-
-  #region Metrics
-
-  public static Domain.Models.Metric ToDomain(this MetricRequestMessage source, Guid agentId)
-  {
-    return new Domain.Models.Metric
-    {
-      AgentId = agentId,
-      Timestamp = source.Timestamp,
-      CpuUsage = source.CpuUsage,
-      MemoryUsage = source.MemoryUsage,
-      NetworkUsage = source.NetworkUsage,
-      Uptime = source.Uptime,
-      DiskUsage = source.DiskUsage
     };
   }
 

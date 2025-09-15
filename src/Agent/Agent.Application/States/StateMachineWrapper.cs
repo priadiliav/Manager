@@ -1,4 +1,5 @@
 using Agent.Application.Abstractions;
+using Agent.Domain.Context;
 using Common.Messages.Agent.State;
 using Microsoft.Extensions.Logging;
 using Stateless;
@@ -23,7 +24,7 @@ public class StateMachineWrapper(
           t.Destination);
 
       _ = communicationClient.PutAsync<AgentStateChangeResponseMessage, AgentStateChangeRequestMessage>(
-          url: "agents/state",
+          url: $"states/{AgentStateContext.Id}",
           message: new AgentStateChangeRequestMessage
           {
               Machine = typeof(TState).Name,
@@ -32,7 +33,7 @@ public class StateMachineWrapper(
               To = t.Destination.ToString(),
               Timestamp = DateTime.UtcNow
           },
-          authenticate: true,
+          authenticate: false,
           cancellationToken: CancellationToken.None);
     });
   }

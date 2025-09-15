@@ -17,7 +17,7 @@ public class MetricsPublisherRunner(
     var metrics = collectors.ToDictionary(c => c.Name,
         c => c.Collect(cancellationToken));
 
-    var message = new MetricRequestMessage
+    var message = new AgentMetricRequestMessage
     {
       CpuUsage = metrics.GetValueOrDefault("cpu_usage", 0), // value in percentage
       MemoryUsage = metrics.GetValueOrDefault("memory_usage", 0), // value in percentage
@@ -27,7 +27,7 @@ public class MetricsPublisherRunner(
       Timestamp = DateTimeOffset.UtcNow, // current timestamp
     };
 
-    await publisherClient.PublishAsync<MetricResponseMessage, MetricRequestMessage>(
+    await publisherClient.PublishAsync<AgentMetricResponseMessage, AgentMetricRequestMessage>(
         Url, message, cancellationToken);
 
     logger.LogInformation("Published metrics: {Message}", message.ToString());
