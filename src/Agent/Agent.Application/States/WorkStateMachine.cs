@@ -48,8 +48,6 @@ public class WorkStateMachine
       var runnerStateMachine = new RunnerStateMachine(
           wrapper, runner, context.CancellationTokenSource.Token);
       _runnerMachines.Add(runnerStateMachine);
-
-      wrapper.RegisterMachine(runnerStateMachine.Machine);
     }
   }
 

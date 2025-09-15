@@ -33,6 +33,7 @@ export const AgentCharts = ({ agentId, signalRClient }: Props) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+
     useEffect(() => {
         fetchMetricsData(from, to);
 

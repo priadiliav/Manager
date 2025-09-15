@@ -27,4 +27,4 @@ ORDER BY (AgentId, Timestamp);
 
 -- Cleanup old data older than 30 days
 DELETE FROM agent_state
-WHERE Timestamp < '2025-09-15 14:00:01'
+WHERE Timestamp < '2025-09-16 14:00:01'

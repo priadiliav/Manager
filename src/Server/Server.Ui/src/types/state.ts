@@ -8,3 +8,11 @@ export interface AgentStateDto {
     timestamp: string;
 }
 
+
+export interface AgentStateNodeDto {
+    name: string;
+    transitions: string[];
+    machines: AgentStateNodeDto[];
+    x: string;
+    y: string;
+}

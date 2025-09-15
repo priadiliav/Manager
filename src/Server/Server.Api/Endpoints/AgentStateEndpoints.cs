@@ -1,4 +1,5 @@
 using Common.Messages.Agent.State;
+using Server.Application.Resources;
 using Server.Application.Services;
 
 namespace Server.Api.Endpoints;
@@ -20,6 +21,10 @@ public static class AgentStateEndpoints
       })
       .WithTags("Agent State")
       .WithName("CreateAgentState");
+
+      group.MapGet("/template", () => Results.Ok(AgentStateTree.TemplateTree))
+      .WithTags("Agent State")
+      .WithName("GetAgentStateTemplate");
 
     group.MapGet("/{agentId:guid}", async (Guid agentId,
         DateTimeOffset from,
