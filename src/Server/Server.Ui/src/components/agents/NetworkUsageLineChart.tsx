@@ -9,7 +9,7 @@ interface Props {
 
 export const NetworkUsageLineChart = ({ data, labels }: Props) => {
     return (
-        <CollapsibleSection title="Network Usage (B/s)" noCard>
+        <CollapsibleSection title="Network Usage (B/s)" noCard defaultOpen={false}>
             <Box sx={{ height: 300 }}>
                 <CustomLineChart data={data} labels={labels} />
             </Box>

@@ -72,7 +72,6 @@ public class ConfigurationService (IUnitOfWork unitOfWork) : IConfigurationServi
     // Mark all associated agents as not synchronized
     MarkAgentsAsNotSynchronized(existingConfigurationDomain.Agents);
 
-		await unitOfWork.Configurations.ModifyAsync(existingConfigurationDomain);// todo: remove, tracked entity
 		await unitOfWork.SaveChangesAsync();
 
 		var updatedConfigurationDto = await GetConfigurationAsync(configurationId);

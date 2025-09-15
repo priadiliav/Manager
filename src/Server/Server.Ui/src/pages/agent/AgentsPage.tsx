@@ -61,7 +61,7 @@ export const AgentsPage = () => {
     //#endregion
 
     return (
-        <FetchContentWrapper loading={loading} error={error} onRetry={loadAgents}>
+        <FetchContentWrapper loading={loading} error={error}>
             <Button
                 size="small"
                 variant="contained"

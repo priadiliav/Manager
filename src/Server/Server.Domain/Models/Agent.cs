@@ -18,8 +18,8 @@ public class Agent : IEntity<Guid>
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
 
-  public AgentStatus Status { get; set; } = AgentStatus.Ok;
-  public DateTimeOffset? LastStatusChangeAt { get; set; }
+  public AgentStatus Status { get; private set; } = AgentStatus.Ok;
+  public DateTimeOffset? LastStatusChangeAt { get; private set; }
 
 	public virtual Configuration Configuration { get; init; } = null!;
   public virtual Hardware Hardware { get; init; } = null!;
