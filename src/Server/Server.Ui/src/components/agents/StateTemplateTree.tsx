@@ -8,14 +8,19 @@ interface Props {
     activeState?: AgentStateDto | null;
 }
 
-const flattenTree = (node: AgentStateNodeDto): { nodes: Node[], edges: Edge[] } => {
+
+const flattenTree = (
+    node: AgentStateNodeDto,
+    parentPath: string = ""
+): { nodes: Node[]; edges: Edge[] } => {
     let nodes: Node[] = [];
     let edges: Edge[] = [];
 
-    const nodeId = node.name;
+    const nodeId = `${parentPath}${node.machineType}_${node.name}`;
+
     nodes.push({
         id: nodeId,
-        data: { label: node.name },
+        data: { label: node.name, machineType: node.machineType },
         position: { x: Number(node.x) || 0, y: Number(node.y) || 0 },
         style: {
             background: '#fff',
@@ -26,11 +31,11 @@ const flattenTree = (node: AgentStateNodeDto): { nodes: Node[], edges: Edge[] } 
         }
     });
 
-    node.transitions.forEach((t, i) => {
+    node.transitions.forEach(t => {
         edges.push({
-            id: `${nodeId}-${t}`,
+            id: `${nodeId}->${parentPath}${node.machineType}_${t}`,
             source: nodeId,
-            target: t,
+            target: `${parentPath}${node.machineType}_${t}`,
             type: 'step',
             style: { strokeWidth: 2, stroke: '#555' },
             markerEnd: { type: MarkerType.ArrowClosed },
@@ -39,13 +44,17 @@ const flattenTree = (node: AgentStateNodeDto): { nodes: Node[], edges: Edge[] } 
     });
 
     node.machines.forEach(child => {
-        const { nodes: childNodes, edges: childEdges } = flattenTree(child);
+        const { nodes: childNodes, edges: childEdges } = flattenTree(
+            child,
+            nodeId + "/"
+        );
         nodes = nodes.concat(childNodes);
         edges = edges.concat(childEdges);
     });
 
     return { nodes, edges };
 };
+
 
 export const StateTemplateTree = ({ template, activeState }: Props) => {
     const { nodes: initialNodes, edges: initialEdges } = flattenTree(template);
@@ -57,25 +66,39 @@ export const StateTemplateTree = ({ template, activeState }: Props) => {
         if (!activeState) return;
 
         setNodes(prev =>
-            prev.map(node => ({
-                ...node,
-                style: {
-                    ...node.style,
-                    background: node.id === activeState.toState ? '#4caf50' : '#fff',
-                    color: node.id === activeState.toState ? '#fff' : '#000'
-                }
-            }))
+            prev.map(node => {
+                const isActive =
+                    node.data.machineType?.includes(activeState.machine.replace("Agent", "")) &&
+                    node.id.endsWith(`_${activeState.toState}`);
+                return {
+                    ...node,
+                    style: {
+                        ...node.style,
+                        background: isActive ? '#4caf50' : '#fff',
+                        color: isActive ? '#fff' : '#000'
+                    }
+                };
+            })
         );
 
         setEdges(prev =>
-            prev.map(edge => ({
-                ...edge,
-                animated:
-                    edge.source === activeState.fromState &&
-                    edge.target === activeState.toState
-            }))
+            prev.map(edge => {
+                const isActive =
+                    edge.source.endsWith(`_${activeState.fromState}`) &&
+                    edge.target.endsWith(`_${activeState.toState}`);
+                return {
+                    ...edge,
+                    animated: isActive,
+                    style: {
+                        ...edge.style,
+                        stroke: isActive ? '#4caf50' : '#555'
+                    }
+                };
+            })
         );
     }, [activeState]);
+
+
 
     return (
         <div style={{ width: "100%", height: "500px" }}>
@@ -84,10 +107,6 @@ export const StateTemplateTree = ({ template, activeState }: Props) => {
                 edges={edges}
                 nodesDraggable={false}
                 nodesConnectable={false}
-                panOnDrag={false}
-                panOnScroll={false}
-                zoomOnScroll={false}
-                zoomOnPinch={false}
                 panOnScrollMode={PanOnScrollMode.Free}
             />
         </div>

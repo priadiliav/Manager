@@ -68,13 +68,13 @@ public class AgentStateRepository(ClickHouseConnection connection) : IAgentState
     """
       SELECT AgentId, Timestamp, Machine, FromState, ToState, Trigger
       FROM agent_state
-      WHERE AgentId = @AgentId AND Timestamp BETWEEN @From AND @To
+      WHERE AgentId = @AgentId AND Timestamp BETWEEN @FromState AND @ToState
       ORDER BY Timestamp DESC
       LIMIT @Limit
     """;
     command.AddParameter("AgentId", agentId);
-    command.AddParameter("From", from);
-    command.AddParameter("To", to);
+    command.AddParameter("FromState", from);
+    command.AddParameter("ToState", to);
     command.AddParameter("Limit", limit);
 
     await using var reader = await command.ExecuteReaderAsync();

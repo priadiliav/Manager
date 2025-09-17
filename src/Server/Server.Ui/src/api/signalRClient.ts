@@ -33,7 +33,6 @@ export class SignalRClient {
                 this.connected = true;
                 console.log("SignalR connected to", this.connection.baseUrl);
             } catch (err) {
-                console.error("SignalR start error:", err);
                 setTimeout(() => this.start(), 2000);
             }
         }
@@ -49,7 +48,6 @@ export class SignalRClient {
         try {
             return await this.connection.invoke<T>(method, ...args);
         } catch (err) {
-            console.error(`SignalR invoke error: ${method}`, err);
             return null;
         }
     }

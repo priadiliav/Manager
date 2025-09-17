@@ -46,8 +46,9 @@ public class WorkStateMachine
     foreach (var runner in runners)
     {
       var runnerStateMachine = new RunnerStateMachine(
-          wrapper, runner, context.CancellationTokenSource.Token);
+          wrapper, runner, context);
       _runnerMachines.Add(runnerStateMachine);
+      wrapper.RegisterMachine(runnerStateMachine.Machine);
     }
   }
 

@@ -41,14 +41,14 @@ public class AgentMetricRepository(ClickHouseConnection connection) : IAgentMetr
     """
       SELECT AgentId, Timestamp, CpuUsage, MemoryUsage, DiskUsage, NetworkUsage
       FROM metrics
-      WHERE AgentId = @AgentId AND Timestamp >= @From AND Timestamp <= @To
+      WHERE AgentId = @AgentId AND Timestamp >= @FromState AND Timestamp <= @ToState
       ORDER BY Timestamp ASC
       LIMIT @Limit
     """;
 
     command.AddParameter("AgentId", agentId);
-    command.AddParameter("From", from);
-    command.AddParameter("To", to);
+    command.AddParameter("FromState", from);
+    command.AddParameter("ToState", to);
     command.AddParameter("Limit", limit);
 
     await using var reader = await command.ExecuteReaderAsync();

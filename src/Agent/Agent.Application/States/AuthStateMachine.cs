@@ -9,7 +9,7 @@ public enum AgentAuthenticationState
 {
     Idle,
     Processing,
-    Finished,
+    Finishing,
     Stopping,
     Error
 }
@@ -56,11 +56,11 @@ public class AuthStateMachine
 
         Machine.Configure(AgentAuthenticationState.Processing)
             .OnEntryAsync(HandleProcessingAsync)
-            .Permit(AuthenticationTrigger.Success, AgentAuthenticationState.Finished)
+            .Permit(AuthenticationTrigger.Success, AgentAuthenticationState.Finishing)
             .Permit(AuthenticationTrigger.Stop, AgentAuthenticationState.Stopping)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
 
-        Machine.Configure(AgentAuthenticationState.Finished)
+        Machine.Configure(AgentAuthenticationState.Finishing)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
 
         Machine.Configure(AgentAuthenticationState.Stopping)

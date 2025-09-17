@@ -61,8 +61,8 @@ public static class ToDomainMapper
       AgentId = agentId,
       Timestamp = source.Timestamp,
       Machine = source.Machine,
-      FromState = source.From,
-      ToState = source.To,
+      FromState = source.FromState,
+      ToState = source.ToState,
       Trigger = source.Trigger
     };
 

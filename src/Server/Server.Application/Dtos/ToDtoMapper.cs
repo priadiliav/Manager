@@ -97,7 +97,8 @@ public static class ToDtoMapper
         FromState = agentState.FromState,
         ToState = agentState.ToState,
         Machine = agentState.Machine,
-        Trigger = agentState.Trigger
+        Trigger = agentState.Trigger,
+        Details = agentState.Details
     };
 
   public static AgentStateChangeResponseMessage ToMessage(this Domain.Models.AgentState agentState)
@@ -154,7 +155,7 @@ public static class ToDtoMapper
   {
     return new ConfigurationMessage
     {
-      // To be expanded
+      // ToState be expanded
       Name = configuration.Name,
     };
   }

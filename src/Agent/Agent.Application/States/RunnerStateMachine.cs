@@ -1,4 +1,5 @@
 using Agent.Application.Abstractions;
+using Agent.Domain.Context;
 using Stateless;
 
 namespace Agent.Application.States;
@@ -6,7 +7,9 @@ namespace Agent.Application.States;
 public enum RunnerState
 {
     Idle,
-    Working,
+    Processing,
+    Finishing,
+    Stopping,
     Error
 }
 
@@ -14,6 +17,7 @@ public enum RunnerTrigger
 {
     Start,
     Success,
+    Stop,
     ErrorOccured
 }
 
@@ -22,15 +26,15 @@ public class RunnerStateMachine
     public StateMachine<RunnerState, RunnerTrigger> Machine { get; }
 
     private readonly IWorkerRunner _workerRunner;
-    private readonly CancellationToken _token;
+    private readonly AgentStateContext _context;
     private readonly StateMachineWrapper _wrapper;
 
     public RunnerStateMachine(
         StateMachineWrapper wrapper,
         IWorkerRunner workerRunner,
-        CancellationToken token)
+        AgentStateContext context)
     {
-      _token = token;
+      _context = context ?? throw new ArgumentNullException(nameof(context));
       _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
       _workerRunner = workerRunner ?? throw new ArgumentNullException(nameof(workerRunner));
 
@@ -42,44 +46,48 @@ public class RunnerStateMachine
     private void ConfigureStateMachine()
     {
       Machine.Configure(RunnerState.Idle)
-          .Permit(RunnerTrigger.Start, RunnerState.Working);
+          .Permit(RunnerTrigger.Start, RunnerState.Processing);
 
-      Machine.Configure(RunnerState.Working)
+      Machine.Configure(RunnerState.Processing)
           .OnEntryAsync(WorkAsync)
-          .Permit(RunnerTrigger.Success, RunnerState.Idle)
+          .Permit(RunnerTrigger.Success, RunnerState.Finishing)
           .Permit(RunnerTrigger.ErrorOccured, RunnerState.Error);
 
-        Machine.Configure(RunnerState.Error)
-            .Permit(RunnerTrigger.Start, RunnerState.Working)
-            .OnEntryAsync(async () =>
-            {
-              await Task.Delay(_workerRunner.Interval, _token);
-              await Machine.FireAsync(RunnerTrigger.Start);
-            });
+      Machine.Configure(RunnerState.Finishing)
+          .OnEntryAsync(async () =>
+          {
+            await Task.Delay(_workerRunner.Interval, _context.CancellationTokenSource.Token);
+            await Machine.FireAsync(RunnerTrigger.Start);
+          })
+          .Permit(RunnerTrigger.Start, RunnerState.Processing);
+
+      Machine.Configure(RunnerState.Error)
+          .Permit(RunnerTrigger.Start, RunnerState.Processing)
+          .OnEntryAsync(async () =>
+          {
+            await Task.Delay(_workerRunner.Interval, _context.CancellationTokenSource.Token);
+            await Machine.FireAsync(RunnerTrigger.Start);
+          });
     }
 
     public async Task RunAsync()
     {
-        while (!_token.IsCancellationRequested)
-        {
-            if (Machine.State == RunnerState.Idle)
-                await _wrapper.FireAsync(Machine, RunnerTrigger.Start);
-
-            await Task.Delay(_workerRunner.Interval, _token);
-        }
+      if (Machine.State == RunnerState.Idle)
+          await _wrapper.FireAsync(Machine, RunnerTrigger.Start);
     }
 
-  private async Task WorkAsync()
-  {
-    try
+    private async Task WorkAsync()
     {
-      await _workerRunner.RunAsync(_token);
+      try
+      {
+        await _workerRunner.RunAsync(_context.CancellationTokenSource.Token);
 
-      await _wrapper.FireAsync(Machine, RunnerTrigger.Success);
+        await _wrapper.FireAsync(Machine, RunnerTrigger.Success);
+      }
+      catch (Exception ex)
+      {
+        _context.DetailsMessage = ex.Message;
+        await _wrapper.FireAsync(Machine, RunnerTrigger.ErrorOccured);
+      }
     }
-    catch (Exception ex)
-    {
-      await _wrapper.FireAsync(Machine, RunnerTrigger.ErrorOccured);
-    }
-  }
 }

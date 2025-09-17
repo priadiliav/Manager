@@ -7,4 +7,5 @@ public class AgentStateDto
   public string FromState { get; set; } = string.Empty;
   public string ToState { get; set; } = string.Empty;
   public string Trigger { get; set; } = string.Empty;
+  public string Details { get; set; } = string.Empty;
 }

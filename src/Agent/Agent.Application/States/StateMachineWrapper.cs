@@ -8,7 +8,8 @@ namespace Agent.Application.States;
 
 public class StateMachineWrapper(
     ILogger<StateMachineWrapper> logger,
-    ICommunicationClient communicationClient)
+    ICommunicationClient communicationClient,
+    AgentStateContext agentStateContext)
 {
   public void RegisterMachine<TState, TTrigger>(StateMachine<TState, TTrigger> machine)
       where TState : struct, Enum
@@ -28,9 +29,10 @@ public class StateMachineWrapper(
           message: new AgentStateChangeRequestMessage
           {
               Machine = typeof(TState).Name,
-              From = t.Source.ToString(),
+              FromState = t.Source.ToString(),
               Trigger = t.Trigger.ToString(),
-              To = t.Destination.ToString(),
+              ToState = t.Destination.ToString(),
+              Details = agentStateContext.DetailsMessage,
               Timestamp = DateTime.UtcNow
           },
           authenticate: false,

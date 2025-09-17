@@ -101,7 +101,7 @@ public class OverallStateMachine
   {
     await _authMachine.StartAsync();
 
-    if (_authMachine.CurrentState is AgentAuthenticationState.Finished)
+    if (_authMachine.CurrentState is AgentAuthenticationState.Finishing)
     {
       await _wrapper.FireAsync(Machine, AgentOverallTrigger.Synchronize);
     }

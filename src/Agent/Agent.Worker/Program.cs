@@ -17,7 +17,7 @@ builder.Services.AddSingleton<StateMachineWrapper>(sp =>
 {
   var logger = sp.GetRequiredService<ILogger<StateMachineWrapper>>();
   var client = sp.GetRequiredService<ICommunicationClient>();
-  return new StateMachineWrapper(logger, client);
+  return new StateMachineWrapper(logger, client, sp.GetRequiredService<AgentStateContext>());
 });
 builder.Services.AddSingleton<AuthStateMachine>(sp =>
 {
