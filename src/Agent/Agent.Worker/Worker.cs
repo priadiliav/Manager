@@ -1,5 +1,4 @@
 using Agent.Application.States;
-using Agent.Domain.Context;
 
 namespace Agent.Worker;
 

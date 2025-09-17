@@ -25,16 +25,17 @@ public readonly struct ProcessInConfigurationId(long configurationId, long proce
     => ConfigurationId == other.ConfigurationId && ProcessId == other.ProcessId;
 }
 
-public class ProcessInConfiguration : ICompositeEntity<long>
+public sealed class ProcessInConfiguration : ICompositeEntity<long>
 {
   public long Id => new ProcessInConfigurationId(ConfigurationId, ProcessId).GetHashCode();
 
   public long ConfigurationId { get; init; }
 	public long ProcessId { get; init; }
 	public ProcessState ProcessState { get; init; } = ProcessState.Active;
+
+  public Configuration Configuration { get; init; } = null!;
+	public Process Process { get; init; } = null!;
+
   public DateTimeOffset CreatedAt { get; set; }
   public DateTimeOffset? ModifiedAt { get; set; }
-
-  public virtual Configuration Configuration { get; init; } = null!;
-	public virtual Process Process { get; init; } = null!;
 }

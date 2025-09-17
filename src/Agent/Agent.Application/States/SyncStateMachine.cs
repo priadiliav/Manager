@@ -1,7 +1,7 @@
 using Agent.Application.Abstractions;
 using Agent.Domain.Context;
 using Common.Messages.Agent.Sync;
-using Common.Messages.Static;
+using Common.Messages.Agent.Sync.Hardware;
 using Stateless;
 
 namespace Agent.Application.States;
@@ -73,7 +73,7 @@ public class SyncStateMachine
     {
       var message = new AgentSyncRequestMessage
       {
-          Hardware = new HardwareMessage
+          Hardware = new AgentHardwareMessage
           {
               Cpu = _cpuCollector.Collect(),
               Ram = _memoryCollector.Collect(),

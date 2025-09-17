@@ -1,17 +1,15 @@
 using System.Security.Claims;
 using System.Text;
 using ClickHouse.Driver.ADO;
-using Common.Messages.Configuration;
-using Common.Messages.Policy;
-using Common.Messages.Process;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Api.Endpoints;
-using Server.Application.Abstractions;
+using Server.Application.Abstractions.Notifiers;
+using Server.Application.Abstractions.Providers;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Services;
-using Server.Infrastructure.Communication;
 using Server.Infrastructure.Configs;
 using Server.Infrastructure.Hubs;
 using Server.Infrastructure.Notifiers;
@@ -108,7 +106,6 @@ builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<IProcessRepository, ProcessRepository>();
 builder.Services.AddScoped<IPolicyRepository, PolicyRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IHardwareRepository, HardwareRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IPasswordHasher, HmacPasswordHasher>();
 
@@ -121,9 +118,9 @@ builder.Services.AddScoped<IAgentMetricRepository, AgentMetricRepository>();
 builder.Services.AddScoped<IAgentStateRepository, AgentStateRepository>();
 
 // Long polling services
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ProcessesMessage>, InMemoryLongPollingDispatcher<Guid, ProcessesMessage>>();
+// builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
+// builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
+// builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ProcessesMessage>, InMemoryLongPollingDispatcher<Guid, ProcessesMessage>>();
 
 // Postgres SQL database configuration
 builder.Services.AddDbContext<AppDbContext>(options =>

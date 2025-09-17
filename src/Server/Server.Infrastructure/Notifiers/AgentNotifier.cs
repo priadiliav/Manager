@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Notifiers;
 using Server.Application.Dtos.Agent.Metric;
 using Server.Application.Dtos.Agent.State;
 using Server.Infrastructure.Hubs;

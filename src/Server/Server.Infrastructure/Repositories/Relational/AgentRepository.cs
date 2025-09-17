@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Domain.Models;
 using Server.Infrastructure.Configs;
 

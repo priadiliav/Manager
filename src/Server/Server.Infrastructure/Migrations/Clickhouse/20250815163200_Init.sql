@@ -1,7 +1,5 @@
---todo: change to agent_metric
-
 -- Table for storing agent metrics
-CREATE TABLE metrics
+CREATE TABLE agent_metric
 (
   AgentId UUID,
   Timestamp DateTime,

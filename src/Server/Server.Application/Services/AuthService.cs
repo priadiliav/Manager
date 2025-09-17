@@ -1,5 +1,7 @@
 using Common.Messages.Agent.Login;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Providers;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos;
 using Server.Application.Dtos.User;
 

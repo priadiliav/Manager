@@ -1,6 +1,3 @@
-using System.Security.Claims;
-using Common.Messages.Policy;
-using Server.Application.Abstractions;
 using Server.Application.Dtos.Policy;
 using Server.Application.Services;
 
@@ -54,25 +51,6 @@ public static class PolicyEndpoints
         })
         // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdatePolicy");
-
-    group.MapGet("/subscribe",
-        async (ILongPollingDispatcher<Guid, PoliciesMessage> pollingService, CancellationToken ct, HttpContext context) =>
-        {
-          // Getting the agent ID from the authenticated user
-          var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
-
-          Guid.TryParse(agentId, out var agentIdGuid);
-
-          if (agentIdGuid == Guid.Empty)
-            return Results.Unauthorized();
-
-          var update = await pollingService.WaitForUpdateAsync(agentIdGuid, ct);
-          return update is null
-              ? Results.NoContent()
-              : Results.Ok(update);
-        })
-        .RequireAuthorization(policy => policy.RequireRole("Agent"))
-        .WithName("SubscribeToPoliciesUpdates");
   }
 }
 

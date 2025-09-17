@@ -55,7 +55,7 @@ public class ToDtoMapperTests
         };
 
         // Act
-        var result = configuration.ToDto();
+        var result = configuration.ToDetailedDto();
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -77,7 +77,7 @@ public class ToDtoMapperTests
         };
 
         // Act
-        var result = configuration.ToDto();
+        var result = configuration.ToDetailedDto();
 
         // Assert
         Assert.That(result, Is.Not.Null);

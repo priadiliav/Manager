@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Providers;
 using Server.Infrastructure.Configs;
 
 namespace Server.Infrastructure.Utils;

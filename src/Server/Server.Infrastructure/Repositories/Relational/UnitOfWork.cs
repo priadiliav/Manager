@@ -1,4 +1,5 @@
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Infrastructure.Configs;
 
 namespace Server.Infrastructure.Repositories.Relational;
@@ -9,7 +10,6 @@ public class UnitOfWork(
 	IConfigurationRepository configurationRepository,
 	IAgentRepository agentRepository,
 	IProcessRepository processRepository,
-  IHardwareRepository hardwareRepository,
   IUserRepository userRepository) : IUnitOfWork
 {
 	public IAgentRepository Agents { get; } = agentRepository;
@@ -17,7 +17,6 @@ public class UnitOfWork(
 	public IPolicyRepository Policies { get; } = policyRepository;
 	public IProcessRepository Processes { get; } = processRepository;
   public IUserRepository Users { get; } = userRepository;
-  public IHardwareRepository Hardware { get; } = hardwareRepository;
 
   public async Task<int> SaveChangesAsync() => await context.SaveChangesAsync();
 	public void Dispose() => context.Dispose();

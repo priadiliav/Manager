@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Common.Messages.Agent;
 using Common.Messages.Agent.Sync;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Providers;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Agent;
 using Server.Domain.Models;
@@ -39,7 +41,7 @@ public interface IAgentService
 	Task<AgentModifyResponse?> UpdateAgentAsync(Guid agentId, AgentModifyRequest request);
 
   /// <summary>
-  /// Syncs an agent with the provided static information, such as hardware details.
+  /// Syncs an agent with the provided static information, such as agentHardware details.
   /// </summary>
   /// <param name="agentId"></param>
   /// <param name="message"></param>
@@ -69,7 +71,7 @@ public class AgentService (
 
     var (secretHash, secretSalt) = passwordHasher.CreatePasswordHash(randomGuidString);
 
-    var hardware = Hardware.Empty();
+    var hardware = AgentHardware.Empty();
     var agentDomain = request.ToDomain(hardware, secretHash, secretSalt);
 
     // New agents are not synchronized until they check in for the first time

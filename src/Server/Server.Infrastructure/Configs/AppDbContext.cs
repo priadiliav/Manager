@@ -11,7 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 		public DbSet<Domain.Models.Policy> Policies { get; set; }
 		public DbSet<Domain.Models.Process> Processes { get; set; }
     public DbSet<Domain.Models.User> Users { get; set; }
-    public DbSet<Domain.Models.Hardware> Hardware { get; set; }
+
+    public DbSet<Domain.Models.AgentHardware> Hardware { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -48,10 +49,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 			#endregion
 
       #region Hardware in Agent 1:1
-      modelBuilder.Entity<Hardware>()
+      modelBuilder.Entity<AgentHardware>()
           .HasOne(h => h.Agent)
           .WithOne(a => a.Hardware)
-          .HasForeignKey<Hardware>(h => h.AgentId)
+          .HasForeignKey<AgentHardware>(h => h.AgentId)
           .OnDelete(DeleteBehavior.Cascade)
           .IsRequired();
       #endregion

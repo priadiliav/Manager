@@ -6,7 +6,7 @@ using Agent.Infrastructure.Collectors.Dynamic;
 using Agent.Infrastructure.Collectors.Static;
 using Agent.Infrastructure.Communication;
 using Agent.Worker;
-using Common.Messages.Static;
+using Common.Messages.Agent.Sync.Hardware;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService();
@@ -71,7 +71,6 @@ builder.Services.AddSingleton<IStaticDataCollector<DiskInfoMessage>, DiskInfoCol
 #endregion
 
 #region Application layer configurations
-builder.Services.AddSingleton<IWorkerRunner, ProcessReceiverRunner>();
 builder.Services.AddSingleton<IWorkerRunner, MetricsPublisherRunner>();
 #endregion
 

@@ -1,6 +1,6 @@
 using System.Management;
 using Agent.Application.Abstractions;
-using Common.Messages.Static;
+using Common.Messages.Agent.Sync.Hardware;
 using Microsoft.VisualBasic.Devices;
 
 namespace Agent.Infrastructure.Collectors.Static;
@@ -16,7 +16,7 @@ public class RamInfoCollector : IStaticDataCollector<RamInfoMessage>
 
     try
     {
-      ramInfo.TotalMemoryMB = (long)(computer.TotalPhysicalMemory / 1024 / 1024);
+      ramInfo.TotalMemoryMb = (long)(computer.TotalPhysicalMemory / 1024 / 1024);
       using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PhysicalMemory");
       var ram = searcher.Get().Cast<ManagementObject>().FirstOrDefault();
       if (ram is not null)

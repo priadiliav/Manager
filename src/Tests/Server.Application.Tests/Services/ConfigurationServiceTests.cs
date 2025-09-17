@@ -1,6 +1,4 @@
-using Common.Messages;
-using Common.Messages.Configuration;
-using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Services;
 using Server.Domain.Models;
@@ -161,9 +159,9 @@ public class ConfigurationServiceTests
             Policies = new List<PolicyInConfiguration>()
         };
 
-        _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(existingConfiguration);
-        _mockConfigurationRepository.Setup(x => x.ModifyAsync(It.IsAny<Configuration>())).Returns(Task.CompletedTask);
-        _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(updatedConfiguration);
+        _mockConfigurationRepository.SetupSequence(x => x.GetAsync(configurationId))
+            .ReturnsAsync(existingConfiguration)
+            .ReturnsAsync(updatedConfiguration);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -175,7 +173,6 @@ public class ConfigurationServiceTests
         Assert.That(result.Name, Is.EqualTo("NewName"));
 
         _mockConfigurationRepository.Verify(x => x.GetAsync(configurationId), Times.Exactly(2));
-        _mockConfigurationRepository.Verify(x => x.ModifyAsync(It.IsAny<Configuration>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -247,9 +244,9 @@ public class ConfigurationServiceTests
             Policies = new List<PolicyInConfiguration>()
         };
 
-        _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(existingConfiguration);
-        _mockConfigurationRepository.Setup(x => x.ModifyAsync(It.IsAny<Configuration>())).Returns(Task.CompletedTask);
-        _mockConfigurationRepository.Setup(x => x.GetAsync(configurationId)).ReturnsAsync(updatedConfiguration);
+        _mockConfigurationRepository.SetupSequence(x => x.GetAsync(configurationId))
+            .ReturnsAsync(existingConfiguration)
+            .ReturnsAsync(updatedConfiguration);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act

@@ -1,6 +1,6 @@
 using System.Management;
 using Agent.Application.Abstractions;
-using Common.Messages.Static;
+using Common.Messages.Agent.Sync.Hardware;
 
 namespace Agent.Infrastructure.Collectors.Static;
 

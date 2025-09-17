@@ -1,5 +1,6 @@
 using Common.Messages.Metric;
-using Server.Application.Abstractions;
+using Server.Application.Abstractions.Notifiers;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos;
 using Server.Application.Dtos.Agent.Metric;
 

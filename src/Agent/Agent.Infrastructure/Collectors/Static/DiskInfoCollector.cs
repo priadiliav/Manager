@@ -1,6 +1,6 @@
 using System.Management;
 using Agent.Application.Abstractions;
-using Common.Messages.Static;
+using Common.Messages.Agent.Sync.Hardware;
 using Microsoft.VisualBasic.Devices;
 
 namespace Agent.Infrastructure.Collectors.Static;
@@ -20,7 +20,7 @@ public class DiskInfoCollector : IStaticDataCollector<DiskInfoMessage>
           .FirstOrDefault(d => d.DriveType == System.IO.DriveType.Fixed && d.IsReady);
       if (drive is not null)
       {
-        diskInfo.TotalDiskMB = drive.TotalSize / 1024 / 1024; // Convert bytes to MB
+        diskInfo.TotalDiskMb = drive.TotalSize / 1024 / 1024; // Convert bytes to MB
       }
 
       using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");

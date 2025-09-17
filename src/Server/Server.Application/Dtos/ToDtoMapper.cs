@@ -1,12 +1,11 @@
 using Common.Messages.Agent.Login;
 using Common.Messages.Agent.State;
-using Common.Messages.Configuration;
 using Common.Messages.Metric;
 using Server.Application.Dtos.Agent;
+using Server.Application.Dtos.Agent.Hardware;
 using Server.Application.Dtos.Agent.Metric;
 using Server.Application.Dtos.Agent.State;
 using Server.Application.Dtos.Configuration;
-using Server.Application.Dtos.Hardware;
 using Server.Application.Dtos.Policy;
 using Server.Application.Dtos.Process;
 using Server.Application.Dtos.User;
@@ -37,7 +36,7 @@ public static class ToDtoMapper
         Status = source.Status,
         LastStatusChangeAt = source.LastStatusChangeAt,
         Configuration = source.Configuration.ToDto(),
-        Hardware = source.Hardware.ToDto()
+        AgentHardware = source.Hardware.ToDto()
     };
 
   public static AgentCreateResponse ToCreateResponse(this Domain.Models.Agent agent, string secret)
@@ -108,22 +107,22 @@ public static class ToDtoMapper
     };
   #endregion
 
-  #region Hardware
-  private static HardwareDto ToDto(this Domain.Models.Hardware hardware)
+  #region Agent Hardware
+  private static AgentHardwareDto ToDto(this Domain.Models.AgentHardware agentHardware)
     => new()
     {
-        CpuCores = hardware.CpuCores,
-        CpuModel = hardware.CpuModel,
-        CpuSpeedGHz = hardware.CpuSpeedGHz,
-        CpuArchitecture = hardware.CpuArchitecture,
-        GpuModel = hardware.GpuModel,
-        GpuMemoryMB = hardware.GpuMemoryMB,
-        RamModel = hardware.RamModel,
-        TotalMemoryMB = hardware.TotalMemoryMB,
-        DiskModel = hardware.DiskModel,
-        TotalDiskMB = hardware.TotalDiskMB,
-        Id = hardware.Id,
-        AgentId = hardware.AgentId
+        CpuCores = agentHardware.CpuCores,
+        CpuModel = agentHardware.CpuModel,
+        CpuSpeedGHz = agentHardware.CpuSpeedGHz,
+        CpuArchitecture = agentHardware.CpuArchitecture,
+        GpuModel = agentHardware.GpuModel,
+        GpuMemoryMB = agentHardware.GpuMemoryMB,
+        RamModel = agentHardware.RamModel,
+        TotalMemoryMB = agentHardware.TotalMemoryMB,
+        DiskModel = agentHardware.DiskModel,
+        TotalDiskMB = agentHardware.TotalDiskMB,
+        Id = agentHardware.Id,
+        AgentId = agentHardware.AgentId
     };
   #endregion
 
@@ -148,15 +147,6 @@ public static class ToDtoMapper
       AgentIds = configuration.Agents.Select(a => a.Id).ToList(),
       Processes = configuration.Processes.Select(p => p.ToDto()).ToList(),
       Policies = configuration.Policies.Select(p => p.ToDto()).ToList()
-    };
-  }
-
-  public static ConfigurationMessage ToMessage(this Domain.Models.Configuration configuration)
-  {
-    return new ConfigurationMessage
-    {
-      // ToState be expanded
-      Name = configuration.Name,
     };
   }
 	#endregion

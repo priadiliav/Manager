@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Providers;
 
 namespace Server.Infrastructure.Communication;
 

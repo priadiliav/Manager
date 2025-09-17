@@ -1,4 +1,5 @@
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Providers;
 
 namespace Server.Infrastructure.Utils;
 

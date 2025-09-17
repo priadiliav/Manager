@@ -1,6 +1,7 @@
 using ClickHouse.Driver.ADO;
 using ClickHouse.Driver.Utility;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Domain.Models;
 
 namespace Server.Infrastructure.Repositories.TimeSeries;

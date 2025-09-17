@@ -1,6 +1,3 @@
-using System.Security.Claims;
-using Common.Messages.Configuration;
-using Server.Application.Abstractions;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Services;
 
@@ -54,24 +51,5 @@ public static class ConfigurationEndpoints
         })
         // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("UpdateConfiguration");
-
-    group.MapGet("/subscribe",
-        async (ILongPollingDispatcher<Guid, ConfigurationMessage> pollingService, CancellationToken ct, HttpContext context) =>
-        {
-          // Getting the agent ID from the authenticated user
-          var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
-
-          Guid.TryParse(agentId, out var agentIdGuid);
-
-          if (agentIdGuid == Guid.Empty)
-            return Results.Unauthorized();
-
-          var update = await pollingService.WaitForUpdateAsync(agentIdGuid, ct);
-          return update is null
-              ? Results.NoContent()
-              : Results.Ok(update);
-        })
-        .RequireAuthorization(policy => policy.RequireRole("Agent"))
-        .WithName("SubscribeToConfigurationUpdates");
 	}
 }

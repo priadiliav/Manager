@@ -1,6 +1,6 @@
 using System.Management;
 using Agent.Application.Abstractions;
-using Common.Messages.Static;
+using Common.Messages.Agent.Sync.Hardware;
 
 namespace Agent.Infrastructure.Collectors.Static;
 
@@ -18,7 +18,7 @@ public class GpuInfoCollector : IStaticDataCollector<GpuInfoMessage>
       if (gpu is not null)
       {
         gpuInfo.GpuModel = gpu["Name"]?.ToString() ?? "Unknown";
-        gpuInfo.GpuMemoryMB = Convert.ToInt32((uint?)gpu["AdapterRAM"] / 1024 / 1024 ?? 0);
+        gpuInfo.GpuMemoryMb = Convert.ToInt32((uint?)gpu["AdapterRAM"] / 1024 / 1024 ?? 0);
       }
     }catch
     {

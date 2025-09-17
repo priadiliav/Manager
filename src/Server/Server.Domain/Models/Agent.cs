@@ -15,15 +15,15 @@ public class Agent : IEntity<Guid>
   public string Name { get; set; } = string.Empty;
   public byte[] SecretHash { get; init; } = default!;
   public byte[] SecretSalt { get; init; } = default!;
-  public DateTimeOffset CreatedAt { get; set; }
-  public DateTimeOffset? ModifiedAt { get; set; }
 
   public AgentStatus Status { get; private set; } = AgentStatus.Ok;
   public DateTimeOffset? LastStatusChangeAt { get; private set; }
 
 	public virtual Configuration Configuration { get; init; } = null!;
-  public virtual Hardware Hardware { get; init; } = null!;
+  public virtual AgentHardware Hardware { get; init; } = null!;
 
+  public DateTimeOffset CreatedAt { get; set; }
+  public DateTimeOffset? ModifiedAt { get; set; }
   /// <summary>
   /// Modifies the current agent with the values from another agent.
   /// </summary>

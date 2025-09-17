@@ -1,6 +1,7 @@
 using ClickHouse.Driver.ADO;
 using ClickHouse.Driver.Utility;
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Domain.Models;
 
 namespace Server.Infrastructure.Repositories.TimeSeries;
@@ -13,7 +14,7 @@ public class AgentMetricRepository(ClickHouseConnection connection) : IAgentMetr
 
     command.CommandText =
     """
-      INSERT INTO metrics (AgentId, Timestamp, CpuUsage, MemoryUsage, DiskUsage, NetworkUsage)
+      INSERT INTO agent_metric (AgentId, Timestamp, CpuUsage, MemoryUsage, DiskUsage, NetworkUsage)
       VALUES (@AgentId, @Timestamp, @CpuUsage, @MemoryUsage, @DiskUsage, @NetworkUsage)
     """;
 
@@ -40,7 +41,7 @@ public class AgentMetricRepository(ClickHouseConnection connection) : IAgentMetr
     command.CommandText =
     """
       SELECT AgentId, Timestamp, CpuUsage, MemoryUsage, DiskUsage, NetworkUsage
-      FROM metrics
+      FROM agent_metric
       WHERE AgentId = @AgentId AND Timestamp >= @FromState AND Timestamp <= @ToState
       ORDER BY Timestamp ASC
       LIMIT @Limit

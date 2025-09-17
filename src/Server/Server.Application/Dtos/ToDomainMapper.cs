@@ -1,6 +1,6 @@
 using Common.Messages.Agent.State;
+using Common.Messages.Agent.Sync;
 using Common.Messages.Metric;
-using Common.Messages.Static;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
@@ -14,7 +14,7 @@ public static class ToDomainMapper
 {
 	#region Agent
 	public static Domain.Models.Agent ToDomain(this AgentCreateRequest source,
-      Domain.Models.Hardware hardware,
+      Domain.Models.AgentHardware hardware,
       byte[] secretHash,
       byte[] secretSalt)
 		=> new()
@@ -36,7 +36,6 @@ public static class ToDomainMapper
 	#endregion
 
   #region Agent Metrics
-
   public static AgentMetric ToDomain(this AgentMetricRequestMessage source, Guid agentId)
   {
     return new AgentMetric
@@ -50,11 +49,9 @@ public static class ToDomainMapper
         DiskUsage = source.DiskUsage
     };
   }
-
   #endregion
 
   #region Agent State
-
   public static AgentState ToDomain(this AgentStateChangeRequestMessage source, Guid agentId)
     => new()
     {
@@ -65,11 +62,10 @@ public static class ToDomainMapper
       ToState = source.ToState,
       Trigger = source.Trigger
     };
-
   #endregion
 
-  #region Hardware
-  public static Domain.Models.Hardware ToDomain(this HardwareMessage source, Guid agentId)
+  #region Agent Hardware
+  public static Domain.Models.AgentHardware ToDomain(this AgentHardwareMessage source, Guid agentId)
     => new()
     {
       CpuCores      = source.Cpu.CpuCores,
@@ -77,11 +73,11 @@ public static class ToDomainMapper
       CpuSpeedGHz   = source.Cpu.CpuSpeedGHz,
       CpuArchitecture = source.Cpu.CpuArchitecture,
       GpuModel      = source.Gpu.GpuModel,
-      GpuMemoryMB   = source.Gpu.GpuMemoryMB,
+      GpuMemoryMB   = source.Gpu.GpuMemoryMb,
       RamModel      = source.Ram.RamModel,
-      TotalMemoryMB = source.Ram.TotalMemoryMB,
+      TotalMemoryMB = source.Ram.TotalMemoryMb,
       DiskModel     = source.Disk.DiskModel,
-      TotalDiskMB   = source.Disk.TotalDiskMB,
+      TotalDiskMB   = source.Disk.TotalDiskMb,
       AgentId       = agentId
     };
   #endregion
@@ -137,14 +133,6 @@ public static class ToDomainMapper
 				Name = source.Name
 		};
 
-	private static ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source, long configurationId)
-		=> new()
-		{
-				ProcessId = source.ProcessId,
-				ProcessState = source.ProcessState,
-				ConfigurationId = configurationId
-		};
-
 	private static ProcessInConfiguration ToDomain(this ProcessInConfigurationDto source)
 		=> new()
 		{
@@ -189,15 +177,6 @@ public static class ToDomainMapper
 				RegistryKey = source.RegistryKey
 		};
 
-	private static PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source, long configurationId)
-		=> new()
-		{
-				PolicyId = source.PolicyId,
-				RegistryValue = source.RegistryValue,
-				ConfigurationId = configurationId
-		};
-
-
 	private static PolicyInConfiguration ToDomain(this PolicyInConfigurationDto source)
 		=> new()
 		{
@@ -207,7 +186,6 @@ public static class ToDomainMapper
 	#endregion
 
   #region User
-
   public static Domain.Models.User ToDomain(this UserRegisterRequest source, byte[] passwordHash, byte[] passwordSalt)
   {
     return new Domain.Models.User
@@ -218,6 +196,5 @@ public static class ToDomainMapper
       PasswordSalt = passwordSalt
     };
   }
-
   #endregion
 }

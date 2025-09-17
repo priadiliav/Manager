@@ -19,16 +19,17 @@ public readonly struct PolicyInConfigurationKey(long configurationId, long polic
     => ConfigurationId == other.ConfigurationId && PolicyId == other.PolicyId;
 }
 
-public class PolicyInConfiguration : ICompositeEntity<long>
+public sealed class PolicyInConfiguration : ICompositeEntity<long>
 {
   public long Id => new PolicyInConfigurationKey(ConfigurationId, PolicyId).GetHashCode();
 
 	public long ConfigurationId { get; init; }
 	public long PolicyId { get; init; }
 	public string RegistryValue { get; init; } = string.Empty;
-  public DateTimeOffset CreatedAt { get; set; }
-  public DateTimeOffset? ModifiedAt { get; set; }
 
 	public Configuration Configuration { get; init; } = null!;
 	public Policy Policy { get; init; } = null!;
+
+  public DateTimeOffset CreatedAt { get; set; }
+  public DateTimeOffset? ModifiedAt { get; set; }
 }

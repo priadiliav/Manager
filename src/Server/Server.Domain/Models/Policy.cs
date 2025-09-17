@@ -27,11 +27,11 @@ public class Policy : IEntity<long>
 	public RegistryValueType RegistryValueType { get; set; }
 	public RegistryKeyType RegistryKeyType { get; set; }
 	public string RegistryKey { get; set; } = string.Empty;
-  public DateTimeOffset CreatedAt { get; set; }
-  public DateTimeOffset? ModifiedAt { get; set; }
 
 	public virtual ICollection<PolicyInConfiguration> Configurations { get; init; } = [];
 
+  public DateTimeOffset CreatedAt { get; set; }
+  public DateTimeOffset? ModifiedAt { get; set; }
   /// <summary>
   /// Modifies the current policy with the values from another policy.
   /// </summary>

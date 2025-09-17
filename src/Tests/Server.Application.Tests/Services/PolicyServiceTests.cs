@@ -1,4 +1,5 @@
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos.Policy;
 using Server.Application.Services;
 using Server.Domain.Models;
@@ -10,6 +11,7 @@ public class PolicyServiceTests
 {
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IPolicyRepository> _mockPolicyRepository = null!;
+    private Mock<IAgentRepository> _mockAgentRepository = null!;
     private PolicyService _policyService = null!;
 
     [SetUp]
@@ -17,7 +19,9 @@ public class PolicyServiceTests
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockPolicyRepository = new Mock<IPolicyRepository>();
+        _mockAgentRepository = new Mock<IAgentRepository>();
         _mockUnitOfWork.Setup(x => x.Policies).Returns(_mockPolicyRepository.Object);
+        _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
         _policyService = new PolicyService(_mockUnitOfWork.Object);
     }
 
@@ -192,9 +196,11 @@ public class PolicyServiceTests
             RegistryKey = "NewKey"
         };
 
-        _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(existingPolicy);
-        _mockPolicyRepository.Setup(x => x.ModifyAsync(It.IsAny<Policy>())).Returns(Task.CompletedTask);
-        _mockPolicyRepository.Setup(x => x.GetAsync(policyId)).ReturnsAsync(updatedPolicy);
+        _mockPolicyRepository.SetupSequence(x => x.GetAsync(policyId))
+            .ReturnsAsync(existingPolicy)
+            .ReturnsAsync(updatedPolicy);
+        _mockAgentRepository.Setup(x => x.GetByConfigurationIdsAsync(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync(new List<Agent>());
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -211,7 +217,6 @@ public class PolicyServiceTests
         Assert.That(result.RegistryKey, Is.EqualTo("NewKey"));
 
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Exactly(2));
-        _mockPolicyRepository.Verify(x => x.ModifyAsync(It.IsAny<Policy>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -239,7 +244,6 @@ public class PolicyServiceTests
         Assert.That(result, Is.Null);
 
         _mockPolicyRepository.Verify(x => x.GetAsync(policyId), Times.Once);
-        _mockPolicyRepository.Verify(x => x.ModifyAsync(It.IsAny<Policy>()), Times.Never);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 

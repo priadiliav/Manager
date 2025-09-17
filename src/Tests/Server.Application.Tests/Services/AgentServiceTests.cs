@@ -1,4 +1,6 @@
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Providers;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
 using Server.Domain.Models;
@@ -11,16 +13,19 @@ public class AgentServiceTests
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IAgentRepository> _mockAgentRepository = null!;
     private AgentService _agentService = null!;
-    private IPasswordHasher _passwordHasher = null!;
+    private Mock<IPasswordHasher> _passwordHasherMock = null!;
 
     [SetUp]
     public void Setup()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockAgentRepository = new Mock<IAgentRepository>();
-        _passwordHasher = new Mock<IPasswordHasher>().Object;
+        _passwordHasherMock = new Mock<IPasswordHasher>();
+        _passwordHasherMock
+            .Setup(x => x.CreatePasswordHash(It.IsAny<string>()))
+            .Returns((new byte[] { 1 }, new byte[] { 2 }));
         _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
-        _agentService = new AgentService(_passwordHasher, _mockUnitOfWork.Object);
+        _agentService = new AgentService(_passwordHasherMock.Object, _mockUnitOfWork.Object);
     }
 
     [Test]
@@ -73,7 +78,7 @@ public class AgentServiceTests
             Id = agentId, Name = "TestAgent",
             ConfigurationId = 1,
             Configuration = new Configuration { Id = 1, Name = "Default" },
-            Hardware = new Hardware(),
+            Hardware = new AgentHardware(),
         };
 
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(agent);
@@ -88,7 +93,7 @@ public class AgentServiceTests
         Assert.That(result.IsSynchronized, Is.False);
         Assert.That(result.ConfigurationId, Is.EqualTo(1));
         Assert.That(result.Configuration.Name, Is.EqualTo("Default"));
-        Assert.That(result.Hardware, Is.Not.Null);
+        Assert.That(result.AgentHardware, Is.Not.Null);
 
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Once);
     }
@@ -147,9 +152,9 @@ public class AgentServiceTests
         var request = new AgentModifyRequest { Name = "NewName", ConfigurationId = 2 };
         var updatedAgent = new Agent { Id = agentId, Name = "NewName", ConfigurationId = 2 };
 
-        _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(existingAgent);
-        _mockAgentRepository.Setup(x => x.ModifyAsync(It.IsAny<Agent>())).Returns(Task.CompletedTask);
-        _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(updatedAgent);
+        _mockAgentRepository.SetupSequence(x => x.GetAsync(agentId))
+            .ReturnsAsync(existingAgent)
+            .ReturnsAsync(updatedAgent);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -162,7 +167,6 @@ public class AgentServiceTests
         Assert.That(result.ConfigurationId, Is.EqualTo(2));
 
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Exactly(2));
-        _mockAgentRepository.Verify(x => x.ModifyAsync(It.IsAny<Agent>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -182,7 +186,6 @@ public class AgentServiceTests
         Assert.That(result, Is.Null);
 
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Once);
-        _mockAgentRepository.Verify(x => x.ModifyAsync(It.IsAny<Agent>()), Times.Never);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 
@@ -213,9 +216,9 @@ public class AgentServiceTests
         var request = new AgentModifyRequest { Name = "NewName", ConfigurationId = 2 };
         var updatedAgent = new Agent { Id = agentId, Name = "NewName", ConfigurationId = 2 };
 
-        _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(existingAgent);
-        _mockAgentRepository.Setup(x => x.ModifyAsync(It.IsAny<Agent>())).Returns(Task.CompletedTask);
-        _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(updatedAgent);
+        _mockAgentRepository.SetupSequence(x => x.GetAsync(agentId))
+            .ReturnsAsync(existingAgent)
+            .ReturnsAsync(updatedAgent);
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -223,5 +226,97 @@ public class AgentServiceTests
 
         // Assert
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateAgentAsync_ShouldReturnResponseWithIdAndSecret_AndMarkNotSynchronized()
+    {
+        // Arrange
+        var request = new AgentCreateRequest { Name = "AgentX", ConfigurationId = 42 };
+        Agent? createdAgent = null;
+
+        _mockAgentRepository
+            .Setup(x => x.CreateAsync(It.IsAny<Agent>()))
+            .Callback<Agent>(a => createdAgent = a)
+            .Returns(Task.CompletedTask);
+
+        _mockAgentRepository
+            .Setup(x => x.GetAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(() => createdAgent);
+
+        _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+
+        // Act
+        var response = await _agentService.CreateAgentAsync(request);
+
+        // Assert
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Id, Is.EqualTo(createdAgent!.Id));
+        Assert.That(response.Secret, Is.Not.Null.And.Not.Empty);
+        Assert.That(createdAgent.Status, Is.EqualTo(AgentStatus.NotSynchronized));
+        _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task SyncAgentAsync_WhenAgentDoesNotExist_ShouldReturnNull()
+    {
+        // Arrange
+        var agentId = Guid.NewGuid();
+        _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync((Agent?)null);
+
+        var message = new Common.Messages.Agent.Sync.AgentSyncRequestMessage
+        {
+            Hardware = new Common.Messages.Agent.Sync.AgentHardwareMessage
+            {
+                Cpu = new Common.Messages.Agent.Sync.Hardware.CpuInfoMessage(),
+                Gpu = new Common.Messages.Agent.Sync.Hardware.GpuInfoMessage(),
+                Ram = new Common.Messages.Agent.Sync.Hardware.RamInfoMessage(),
+                Disk = new Common.Messages.Agent.Sync.Hardware.DiskInfoMessage()
+            }
+        };
+
+        // Act
+        var result = await _agentService.SyncAgentAsync(agentId, message);
+
+        // Assert
+        Assert.That(result, Is.Null);
+        _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task SyncAgentAsync_WhenAgentExists_ShouldUpdateHardwareAndStatusAndSave()
+    {
+      // Arrange
+      var agentId = Guid.NewGuid();
+      var existing = new Agent
+      {
+          Id = agentId,
+          Name = "A",
+          ConfigurationId = 1,
+          Hardware = new AgentHardware(),
+          Configuration = new Configuration { Id = 1, Name = "C" }
+      };
+
+      _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(existing);
+      _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+
+      var message = new Common.Messages.Agent.Sync.AgentSyncRequestMessage
+      {
+          Hardware = new Common.Messages.Agent.Sync.AgentHardwareMessage
+          {
+              Cpu = new Common.Messages.Agent.Sync.Hardware.CpuInfoMessage { CpuModel = "m", CpuCores = 4 },
+              Gpu = new Common.Messages.Agent.Sync.Hardware.GpuInfoMessage { GpuModel = "g", GpuMemoryMb = 2048 },
+              Ram = new Common.Messages.Agent.Sync.Hardware.RamInfoMessage { RamModel = "r", TotalMemoryMb = 8192 },
+              Disk = new Common.Messages.Agent.Sync.Hardware.DiskInfoMessage { DiskModel = "d", TotalDiskMb = 256000 }
+          }
+      };
+
+      // Act
+      var result = await _agentService.SyncAgentAsync(agentId, message);
+
+      // Assert
+      Assert.That(result, Is.Not.Null);
+      Assert.That(existing.Status, Is.EqualTo(AgentStatus.Ok));
+      _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 }

@@ -1,4 +1,5 @@
 using Server.Application.Abstractions;
+using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos.Process;
 using Server.Application.Services;
 using Server.Domain.Models;
@@ -10,6 +11,7 @@ public class ProcessServiceTests
 {
     private Mock<IUnitOfWork> _mockUnitOfWork = null!;
     private Mock<IProcessRepository> _mockProcessRepository = null!;
+    private Mock<IAgentRepository> _mockAgentRepository = null!;
     private ProcessService _processService = null!;
 
     [SetUp]
@@ -17,7 +19,9 @@ public class ProcessServiceTests
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockProcessRepository = new Mock<IProcessRepository>();
+        _mockAgentRepository = new Mock<IAgentRepository>();
         _mockUnitOfWork.Setup(x => x.Processes).Returns(_mockProcessRepository.Object);
+        _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
         _processService = new ProcessService(_mockUnitOfWork.Object);
     }
 
@@ -138,9 +142,11 @@ public class ProcessServiceTests
         var request = new ProcessModifyRequest { Name = "NewName" };
         var updatedProcess = new Process { Id = processId, Name = "NewName" };
         
-        _mockProcessRepository.Setup(x => x.GetAsync(processId)).ReturnsAsync(existingProcess);
-        _mockProcessRepository.Setup(x => x.ModifyAsync(It.IsAny<Process>())).Returns(Task.CompletedTask);
-        _mockProcessRepository.Setup(x => x.GetAsync(processId)).ReturnsAsync(updatedProcess);
+        _mockProcessRepository.SetupSequence(x => x.GetAsync(processId))
+            .ReturnsAsync(existingProcess)
+            .ReturnsAsync(updatedProcess);
+        _mockAgentRepository.Setup(x => x.GetByConfigurationIdsAsync(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync(new List<Agent>());
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -152,7 +158,6 @@ public class ProcessServiceTests
         Assert.That(result.Name, Is.EqualTo("NewName"));
         
         _mockProcessRepository.Verify(x => x.GetAsync(processId), Times.Exactly(2));
-        _mockProcessRepository.Verify(x => x.ModifyAsync(It.IsAny<Process>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -172,7 +177,6 @@ public class ProcessServiceTests
         Assert.That(result, Is.Null);
         
         _mockProcessRepository.Verify(x => x.GetAsync(processId), Times.Once);
-        _mockProcessRepository.Verify(x => x.ModifyAsync(It.IsAny<Process>()), Times.Never);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 
@@ -203,9 +207,11 @@ public class ProcessServiceTests
         var request = new ProcessModifyRequest { Name = "NewName" };
         var updatedProcess = new Process { Id = processId, Name = "NewName" };
         
-        _mockProcessRepository.Setup(x => x.GetAsync(processId)).ReturnsAsync(existingProcess);
-        _mockProcessRepository.Setup(x => x.ModifyAsync(It.IsAny<Process>())).Returns(Task.CompletedTask);
-        _mockProcessRepository.Setup(x => x.GetAsync(processId)).ReturnsAsync(updatedProcess);
+        _mockProcessRepository.SetupSequence(x => x.GetAsync(processId))
+            .ReturnsAsync(existingProcess)
+            .ReturnsAsync(updatedProcess);
+        _mockAgentRepository.Setup(x => x.GetByConfigurationIdsAsync(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync(new List<Agent>());
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -304,9 +310,11 @@ public class ProcessServiceTests
         var request = new ProcessModifyRequest { Name = "" };
         var updatedProcess = new Process { Id = processId, Name = "" };
         
-        _mockProcessRepository.Setup(x => x.GetAsync(processId)).ReturnsAsync(existingProcess);
-        _mockProcessRepository.Setup(x => x.ModifyAsync(It.IsAny<Process>())).Returns(Task.CompletedTask);
-        _mockProcessRepository.Setup(x => x.GetAsync(processId)).ReturnsAsync(updatedProcess);
+        _mockProcessRepository.SetupSequence(x => x.GetAsync(processId))
+            .ReturnsAsync(existingProcess)
+            .ReturnsAsync(updatedProcess);
+        _mockAgentRepository.Setup(x => x.GetByConfigurationIdsAsync(It.IsAny<IEnumerable<long>>()))
+            .ReturnsAsync(new List<Agent>());
         _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
         // Act
@@ -318,7 +326,6 @@ public class ProcessServiceTests
         Assert.That(result.Name, Is.EqualTo(""));
         
         _mockProcessRepository.Verify(x => x.GetAsync(processId), Times.Exactly(2));
-        _mockProcessRepository.Verify(x => x.ModifyAsync(It.IsAny<Process>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 } 
