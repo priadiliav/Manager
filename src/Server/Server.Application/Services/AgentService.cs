@@ -72,6 +72,9 @@ public class AgentService (
     var hardware = Hardware.Empty();
     var agentDomain = request.ToDomain(hardware, secretHash, secretSalt);
 
+    // New agents are not synchronized until they check in for the first time
+    agentDomain.UpdateStatus(AgentStatus.NotSynchronized);
+
     await unitOfWork.Agents.CreateAsync(agentDomain);
     await unitOfWork.SaveChangesAsync();
 
@@ -88,7 +91,6 @@ public class AgentService (
 		var agentDomain = request.ToDomain(agentId);
 		existingAgentDomain.ModifyFrom(agentDomain);
 
-		await unitOfWork.Agents.ModifyAsync(existingAgentDomain); // todo: remove, tracked entity
 		await unitOfWork.SaveChangesAsync();
 
 		var updatedAgentDto = await unitOfWork.Agents.GetAsync(agentId);
@@ -101,10 +103,10 @@ public class AgentService (
     if (existingAgentDomain is null)
       return null;
 
-    // Software updates and another static agent information can be handled here in the future
+    // Another static agent information can be handled here in the future
     var hardwareDomain = message.Hardware.ToDomain(agentId);
     existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
-    existingAgentDomain.MarkAsSynchronized();
+    existingAgentDomain.UpdateStatus(AgentStatus.Ok);
 
     await unitOfWork.SaveChangesAsync();
 

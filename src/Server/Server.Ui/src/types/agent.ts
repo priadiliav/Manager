@@ -1,17 +1,16 @@
 import { ConfigurationDto } from "./configuration";
 import { HardwareDto } from "./hardware";
 
-export enum AgentState {
-  Online,
-  Offline,
-  Unknown
+export enum AgentStatus {
+  Ok,
+  NotSynchronized,
 }
 
 export interface AgentDto {
   id: string;
   name: string;
-  state: AgentState;
-  isSynchronized: boolean;
+  status: AgentStatus;
+  lastStatusChangeAt: string | null;
   configurationId: string;
 }
 
@@ -33,11 +32,9 @@ export interface AgentModifyRequest {
 export interface AgentDetailedDto {
   id: string;
   name: string;
-  state: AgentState;
   configurationId: string;
-  isSynchronized: boolean;
-  lastSynchronizedAt: string | null;
-  lastUnsynchronizedAt: string | null;
+  status: AgentStatus;
+  lastStatusChangeAt: string | null;
   configuration: ConfigurationDto;
   hardware: HardwareDto;
 }

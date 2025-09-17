@@ -9,7 +9,7 @@ interface Props {
 
 export const MemoryUsageLineChart = ({ data, labels }: Props) => {
     return (
-        <CollapsibleSection title="Memory Usage (%)" noCard>
+        <CollapsibleSection title="Memory Usage (%)" noCard defaultOpen={false}>
             <Box sx={{ height: 300 }}>
                 <CustomLineChart data={data} labels={labels} />
             </Box>

@@ -34,13 +34,7 @@ namespace Server.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsSynchronized")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("LastSynchronizedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("LastUnsynchronizedAt")
+                    b.Property<DateTimeOffset?>("LastStatusChangeAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("ModifiedAt")
@@ -57,6 +51,9 @@ namespace Server.Infrastructure.Migrations
                     b.Property<byte[]>("SecretSalt")
                         .IsRequired()
                         .HasColumnType("bytea");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

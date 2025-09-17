@@ -9,7 +9,7 @@ interface Props {
 
 export const DiskUsageLineChart = ({ data, labels }: Props) => {
     return (
-        <CollapsibleSection title="Disk Usage (%)" noCard>
+        <CollapsibleSection title="Disk Usage (%)" noCard defaultOpen={false}>
             <Box sx={{ height: 300 }}>
                 <CustomLineChart data={data} labels={labels} />
             </Box>

@@ -5,9 +5,9 @@ using Server.Domain.Models;
 
 namespace Server.Infrastructure.Repositories.TimeSeries;
 
-public class MetricRepository(ClickHouseConnection connection) : IMetricRepository
+public class AgentMetricRepository(ClickHouseConnection connection) : IAgentMetricRepository
 {
-  public async Task CreateAsync(Metric metric)
+  public async Task CreateAsync(AgentMetric agentMetric)
   {
     await using var command = connection.CreateCommand();
 
@@ -17,23 +17,23 @@ public class MetricRepository(ClickHouseConnection connection) : IMetricReposito
       VALUES (@AgentId, @Timestamp, @CpuUsage, @MemoryUsage, @DiskUsage, @NetworkUsage)
     """;
 
-    command.AddParameter("AgentId", metric.AgentId);
-    command.AddParameter("Timestamp", metric.Timestamp);
-    command.AddParameter("CpuUsage", metric.CpuUsage);
-    command.AddParameter("MemoryUsage", metric.MemoryUsage);
-    command.AddParameter("DiskUsage", metric.DiskUsage);
-    command.AddParameter("NetworkUsage", metric.NetworkUsage);
+    command.AddParameter("AgentId", agentMetric.AgentId);
+    command.AddParameter("Timestamp", agentMetric.Timestamp);
+    command.AddParameter("CpuUsage", agentMetric.CpuUsage);
+    command.AddParameter("MemoryUsage", agentMetric.MemoryUsage);
+    command.AddParameter("DiskUsage", agentMetric.DiskUsage);
+    command.AddParameter("NetworkUsage", agentMetric.NetworkUsage);
 
     await command.ExecuteNonQueryAsync();
   }
 
-  public async Task<IEnumerable<Metric>> GetMetricsAsync(
+  public async Task<IEnumerable<AgentMetric>> GetAsync(
       Guid agentId,
       DateTimeOffset from,
       DateTimeOffset to,
       int limit = 50)
   {
-    var metrics = new List<Metric>();
+    var metrics = new List<AgentMetric>();
 
     await using var command = connection.CreateCommand();
 
@@ -41,20 +41,20 @@ public class MetricRepository(ClickHouseConnection connection) : IMetricReposito
     """
       SELECT AgentId, Timestamp, CpuUsage, MemoryUsage, DiskUsage, NetworkUsage
       FROM metrics
-      WHERE AgentId = @AgentId AND Timestamp >= @From AND Timestamp <= @To
-      ORDER BY Timestamp DESC
+      WHERE AgentId = @AgentId AND Timestamp >= @FromState AND Timestamp <= @ToState
+      ORDER BY Timestamp ASC
       LIMIT @Limit
     """;
 
     command.AddParameter("AgentId", agentId);
-    command.AddParameter("From", from);
-    command.AddParameter("To", to);
+    command.AddParameter("FromState", from);
+    command.AddParameter("ToState", to);
     command.AddParameter("Limit", limit);
 
     await using var reader = await command.ExecuteReaderAsync();
     while (await reader.ReadAsync())
     {
-      var metric = new Metric
+      var metric = new AgentMetric
       {
           AgentId = reader.GetGuid(0),
           Timestamp = new DateTimeOffset(reader.GetDateTime(1), TimeSpan.Zero),
@@ -69,5 +69,4 @@ public class MetricRepository(ClickHouseConnection connection) : IMetricReposito
 
     return metrics;
   }
-
 }

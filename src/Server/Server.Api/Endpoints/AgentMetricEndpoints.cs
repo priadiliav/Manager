@@ -1,20 +1,18 @@
 using System.Security.Claims;
 using Common.Messages.Metric;
-using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
 using Server.Application.Services;
 
 namespace Server.Api.Endpoints;
 
-public static class MetricEndpoint
+public static class AgentMetricEndpoints
 {
-	public static void MapMetricEndpoints(this IEndpointRouteBuilder app)
+	public static void MapAgentMetricEndpoints(this IEndpointRouteBuilder app)
 	{
-    var group = app.MapGroup("/api/metrics")
-        .WithTags("Metrics");
+    var group = app.MapGroup("/api/metrics").WithTags("Agent Metrics");
 
     group.MapPost("/publish",
-        async ([FromBody] MetricRequestMessage metricsMessage, IMetricService metricService, HttpContext context) =>
+        async ([FromBody] AgentMetricRequestMessage metricsMessage, IAgentMetricService metricService, HttpContext context) =>
         {
           var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
 
@@ -23,7 +21,7 @@ public static class MetricEndpoint
           if (agentIdGuid == Guid.Empty)
             return Results.Unauthorized();
 
-          var response = await metricService.CreateMetricsAsync(agentIdGuid, metricsMessage);
+          var response = await metricService.CreateAsync(agentIdGuid, metricsMessage);
           return response is not null
               ? Results.Ok(response)
               : Results.BadRequest();
@@ -31,9 +29,11 @@ public static class MetricEndpoint
         .RequireAuthorization(policy => policy.RequireRole("Agent"))
         .WithName("PublishMetrics");
 
-    group.MapGet("/", async (Guid agentId, DateTimeOffset from, DateTimeOffset to, IMetricService metricService) =>
+    group.MapGet("/",
+        async (Guid agentId, DateTimeOffset from, DateTimeOffset to, IAgentMetricService metricService) =>
     {
-      var metrics = await metricService.GetMetricsAsync(agentId, from, to);
+      var metrics = await metricService.GetAsync(agentId, from, to);
+
       return Results.Ok(metrics);
     }).WithName("GetMetrics");
   }

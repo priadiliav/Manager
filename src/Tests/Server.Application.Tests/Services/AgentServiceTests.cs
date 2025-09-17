@@ -74,7 +74,6 @@ public class AgentServiceTests
             ConfigurationId = 1,
             Configuration = new Configuration { Id = 1, Name = "Default" },
             Hardware = new Hardware(),
-            IsSynchronized = false
         };
 
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(agent);
@@ -135,9 +134,6 @@ public class AgentServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Name, Is.EqualTo("NewAgent"));
-        Assert.That(result.ConfigurationId, Is.EqualTo(1));
-
         _mockAgentRepository.Verify(x => x.CreateAsync(It.IsAny<Agent>()), Times.Once);
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
     }

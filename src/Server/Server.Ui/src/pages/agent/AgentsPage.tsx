@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { CustomTable } from "../../components/table/CustomTable";
 import { useEffect, useState } from "react";
-import { AgentDto, AgentState } from "../../types/agent";
+import { AgentDto, AgentStatus } from "../../types/agent";
 import { fetchAgents } from "../../api/agent";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { Button } from "@mui/material";
@@ -14,14 +14,13 @@ const columns = [
         label: 'State',
         minWidth: 120,
         render: (row: AgentDto) => {
-            switch (row.state) {
-                case AgentState.Online: return <span style={{ color: 'green' }}>Online</span>;
-                case AgentState.Offline: return <span style={{ color: 'red' }}>Offline</span>;
+            switch (row.status) {
+                case AgentStatus.Ok: return <span style={{ color: 'green' }}>Ok</span>;
+                case AgentStatus.NotSynchronized: return <span style={{ color: 'red' }}>Not Synchronized</span>;
                 default: return <span style={{ color: 'gray' }}>Unknown</span>;
             }
         }
-    },
-    { id: 'isSynchronized', label: 'Is Synchronized', minWidth: 150, render: (row: AgentDto) => row.isSynchronized ? "Yes" : "No" },
+    }
 ];
 
 export const AgentsPage = () => {
@@ -62,7 +61,7 @@ export const AgentsPage = () => {
     //#endregion
 
     return (
-        <FetchContentWrapper loading={loading} error={error} onRetry={loadAgents}>
+        <FetchContentWrapper loading={loading} error={error}>
             <Button
                 size="small"
                 variant="contained"

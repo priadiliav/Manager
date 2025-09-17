@@ -9,6 +9,7 @@ public enum AgentOverallState
   Authenticating,
   Synchronizing,
   Running,
+  Stopping,
   Error
 }
 
@@ -16,6 +17,7 @@ public enum AgentOverallTrigger
 {
   Start,
   Synchronize,
+  Stop,
   Run,
   ErrorOccurred
 }
@@ -56,26 +58,32 @@ public class OverallStateMachine
     Machine.Configure(AgentOverallState.Authenticating)
         .OnEntryAsync(HandleAuthenticationStateChangeAsync)
         .Permit(AgentOverallTrigger.Synchronize, AgentOverallState.Synchronizing)
-        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error);
+        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error)
+        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Stopping);
 
     Machine.Configure(AgentOverallState.Synchronizing)
         .OnEntryAsync(HandleSynchronizingStateChangeAsync)
         .Permit(AgentOverallTrigger.Run, AgentOverallState.Running)
-        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error);
+        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error)
+        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Stopping);
 
     Machine.Configure(AgentOverallState.Running)
         .OnEntryAsync(HandleRunningStateChangeAsync)
-        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error);
+        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error)
+        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Stopping);
+
+    Machine.Configure(AgentOverallState.Stopping)
+        .OnEntryAsync(HandleStoppingStateChangeAsync)
+        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Idle);
 
     Machine.Configure(AgentOverallState.Error)
         .OnEntryAsync(HandleErrorStateChangeAsync);
   }
 
-  public async Task StartAsync()
-  {
-    await _wrapper.FireAsync(Machine, AgentOverallTrigger.Start);
-  }
+  public async Task StartAsync() => await _wrapper.FireAsync(Machine, AgentOverallTrigger.Start);
+  public async Task StopAsync() => await _wrapper.FireAsync(Machine, AgentOverallTrigger.Stop);
 
+  #region Handlers
   private async Task HandleSynchronizingStateChangeAsync()
   {
     await _syncMachine.StartAsync();
@@ -89,12 +97,11 @@ public class OverallStateMachine
       await Machine.FireAsync(AgentOverallTrigger.Run);
     }
   }
-
   private async Task HandleAuthenticationStateChangeAsync()
   {
     await _authMachine.StartAsync();
 
-    if (_authMachine.CurrentState is AgentAuthenticationState.Finished)
+    if (_authMachine.CurrentState is AgentAuthenticationState.Finishing)
     {
       await _wrapper.FireAsync(Machine, AgentOverallTrigger.Synchronize);
     }
@@ -103,7 +110,6 @@ public class OverallStateMachine
       await _wrapper.FireAsync(Machine, AgentOverallTrigger.ErrorOccurred);
     }
   }
-
   private async Task HandleRunningStateChangeAsync()
   {
     await _workMachine.StartAsync();
@@ -113,9 +119,27 @@ public class OverallStateMachine
       await _wrapper.FireAsync(Machine, AgentOverallTrigger.ErrorOccurred);
     }
   }
+  private async Task HandleStoppingStateChangeAsync()
+  {
+      if (_workMachine.CurrentState is AgentWorkState.Processing)
+      {
+        // Logic to stop work machine
+      }
 
-  private async Task HandleErrorStateChangeAsync()
+      if (_syncMachine.CurrentState is AgentSyncState.Processing)
+      {
+        // Logic to stop sync machine
+      }
+
+      if (_authMachine.CurrentState is AgentAuthenticationState.Processing)
+      {
+        // Logic to stop auth machine
+      }
+  }
+  private Task HandleErrorStateChangeAsync()
   {
       _logger.LogInformation("Handling error state, stopping work state machine.");
+      return Task.CompletedTask;
   }
+  #endregion
 }

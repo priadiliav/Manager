@@ -2,25 +2,25 @@ import { AgentDto, AgentCreateRequest, AgentCreateResponse, AgentModifyRequest, 
 import api from './axios';
 
 export const fetchAgents = async (): Promise<AgentDto[]> => {
-  const response = await api.get<AgentDto[]>('/agents');
+  const response = await api.get<AgentDto[]>('api/agents');
   return response.data;
 };
 
 export const fetchAgentById = async (id: string): Promise<AgentDetailedDto> => {
-  const response = await api.get<AgentDetailedDto>(`/agents/${id}`);
+  const response = await api.get<AgentDetailedDto>(`api/agents/${id}`);
   return response.data;
 }
 
 export const createAgent = async (agent: AgentCreateRequest): Promise<AgentCreateResponse> => {
-  const response = await api.post<AgentCreateResponse>('/agents', agent);
+  const response = await api.post<AgentCreateResponse>('api/agents', agent);
   return response.data;
 };
 
 export const modifyAgent = async (id: string, agent: AgentModifyRequest): Promise<AgentDto> => {
-  const response = await api.put<AgentDto>(`/agents/${id}`, agent);
+  const response = await api.put<AgentDto>(`api/agents/${id}`, agent);
   return response.data;
 };
 
 export const deleteAgent = async (id: string): Promise<void> => {
-  await api.delete<void>(`/agents/${id}`);
+  await api.delete<void>(`api/agents/${id}`);
 };

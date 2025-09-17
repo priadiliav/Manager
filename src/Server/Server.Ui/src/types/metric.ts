@@ -1,4 +1,4 @@
-export interface MetricDto {
+export interface AgentMetricDto {
   agentId: string;
   timestamp: string; // ISO 8601 format
   cpuUsage: number; // in percentage

@@ -17,14 +17,14 @@ builder.Services.AddSingleton<StateMachineWrapper>(sp =>
 {
   var logger = sp.GetRequiredService<ILogger<StateMachineWrapper>>();
   var client = sp.GetRequiredService<ICommunicationClient>();
-  return new StateMachineWrapper(logger, client);
+  return new StateMachineWrapper(logger, client, sp.GetRequiredService<AgentStateContext>());
 });
 builder.Services.AddSingleton<AuthStateMachine>(sp =>
 {
   var wrapper = sp.GetRequiredService<StateMachineWrapper>();
   var context = sp.GetRequiredService<AgentStateContext>();
   var client = sp.GetRequiredService<ICommunicationClient>();
-  return new AuthStateMachine(wrapper,client, context);
+  return new AuthStateMachine(client, wrapper, context);
 });
 builder.Services.AddSingleton<SyncStateMachine>();
 builder.Services.AddSingleton<WorkStateMachine>();
@@ -46,7 +46,6 @@ builder.Services.AddSingleton<OverallStateMachine>(sp =>
   return overall;
 });
 #endregion
-
 
 #region Infrastructure layer configurations
 builder.Services.AddSingleton<HttpClient>(_ => new HttpClient

@@ -9,7 +9,8 @@ public enum AgentAuthenticationState
 {
     Idle,
     Processing,
-    Finished,
+    Finishing,
+    Stopping,
     Error
 }
 
@@ -17,6 +18,7 @@ public enum AuthenticationTrigger
 {
     Start,
     Success,
+    Stop,
     ErrorOccurred
 }
 
@@ -31,16 +33,18 @@ public class AuthStateMachine
     public AgentAuthenticationState CurrentState => Machine.State;
 
     public AuthStateMachine(
-        StateMachineWrapper wrapper,
         ICommunicationClient communicationClient,
+        StateMachineWrapper wrapper,
         AgentStateContext context)
     {
-        _communicationClient = communicationClient ?? throw new ArgumentNullException(nameof(communicationClient));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
+        _communicationClient = communicationClient;
+        _context = context;
+        _wrapper = wrapper;
 
+        // Initialize state machine
         Machine = new StateMachine<AgentAuthenticationState, AuthenticationTrigger>(AgentAuthenticationState.Idle);
 
+        // Configure state machine
         ConfigureStateMachine();
     }
 
@@ -52,21 +56,23 @@ public class AuthStateMachine
 
         Machine.Configure(AgentAuthenticationState.Processing)
             .OnEntryAsync(HandleProcessingAsync)
-            .Permit(AuthenticationTrigger.Success, AgentAuthenticationState.Finished)
+            .Permit(AuthenticationTrigger.Success, AgentAuthenticationState.Finishing)
+            .Permit(AuthenticationTrigger.Stop, AgentAuthenticationState.Stopping)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
 
-        Machine.Configure(AgentAuthenticationState.Finished)
+        Machine.Configure(AgentAuthenticationState.Finishing)
             .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
+
+        Machine.Configure(AgentAuthenticationState.Stopping)
+            .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Idle);
 
         Machine.Configure(AgentAuthenticationState.Error)
             .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Processing);
     }
 
-    public async Task StartAsync()
-    {
-        await _wrapper.FireAsync(Machine, AuthenticationTrigger.Start);
-    }
+    public async Task StartAsync() => await _wrapper.FireAsync(Machine, AuthenticationTrigger.Start);
 
+    #region Handlers
     private async Task HandleProcessingAsync()
     {
         try
@@ -76,8 +82,8 @@ public class AuthStateMachine
                 authenticate: false,
                 message: new AgentLoginRequestMessage
                 {
-                    AgentId = Guid.Parse("01993df8-fef4-784d-a677-d51ee89c7e6d"),
-                    Secret = "88692b37-bb69-4513-a02b-583b62c5df88"
+                    AgentId = AgentStateContext.Id,
+                    Secret = AgentStateContext.Secret.ToString()
                 },
                 cancellationToken: CancellationToken.None);
 
@@ -93,4 +99,5 @@ public class AuthStateMachine
             await _wrapper.FireAsync(Machine, AuthenticationTrigger.ErrorOccurred);
         }
     }
+    #endregion
 }

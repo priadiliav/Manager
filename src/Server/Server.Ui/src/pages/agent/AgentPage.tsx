@@ -4,13 +4,13 @@ import { createAgent, fetchAgentById } from "../../api/agent";
 import { AgentCreateRequest, AgentCreateResponse, AgentDetailedDto } from "../../types/agent";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { AgentForm } from "../../components/agents/AgentForm";
-import { Box, Button, Grid, IconButton, TextField, Typography } from "@mui/material";
+import { Box, Button, Grid } from "@mui/material";
 import { AgentCharts } from "../../components/agents/AgentCharts";
 import { HardwareInformation } from "../../components/agents/HardwareInformation";
-import CustomDialog from "../../components/dialogs/CustomDialog";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { SynchronizationInformation } from "../../components/agents/SynchronizationInformation";
+import { AgentStatusInfo } from "../../components/agents/AgentStatusInfo";
 import { StateInformation } from "../../components/agents/StateInformation";
+import { SignalRClient } from "../../api/signalRClient";
+import { AgentCreatedDialog } from "../../components/agents/AgentCreatedDialog";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -27,7 +27,9 @@ export const AgentPage = () => {
 
     const [secretWindowOpen, setSecretWindowOpen] = useState(false);
     const [createdAgentResponse, setCreatedAgentResponse] = useState<AgentCreateResponse | null>(null);
+    const [signalRClient] = useState(() => new SignalRClient("agentHub"));
 
+    //#region Effects
     useEffect(() => {
         if (isEdit && id) {
             const loadAgent = async () => {
@@ -46,6 +48,42 @@ export const AgentPage = () => {
         }
     }, [id, isEdit]);
 
+    useEffect(() => {
+        if (!isEdit || !id) return;
+
+        const startConnection = async () => {
+            try {
+                await signalRClient.start();
+                console.log("SignalR connected");
+
+                await signalRClient.invoke("SubscribeToAgent", id);
+                console.log("Subscribed to agent", id);
+            } catch (err) {
+                console.error("SignalR start/invoke error:", err);
+            }
+        };
+
+        startConnection();
+
+        return () => {
+            const cleanup = async () => {
+                try {
+                    await signalRClient.invoke("UnsubscribeFromAgent", id);
+                    console.log("Unsubscribed from agent", id);
+                } catch (err) {
+                    console.warn("Unsubscribe failed:", err);
+                } finally {
+                    await signalRClient.stop();
+                    console.log("SignalR stopped");
+                }
+            };
+
+            cleanup();
+        };
+    }, [id, isEdit, signalRClient]);
+    //#endregion
+
+    //#region Handlers
     const handleSubmit = async () => {
         try {
             if (isEdit && id) {
@@ -66,12 +104,7 @@ export const AgentPage = () => {
         setSecretWindowOpen(false);
         navigate(`/agents/${createdAgentResponse?.id}`);
     };
-
-    const handleCopySecret = () => {
-        if (createdAgentResponse) {
-            navigator.clipboard.writeText(createdAgentResponse.secret || "");
-        }
-    };
+    //#endregion
 
     return (
         <FetchContentWrapper loading={loading} error={error}>
@@ -119,61 +152,38 @@ export const AgentPage = () => {
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                         {isEdit && (
-                            <SynchronizationInformation
-                                lastSyncAt={agent?.lastSynchronizedAt || null}
-                                lastUnsyncAt={agent?.lastUnsynchronizedAt || null}
-                                isSynchronized={agent?.isSynchronized || false}
+                            <AgentStatusInfo
+                                status={agent?.status || 0}
+                                lastStatusChangeAt={agent?.lastStatusChangeAt || null}
                             />
-                        )}
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        {isEdit && (
-                            <StateInformation />
                         )}
                     </Grid>
                 </Grid>
                 <Grid size={{ xs: 12, md: 8 }}>
-                    {isEdit && (
-                        <AgentCharts
-                            agentId={id || ""}
-                        />)}
+                    <Grid size={{ xs: 12, md: 12 }}>
+                        {isEdit && (
+                            <AgentCharts
+                                agentId={id || ""}
+                                signalRClient={signalRClient}
+                            />)}
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 12 }}>
+                        {isEdit && (
+                            <StateInformation
+                                agentId={id || ""}
+                                signalRClient={signalRClient}
+                            />
+                        )}
+                    </Grid>
                 </Grid>
+
             </Grid>
 
-            <CustomDialog
-                open={secretWindowOpen}
-                title="Agent Secret"
-                onClose={handleSecretWindowClose}
-                submitLabel="OK"
-                onSubmit={handleSecretWindowClose}
-            >
-                <Typography gutterBottom>
-                    Agent id
-                </Typography>
-                <TextField
-                    fullWidth
-                    value={createdAgentResponse?.secret || ""}
-                    InputProps={{
-                        readOnly: true,
-                        value: createdAgentResponse?.id || ""
-                    }}
-                />
-                <Typography gutterBottom>
-                    Please copy this secret. You will not be able to see it again:
-                </Typography>
-                <TextField
-                    fullWidth
-                    value={createdAgentResponse?.secret || ""}
-                    InputProps={{
-                        readOnly: true,
-                        endAdornment: (
-                            <IconButton onClick={handleCopySecret}>
-                                <ContentCopyIcon />
-                            </IconButton>
-                        ),
-                    }}
-                />
-            </CustomDialog>
+            <AgentCreatedDialog
+                secretWindowOpen={secretWindowOpen}
+                createdAgentResponse={createdAgentResponse}
+                handleClose={handleSecretWindowClose}
+            />
         </FetchContentWrapper>
     );
 };

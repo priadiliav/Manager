@@ -16,7 +16,7 @@ export const HardwareInformation = ({ initialData }: Props) => {
     ];
 
     return (
-        <CollapsibleSection title="Hardware Information">
+        <CollapsibleSection title="Hardware Information" >
             <KeyValueTable rows={rows} />
         </CollapsibleSection>
     );
