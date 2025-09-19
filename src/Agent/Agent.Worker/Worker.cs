@@ -10,11 +10,4 @@ public class Worker(OverallStateMachine overallStateMachine) : BackgroundService
 
     await overallStateMachine.StartAsync();
   }
-
-  public override async Task StopAsync(CancellationToken cancellationToken)
-  {
-    await overallStateMachine.StopAsync();
-
-    await base.StopAsync(cancellationToken);
-  }
 }

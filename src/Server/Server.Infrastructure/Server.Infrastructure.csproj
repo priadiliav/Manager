@@ -18,19 +18,11 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-        <PackageReference Include="MQTTNet.Client" Version="2.0.2" />
-        <PackageReference Include="MQTTnet.ClientLib" Version="1.0.1" />
-        <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.3.7.1207" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
-        <PackageReference Include="KubernetesClient" Version="17.0.4" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Server.Application\Server.Application.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Migrations\PostgresSql\" />
     </ItemGroup>
 
 </Project>

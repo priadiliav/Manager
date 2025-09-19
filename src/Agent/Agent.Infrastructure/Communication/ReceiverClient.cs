@@ -3,6 +3,10 @@ using Common.Messages;
 
 namespace Agent.Infrastructure.Communication;
 
+/// <summary>
+/// Client for receiving messages from a specified URL.
+/// </summary>
+/// <param name="communicationClient"></param>
 public class ReceiverClient(ICommunicationClient communicationClient) : IReceiverClient
 {
   public async Task ReceiveAsync<TResponse>(

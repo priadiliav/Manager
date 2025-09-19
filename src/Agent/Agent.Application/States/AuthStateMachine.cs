@@ -1,20 +1,20 @@
-using Agent.Application.Abstractions;
+using Agent.Application.Services;
+using Agent.Application.Utils;
 using Agent.Domain.Context;
-using Common.Messages.Agent.Login;
+using Microsoft.Extensions.Logging;
 using Stateless;
 
 namespace Agent.Application.States;
 
-public enum AgentAuthenticationState
+public enum AuthState
 {
     Idle,
     Processing,
-    Finishing,
     Stopping,
     Error
 }
 
-public enum AuthenticationTrigger
+public enum AuthTrigger
 {
     Start,
     Success,
@@ -24,80 +24,70 @@ public enum AuthenticationTrigger
 
 public class AuthStateMachine
 {
-    public StateMachine<AgentAuthenticationState, AuthenticationTrigger> Machine { get; }
+    private readonly StateMachine<AuthState, AuthTrigger> _machine;
+    private readonly ILogger<AuthStateMachine> _logger;
 
-    private readonly ICommunicationClient _communicationClient;
-    private readonly StateMachineWrapper _wrapper;
-    private readonly AgentStateContext _context;
-
-    public AgentAuthenticationState CurrentState => Machine.State;
+    private readonly IAuthService _authService;
 
     public AuthStateMachine(
-        ICommunicationClient communicationClient,
-        StateMachineWrapper wrapper,
-        AgentStateContext context)
+        ILogger<AuthStateMachine> logger,
+        IAuthService authService,
+        StateMachineWrapper wrapper)
     {
-        _communicationClient = communicationClient;
-        _context = context;
-        _wrapper = wrapper;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
 
         // Initialize state machine
-        Machine = new StateMachine<AgentAuthenticationState, AuthenticationTrigger>(AgentAuthenticationState.Idle);
+        _machine = new StateMachine<AuthState, AuthTrigger>(AuthState.Idle);
 
         // Configure state machine
         ConfigureStateMachine();
+
+        // Register state machine with the wrapper
+        wrapper.RegisterMachine(_machine, "Authentication");
     }
 
     private void ConfigureStateMachine()
     {
-        Machine.Configure(AgentAuthenticationState.Idle)
-            .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Processing)
-            .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
+      _machine.Configure(AuthState.Idle)
+          .Permit(AuthTrigger.Start, AuthState.Processing);
 
-        Machine.Configure(AgentAuthenticationState.Processing)
-            .OnEntryAsync(HandleProcessingAsync)
-            .Permit(AuthenticationTrigger.Success, AgentAuthenticationState.Finishing)
-            .Permit(AuthenticationTrigger.Stop, AgentAuthenticationState.Stopping)
-            .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
+      _machine.Configure(AuthState.Processing)
+          .OnEntryAsync(HandleProcessingAsync)
+          .Permit(AuthTrigger.Success, AuthState.Stopping)
+          .Permit(AuthTrigger.Stop, AuthState.Stopping)
+          .Permit(AuthTrigger.ErrorOccurred, AuthState.Error);
 
-        Machine.Configure(AgentAuthenticationState.Finishing)
-            .Permit(AuthenticationTrigger.ErrorOccurred, AgentAuthenticationState.Error);
+      _machine.Configure(AuthState.Stopping)
+          .Permit(AuthTrigger.Start, AuthState.Idle);
 
-        Machine.Configure(AgentAuthenticationState.Stopping)
-            .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Idle);
-
-        Machine.Configure(AgentAuthenticationState.Error)
-            .Permit(AuthenticationTrigger.Start, AgentAuthenticationState.Processing);
+      _machine.Configure(AuthState.Error)
+          .Permit(AuthTrigger.Start, AuthState.Processing);
     }
 
-    public async Task StartAsync() => await _wrapper.FireAsync(Machine, AuthenticationTrigger.Start);
+    public AuthState CurrentState => _machine.State;
+    public async Task StartAsync()
+      => await StateMachineWrapper.FireAsync(_machine, AuthTrigger.Start);
+    public async Task StopAsync()
+      => await StateMachineWrapper.FireAsync(_machine, AuthTrigger.Stop);
 
     #region Handlers
+    /// <summary>
+    /// Handles the processing state by attempting to authenticate.
+    /// On success, it triggers the Success transition; on failure, it triggers the ErrorOccurred transition.
+    /// </summary>
     private async Task HandleProcessingAsync()
-    {
-        try
-        {
-            var authResponse = await _communicationClient.PostAsync<AgentLoginResponseMessage, AgentLoginRequestMessage>(
-                url: "auth/agent/login",
-                authenticate: false,
-                message: new AgentLoginRequestMessage
-                {
-                    AgentId = AgentStateContext.Id,
-                    Secret = AgentStateContext.Secret.ToString()
-                },
-                cancellationToken: CancellationToken.None);
+      => await StateMachineExecutor.ExecuteAsync(_machine, _logger,
+          async () => await _authService.AuthenticateAsync(),
+          AuthTrigger.Success, AuthTrigger.ErrorOccurred);
 
-            if (authResponse is null || string.IsNullOrWhiteSpace(authResponse.Token))
-                throw new UnauthorizedAccessException();
-
-            _context.AuthenticationToken = authResponse.Token;
-
-            await _wrapper.FireAsync(Machine, AuthenticationTrigger.Success);
-        }
-        catch (Exception)
-        {
-            await _wrapper.FireAsync(Machine, AuthenticationTrigger.ErrorOccurred);
-        }
-    }
+    /// <summary>
+    /// Handles the stopping state by performing any necessary cleanup.
+    /// After a delay, it triggers the Start transition to return to the Idle state.
+    /// </summary>
+    private async Task HandleStoppingAsync()
+      => await StateMachineExecutor.ExecuteAsync(_machine, _logger,
+          async () => await Task.Delay(3000),
+          AuthTrigger.Start, AuthTrigger.ErrorOccurred);
     #endregion
 }

@@ -4,14 +4,14 @@ using Common.Messages.Agent.State;
 using Microsoft.Extensions.Logging;
 using Stateless;
 
-namespace Agent.Application.States;
+namespace Agent.Application.Utils;
 
 public class StateMachineWrapper(
     ILogger<StateMachineWrapper> logger,
     ICommunicationClient communicationClient,
     AgentStateContext agentStateContext)
 {
-  public void RegisterMachine<TState, TTrigger>(StateMachine<TState, TTrigger> machine)
+  public void RegisterMachine<TState, TTrigger>(StateMachine<TState, TTrigger> machine, string machineName)
       where TState : struct, Enum
       where TTrigger : struct, Enum
   {
@@ -28,7 +28,7 @@ public class StateMachineWrapper(
           url: $"states/{AgentStateContext.Id}",
           message: new AgentStateChangeRequestMessage
           {
-              Machine = typeof(TState).Name,
+              Machine = machineName,
               FromState = t.Source.ToString(),
               Trigger = t.Trigger.ToString(),
               ToState = t.Destination.ToString(),
@@ -40,7 +40,7 @@ public class StateMachineWrapper(
     });
   }
 
-  public Task FireAsync<TState, TTrigger>(StateMachine<TState, TTrigger> machine, TTrigger trigger)
+  public static Task FireAsync<TState, TTrigger>(StateMachine<TState, TTrigger> machine, TTrigger trigger)
       where TState : struct, Enum
       where TTrigger : struct, Enum
   {

@@ -1,6 +1,5 @@
-namespace Common.Messages.Metric;
+namespace Common.Messages.Agent.Metric;
 
-//todo: replace by record
 public class AgentMetricRequestMessage : IMessage
 {
     public DateTimeOffset Timestamp { get; init; } = DateTime.UtcNow;
@@ -11,5 +10,5 @@ public class AgentMetricRequestMessage : IMessage
     public double Uptime { get; set; }
 
     public override string ToString()
-        => $"Timestamp: {Timestamp}, CPU: {CpuUsage}%, Memory: {MemoryUsage}%, Disk: {DiskUsage}%, Network: {NetworkUsage} B/s, Uptime: {Uptime}s";
+        => $"Timestamp: {Timestamp}, CPU: {CpuUsage}%, Memory: {MemoryUsage}%, Disk: {DiskUsage}%, Network: {NetworkUsage} kb/s, Uptime: {Uptime}s";
 }

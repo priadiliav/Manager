@@ -1,4 +1,4 @@
-using Common.Messages.Metric;
+using Common.Messages.Agent.Metric;
 using Server.Application.Abstractions.Notifiers;
 using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos;
@@ -34,12 +34,12 @@ public class AgentMetricService(
   {
     var metric = agentMetricRequestMessage.ToDomain(agentId);
     var metricDto = metric.ToDto();
-    var metricMessage = metric.ToMessage();
+    var metricMessageResponse = metric.ToMessage();
 
     await agentMetricRepository.CreateAsync(metric);
     await agentMetricNotifier.NotifyAsync(agentId, metricDto);
 
-    return metricMessage;
+    return metricMessageResponse;
   }
 
   public async Task<IEnumerable<AgentMetricDto>> GetAsync(Guid agentId, DateTimeOffset from, DateTimeOffset to)

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Common.Messages.Metric;
+using Common.Messages.Agent.Metric;
 using Microsoft.AspNetCore.Mvc;
 using Server.Application.Services;
 

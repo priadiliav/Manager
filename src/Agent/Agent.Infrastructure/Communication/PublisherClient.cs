@@ -3,6 +3,10 @@ using Common.Messages;
 
 namespace Agent.Infrastructure.Communication;
 
+/// <summary>
+/// Client for publishing messages to a specified URL.
+/// </summary>
+/// <param name="communicationClient"></param>
 public class PublisherClient(ICommunicationClient communicationClient) : IPublisherClient
 {
   public async Task<TResponse?> PublishAsync<TResponse, TRequest>(

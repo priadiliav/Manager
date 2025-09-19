@@ -1,9 +1,11 @@
+using Agent.Application.States.Workers;
+using Agent.Application.Utils;
 using Microsoft.Extensions.Logging;
 using Stateless;
 
 namespace Agent.Application.States;
 
-public enum AgentOverallState
+public enum OverallState
 {
   Idle,
   Authenticating,
@@ -13,133 +15,162 @@ public enum AgentOverallState
   Error
 }
 
-public enum AgentOverallTrigger
+public enum OverallTrigger
 {
   Start,
   Synchronize,
-  Stop,
   Run,
+  Stop,
   ErrorOccurred
 }
 
 public class OverallStateMachine
 {
-  public StateMachine<AgentOverallState, AgentOverallTrigger> Machine { get; }
-
+  private readonly StateMachine<OverallState, OverallTrigger> _machine;
   private readonly ILogger<OverallStateMachine> _logger;
-  private readonly StateMachineWrapper _wrapper;
 
   private readonly AuthStateMachine _authMachine;
   private readonly SyncStateMachine _syncMachine;
-  private readonly WorkStateMachine _workMachine;
+  private readonly SupervisorStateMachine _supervisorMachine;
 
   public OverallStateMachine(
     ILogger<OverallStateMachine> logger,
     StateMachineWrapper wrapper,
     AuthStateMachine authMachine,
     SyncStateMachine syncMachine,
-    WorkStateMachine workMachine)
+    SupervisorStateMachine supervisorMachine)
   {
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     _authMachine = authMachine ?? throw new ArgumentNullException(nameof(authMachine));
     _syncMachine = syncMachine ?? throw new ArgumentNullException(nameof(syncMachine));
-    _workMachine = workMachine ?? throw new ArgumentNullException(nameof(workMachine));
-    _wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
+    _supervisorMachine = supervisorMachine ?? throw new ArgumentNullException(nameof(supervisorMachine));
 
-    Machine = new StateMachine<AgentOverallState, AgentOverallTrigger>(AgentOverallState.Idle);
+    // Initialize state machine
+    _machine = new StateMachine<OverallState, OverallTrigger>(OverallState.Idle);
+
+    // Configure state machine
     ConfigureAsync();
+
+    // Register state machine with the wrapper
+    wrapper.RegisterMachine(_machine, "Overall");
   }
 
   private void ConfigureAsync()
   {
-    Machine.Configure(AgentOverallState.Idle)
-        .Permit(AgentOverallTrigger.Start, AgentOverallState.Authenticating);
+    _machine.Configure(OverallState.Idle)
+        .Permit(OverallTrigger.Start, OverallState.Authenticating);
 
-    Machine.Configure(AgentOverallState.Authenticating)
-        .OnEntryAsync(HandleAuthenticationStateChangeAsync)
-        .Permit(AgentOverallTrigger.Synchronize, AgentOverallState.Synchronizing)
-        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error)
-        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Stopping);
+    _machine.Configure(OverallState.Authenticating)
+        .OnEntryAsync(HandleAuthenticatingAsync)
+        .Permit(OverallTrigger.Synchronize, OverallState.Synchronizing)
+        .Permit(OverallTrigger.ErrorOccurred, OverallState.Error)
+        .Permit(OverallTrigger.Stop, OverallState.Stopping);
 
-    Machine.Configure(AgentOverallState.Synchronizing)
-        .OnEntryAsync(HandleSynchronizingStateChangeAsync)
-        .Permit(AgentOverallTrigger.Run, AgentOverallState.Running)
-        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error)
-        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Stopping);
+    _machine.Configure(OverallState.Synchronizing)
+        .OnEntryAsync(HandleSynchronizingAsync)
+        .Permit(OverallTrigger.Run, OverallState.Running)
+        .Permit(OverallTrigger.ErrorOccurred, OverallState.Error)
+        .Permit(OverallTrigger.Stop, OverallState.Stopping);
 
-    Machine.Configure(AgentOverallState.Running)
-        .OnEntryAsync(HandleRunningStateChangeAsync)
-        .Permit(AgentOverallTrigger.ErrorOccurred, AgentOverallState.Error)
-        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Stopping);
+    _machine.Configure(OverallState.Running)
+        .OnEntryAsync(HandleRunningAsync)
+        .Permit(OverallTrigger.ErrorOccurred, OverallState.Error)
+        .Permit(OverallTrigger.Stop, OverallState.Stopping);
 
-    Machine.Configure(AgentOverallState.Stopping)
-        .OnEntryAsync(HandleStoppingStateChangeAsync)
-        .Permit(AgentOverallTrigger.Stop, AgentOverallState.Idle);
+    _machine.Configure(OverallState.Stopping)
+        .OnEntryAsync(HandleStoppingAsync)
+        .Permit(OverallTrigger.Stop, OverallState.Idle);
 
-    Machine.Configure(AgentOverallState.Error)
-        .OnEntryAsync(HandleErrorStateChangeAsync);
+    _machine.Configure(OverallState.Error)
+        .OnEntryAsync(HandleErrorAsync)
+        .Permit(OverallTrigger.Start, OverallState.Idle);
   }
 
-  public async Task StartAsync() => await _wrapper.FireAsync(Machine, AgentOverallTrigger.Start);
-  public async Task StopAsync() => await _wrapper.FireAsync(Machine, AgentOverallTrigger.Stop);
+  public async Task StartAsync()
+    => await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Start);
+  public async Task StopAsync()
+    => await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Stop);
 
   #region Handlers
-  private async Task HandleSynchronizingStateChangeAsync()
+  /// <summary>
+  /// Handles the Synchronizing state by starting the synchronization process.
+  /// On success, it triggers the Run transition; on error, it triggers the Error
+  /// </summary>
+  private async Task HandleSynchronizingAsync()
   {
     await _syncMachine.StartAsync();
 
-    if (_syncMachine.CurrentState is AgentSyncState.Error)
+    if (_syncMachine.CurrentState is SyncState.Error)
     {
-      await Machine.FireAsync(AgentOverallTrigger.ErrorOccurred);
+      await _machine.FireAsync(OverallTrigger.ErrorOccurred);
     }
     else
     {
-      await Machine.FireAsync(AgentOverallTrigger.Run);
+      await _machine.FireAsync(OverallTrigger.Run);
     }
   }
-  private async Task HandleAuthenticationStateChangeAsync()
+
+  /// <summary>
+  /// Handles the Authenticating state by starting the authentication process.
+  /// On success, it triggers the Synchronize transition; on error, it triggers the Error
+  /// </summary>
+  private async Task HandleAuthenticatingAsync()
   {
     await _authMachine.StartAsync();
 
-    if (_authMachine.CurrentState is AgentAuthenticationState.Finishing)
+    if (_authMachine.CurrentState is AuthState.Error)
     {
-      await _wrapper.FireAsync(Machine, AgentOverallTrigger.Synchronize);
+      await StateMachineWrapper.FireAsync(_machine, OverallTrigger.ErrorOccurred);
     }
     else
     {
-      await _wrapper.FireAsync(Machine, AgentOverallTrigger.ErrorOccurred);
+      await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Synchronize);
     }
   }
-  private async Task HandleRunningStateChangeAsync()
-  {
-    await _workMachine.StartAsync();
 
-    if (_workMachine.CurrentState is AgentWorkState.Error)
+  /// <summary>
+  /// Handles the Running state by starting the work process.
+  /// On success, it triggers the Stop transition; on error, it triggers the Error transition.
+  /// </summary>
+  private async Task HandleRunningAsync()
+  {
+    await _supervisorMachine.StartAsync();
+
+    if (_supervisorMachine.CurrentState is SupervisorState.Error)
     {
-      await _wrapper.FireAsync(Machine, AgentOverallTrigger.ErrorOccurred);
+      await StateMachineWrapper.FireAsync(_machine, OverallTrigger.ErrorOccurred);
+    }
+    else
+    {
+      await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Stop);
     }
   }
-  private async Task HandleStoppingStateChangeAsync()
+
+  /// <summary>
+  /// Handles the Stopping state by stopping all ongoing processes.
+  /// Once all processes are stopped, it triggers the Stop transition to return to the Idle state
+  /// </summary>
+  private async Task HandleStoppingAsync()
   {
-      if (_workMachine.CurrentState is AgentWorkState.Processing)
-      {
-        // Logic to stop work machine
-      }
+    if (_authMachine.CurrentState is AuthState.Processing)
+      await _authMachine.StopAsync();
 
-      if (_syncMachine.CurrentState is AgentSyncState.Processing)
-      {
-        // Logic to stop sync machine
-      }
+    if (_syncMachine.CurrentState is SyncState.Processing)
+      await _syncMachine.StopAsync();
 
-      if (_authMachine.CurrentState is AgentAuthenticationState.Processing)
-      {
-        // Logic to stop auth machine
-      }
+    if (_supervisorMachine.CurrentState is SupervisorState.Processing)
+      await _supervisorMachine.StopAsync();
+
+    _logger.LogError("Overall state machine entered Stop state. Transitioning to Idle state.");
+
+    await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Stop);
   }
-  private Task HandleErrorStateChangeAsync()
+
+  private async Task HandleErrorAsync()
   {
-      _logger.LogInformation("Handling error state, stopping work state machine.");
-      return Task.CompletedTask;
+    _logger.LogError("Overall state machine entered Error state. Transitioning to Idle state.");
+
+    await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Start);
   }
   #endregion
 }

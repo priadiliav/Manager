@@ -3,7 +3,7 @@ using Agent.Application.Abstractions;
 
 namespace Agent.Infrastructure.Collectors.Dynamic;
 
-public class NetworkUsageCollector(string interfaceName = null) : IDynamicDataCollector<double>
+public class NetworkUsageCollector() : IDynamicDataCollector<double>
 {
   public string Name => "network_usage";
 
@@ -15,9 +15,6 @@ public class NetworkUsageCollector(string interfaceName = null) : IDynamicDataCo
   {
     var interfaces = NetworkInterface.GetAllNetworkInterfaces()
         .Where(ni => ni.OperationalStatus == OperationalStatus.Up);
-
-    if (!string.IsNullOrEmpty(interfaceName))
-      interfaces = interfaces.Where(ni => ni.Name == interfaceName);
 
     var niSelected = interfaces.FirstOrDefault();
     if (niSelected == null) return 0;
@@ -36,6 +33,6 @@ public class NetworkUsageCollector(string interfaceName = null) : IDynamicDataCo
     _lastBytesReceived = bytesReceived;
     _lastTime = now;
 
-    return sentPerSec + receivedPerSec;
+    return (sentPerSec + receivedPerSec) / 1024.0;
   }
 }

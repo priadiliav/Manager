@@ -15,9 +15,7 @@ public interface ICommunicationClient
   /// <typeparam name="TResponse"></typeparam>
   /// <returns></returns>
   Task<TResponse?> PostAsync<TResponse, TRequest>(
-      string url,
-      bool authenticate,
-      TRequest message, CancellationToken cancellationToken)
+      string url, bool authenticate, TRequest message, CancellationToken cancellationToken = default)
       where TRequest : IMessage
       where TResponse : IMessage;
 
@@ -30,9 +28,7 @@ public interface ICommunicationClient
   /// <typeparam name="TResponse"></typeparam>
   /// <returns></returns>
   Task<TResponse?> GetAsync<TResponse>(
-      string url,
-      bool authenticate,
-      CancellationToken cancellationToken)
+      string url, bool authenticate, CancellationToken cancellationToken = default)
       where TResponse : IMessage;
 
 
@@ -47,9 +43,7 @@ public interface ICommunicationClient
   /// <typeparam name="TRequest"></typeparam>
   /// <returns></returns>
   Task<TResponse?> PutAsync<TResponse, TRequest>(
-      string url,
-      bool authenticate,
-      TRequest message, CancellationToken cancellationToken)
+      string url, bool authenticate, TRequest message, CancellationToken cancellationToken = default)
       where TRequest : IMessage
       where TResponse : IMessage;
 }

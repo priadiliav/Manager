@@ -1,6 +1,6 @@
+using Common.Messages.Agent.Metric;
 using Common.Messages.Agent.State;
 using Common.Messages.Agent.Sync;
-using Common.Messages.Metric;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
