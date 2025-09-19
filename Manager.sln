@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{3DFB96
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Messages", "src\Common\Common.Messages\Common.Messages.csproj", "{D92B0D74-64AC-44B1-A258-EEE4FB7D5679}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agent.Updater", "src\Agent\Agent.Updater\Agent.Updater.csproj", "{8242EFF3-7766-4AFA-8F1B-97697B7F5562}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,7 @@ Global
 		{3C2E1654-D37A-4116-B888-8418FCA6B273} = {A3895407-E469-4A99-B280-EFC5B40B7959}
 		{A8FC149F-D1FA-4776-8699-795732200090} = {BC839F4E-D5AB-44F6-B60B-DF7F9D153869}
 		{D92B0D74-64AC-44B1-A258-EEE4FB7D5679} = {3DFB96AC-782D-4573-B5B5-27D7221A7566}
+		{8242EFF3-7766-4AFA-8F1B-97697B7F5562} = {763D9EE5-70AA-46C5-A489-82EA4F204113}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A72B87F-4025-4D6C-8425-6695BF952066}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -111,5 +114,9 @@ Global
 		{D92B0D74-64AC-44B1-A258-EEE4FB7D5679}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D92B0D74-64AC-44B1-A258-EEE4FB7D5679}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D92B0D74-64AC-44B1-A258-EEE4FB7D5679}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8242EFF3-7766-4AFA-8F1B-97697B7F5562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8242EFF3-7766-4AFA-8F1B-97697B7F5562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8242EFF3-7766-4AFA-8F1B-97697B7F5562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8242EFF3-7766-4AFA-8F1B-97697B7F5562}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
