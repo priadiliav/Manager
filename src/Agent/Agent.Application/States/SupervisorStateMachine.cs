@@ -66,15 +66,15 @@ public class SupervisorStateMachine
   #region Handlers
   private async Task HandleProcessingAsync()
   {
-    foreach (var runnerMachine in _runnerMachines)
-      if (runnerMachine.CurrentState is WorkerState.Idle or WorkerState.Stopping)
-      {
-        await runnerMachine.StartAsync();
+    var tasks = _runnerMachines
+        .Where(runner => runner.CurrentState is WorkerState.Idle or WorkerState.Stopping)
+        .Select(runner => runner.StartAsync());
 
-        if (runnerMachine.CurrentState is WorkerState.Error)
-          await _machine.FireAsync(SupervisorTrigger.ErrorOccurred);
-      }
+    await Task.WhenAll(tasks);
+
+    await _machine.FireAsync(SupervisorTrigger.Success);
   }
+
 
   private async Task HandleStoppingAsync()
   {

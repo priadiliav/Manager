@@ -34,7 +34,5 @@ public class CommandWorkerStateMachine(
   #endregion
 
   protected override Task HandleProcessingAsync()
-  {
-    throw new NotImplementedException();
-  }
+    => commandService.PollAndExecuteCommandsAsync();
 }

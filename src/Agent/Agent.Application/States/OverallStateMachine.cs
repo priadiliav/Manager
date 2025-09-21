@@ -173,4 +173,7 @@ public class OverallStateMachine
     await StateMachineWrapper.FireAsync(_machine, OverallTrigger.Start);
   }
   #endregion
+
+  public Task TryToFireAsync(OverallTrigger trigger)
+    => StateMachineWrapper.FireAsync(_machine, trigger);
 }

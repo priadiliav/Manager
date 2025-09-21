@@ -27,16 +27,21 @@ export class SignalRClient {
     }
 
     public async start(): Promise<void> {
-        if (!this.connected) {
-            try {
-                await this.connection.start();
-                this.connected = true;
-                console.log("SignalR connected to", this.connection.baseUrl);
-            } catch (err) {
-                setTimeout(() => this.start(), 2000);
-            }
+        if (this.connection.state === signalR.HubConnectionState.Connected ||
+            this.connection.state === signalR.HubConnectionState.Connecting) {
+            return;
+        }
+
+        try {
+            await this.connection.start();
+            this.connected = true;
+            console.log("SignalR connected to", this.connection.baseUrl);
+        } catch (err) {
+            console.error("SignalR start failed", err);
+            setTimeout(() => this.start(), 2000);
         }
     }
+
 
     public async stop(): Promise<void> {
         await this.connection.stop();
