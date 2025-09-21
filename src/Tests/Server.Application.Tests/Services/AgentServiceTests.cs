@@ -93,7 +93,7 @@ public class AgentServiceTests
         Assert.That(result.IsSynchronized, Is.False);
         Assert.That(result.ConfigurationId, Is.EqualTo(1));
         Assert.That(result.Configuration.Name, Is.EqualTo("Default"));
-        Assert.That(result.AgentHardware, Is.Not.Null);
+        Assert.That(result.Hardware, Is.Not.Null);
 
         _mockAgentRepository.Verify(x => x.GetAsync(agentId), Times.Once);
     }

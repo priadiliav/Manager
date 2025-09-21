@@ -36,7 +36,7 @@ public static class ToDtoMapper
         Status = source.Status,
         LastStatusChangeAt = source.LastStatusChangeAt,
         Configuration = source.Configuration.ToDto(),
-        AgentHardware = source.Hardware.ToDto()
+        Hardware = source.Hardware.ToDto()
     };
 
   public static AgentCreateResponse ToCreateResponse(this Domain.Models.Agent agent, string secret)

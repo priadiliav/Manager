@@ -38,7 +38,7 @@ public class SupervisorStateMachine
     ConfigureStateMachine();
 
     // Register state machine with the wrapper
-    wrapper.RegisterMachine(_machine, "Work");
+    wrapper.RegisterMachine(_machine, "Supervisor");
   }
 
   private void ConfigureStateMachine()

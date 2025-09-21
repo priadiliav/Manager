@@ -1,6 +1,5 @@
 using Agent.Application.Services;
 using Agent.Application.Utils;
-using Agent.Domain.Context;
 using Microsoft.Extensions.Logging;
 using Stateless;
 

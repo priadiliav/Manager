@@ -1,6 +1,5 @@
 using Agent.Application.Abstractions;
 using Agent.Domain.Configs;
-using Agent.Domain.Context;
 using Common.Messages.Agent.Login;
 using Microsoft.Extensions.Options;
 

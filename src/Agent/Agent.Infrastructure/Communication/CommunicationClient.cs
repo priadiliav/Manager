@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using Agent.Application.Abstractions;
-using Agent.Domain.Context;
 using Common.Messages;
 
 namespace Agent.Infrastructure.Communication;

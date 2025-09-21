@@ -22,44 +22,44 @@ public enum WorkerTrigger
 
 public abstract class WorkerStateMachine
 {
-    protected readonly StateMachine<WorkerState, WorkerTrigger> Machine;
-    protected readonly ILogger Logger;
+    private readonly StateMachine<WorkerState, WorkerTrigger> _machine;
+    private readonly ILogger _logger;
     private readonly string _name;
     protected WorkerStateMachine(
         ILogger logger,
         StateMachineWrapper wrapper,
         string name)
     {
-        Logger = logger;
+        _logger = logger;
         _name = name;
-        Machine = new StateMachine<WorkerState, WorkerTrigger>(WorkerState.Idle);
+        _machine = new StateMachine<WorkerState, WorkerTrigger>(WorkerState.Idle);
 
         ConfigureStateMachine();
-        wrapper.RegisterMachine(Machine, name);
+        wrapper.RegisterMachine(_machine, name);
     }
 
     private void ConfigureStateMachine()
     {
-        Machine.Configure(WorkerState.Idle)
+        _machine.Configure(WorkerState.Idle)
             .Permit(WorkerTrigger.Start, WorkerState.Processing);
 
-        Machine.Configure(WorkerState.Processing)
+        _machine.Configure(WorkerState.Processing)
             .OnEntryAsync(async () => await ScheduleAsync())
             .Permit(WorkerTrigger.Stop, WorkerState.Stopping)
             .Permit(WorkerTrigger.ErrorOccurred, WorkerState.Error);
 
-        Machine.Configure(WorkerState.Stopping)
+        _machine.Configure(WorkerState.Stopping)
             .OnEntryAsync(HandleStoppingAsync)
             .Permit(WorkerTrigger.Start, WorkerState.Idle);
 
-        Machine.Configure(WorkerState.Error)
+        _machine.Configure(WorkerState.Error)
             .OnEntryAsync(HandleErrorAsync)
             .Permit(WorkerTrigger.Start, WorkerState.Processing);
     }
 
-    public WorkerState CurrentState => Machine.State;
-    public Task StartAsync() => Machine.FireAsync(WorkerTrigger.Start);
-    public Task StopAsync() => Machine.FireAsync(WorkerTrigger.Stop);
+    public WorkerState CurrentState => _machine.State;
+    public Task StartAsync() => _machine.FireAsync(WorkerTrigger.Start);
+    public Task StopAsync() => _machine.FireAsync(WorkerTrigger.Stop);
 
     private async Task ScheduleAsync()
     {
@@ -68,30 +68,30 @@ public abstract class WorkerStateMachine
         var interval = await GetIntervalAsync();
 
         var attempt = 0;
-        while (Machine.State == WorkerState.Processing)
+        while (_machine.State == WorkerState.Processing)
         {
             try
             {
-                Logger.LogInformation("Worker {Name} starting processing cycle", _name);
+                _logger.LogInformation("Worker {Name} starting processing cycle", _name);
                 await HandleProcessingAsync();
                 attempt = 0;
             }
             catch (Exception ex)
             {
                 attempt++;
-                Logger.LogError(ex, "Worker {name} failed attempt {Attempt}/{Max}", _name, attempt, retries);
+                _logger.LogError(ex, "Worker {name} failed attempt {Attempt}/{Max}", _name, attempt, retries);
 
                 if (attempt >= retries)
                 {
-                  Logger.LogError("Worker {name} exceeded max retries, going to Error", _name);
-                  await Machine.FireAsync(WorkerTrigger.ErrorOccurred);
+                  _logger.LogError("Worker {name} exceeded max retries, going to Error", _name);
+                  await _machine.FireAsync(WorkerTrigger.ErrorOccurred);
                   break;
                 }
 
                 await Task.Delay(retryDelaySeconds);
             }
 
-            Logger.LogInformation("Worker {Name} completed cycle, waiting for {Interval}", _name, interval);
+            _logger.LogInformation("Worker {Name} completed cycle, waiting for {Interval}", _name, interval);
 
             await Task.Delay(interval);
         }

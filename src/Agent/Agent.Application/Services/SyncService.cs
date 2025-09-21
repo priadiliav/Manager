@@ -33,13 +33,16 @@ public class SyncService(
             Disk = diskCollector.Collect(),
             Gpu = gpuCollector.Collect()
         },
+        // StateTreeJson = ,
     };
 
     logger.LogInformation("Synchronization: {Message}", message);
 
-    await communicationClient.PutAsync<AgentSyncResponseMessage, AgentSyncRequestMessage>(
+    var responseMessage = await communicationClient.PutAsync<AgentSyncResponseMessage, AgentSyncRequestMessage>(
         url: endpointsConfig.Value.Sync,
         authenticate: true,
         message: message);
+
+    // Update local configuration
   }
 }

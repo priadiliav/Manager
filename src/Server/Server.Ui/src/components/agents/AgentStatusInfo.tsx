@@ -21,6 +21,7 @@ function getStatusText(status: AgentStatus): string {
 
 export const AgentStatusInfo = ({ status, lastStatusChangeAt }: Props) => {
     const rows = [
+        { key: 'State', value: 'Online' },
         { key: "Status", value: getStatusText(status) },
         { key: "Last Status Change At", value: lastStatusChangeAt ? new Date(lastStatusChangeAt).toLocaleString() : "N/A" },
     ]

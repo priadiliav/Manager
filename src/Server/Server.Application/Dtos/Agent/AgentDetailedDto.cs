@@ -14,5 +14,5 @@ public class AgentDetailedDto
   public AgentStatus Status { get; init; }
   public DateTimeOffset? LastStatusChangeAt { get; init; }
   public ConfigurationDto Configuration { get; init; } = null!;
-  public AgentHardwareDto AgentHardware { get; init; } = null!;
+  public AgentHardwareDto Hardware { get; init; } = null!;
 }

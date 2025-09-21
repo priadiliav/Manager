@@ -7,7 +7,6 @@ public class Configuration
   public int MetricPublishRetryDelaySeconds { get; set; }
 
   public int CommandPollIntervalSeconds { get; set; }
-  public int CommandExecutionTimeoutSeconds { get; set; }
   public int CommandExecutionRetryCount { get; set; }
   public int CommandExecutionRetryDelaySeconds { get; set; }
 }

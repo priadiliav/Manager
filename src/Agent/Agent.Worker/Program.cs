@@ -4,20 +4,18 @@ using Agent.Application.States;
 using Agent.Application.States.Workers;
 using Agent.Application.Utils;
 using Agent.Domain.Configs;
-using Agent.Domain.Context;
 using Agent.Infrastructure.Collectors.Dynamic;
 using Agent.Infrastructure.Collectors.Static;
 using Agent.Infrastructure.Communication;
 using Agent.Infrastructure.Repositories;
-using Agent.Worker;
 using Common.Messages.Agent.Sync.Hardware;
+using Agent.Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService();
 
 #region Application layer configurations
 builder.Services.AddSingleton<StateMachineWrapper>();
-builder.Services.AddSingleton<AgentStateContext>();
 builder.Services.AddSingleton<AuthStateMachine>();
 builder.Services.AddSingleton<SyncStateMachine>();
 builder.Services.AddSingleton<SupervisorStateMachine>();

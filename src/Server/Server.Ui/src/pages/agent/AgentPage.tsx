@@ -8,7 +8,6 @@ import { Box, Button, Grid } from "@mui/material";
 import { AgentCharts } from "../../components/agents/AgentCharts";
 import { HardwareInformation } from "../../components/agents/HardwareInformation";
 import { AgentStatusInfo } from "../../components/agents/AgentStatusInfo";
-import { StateInformation } from "../../components/agents/StateInformation";
 import { SignalRClient } from "../../api/signalRClient";
 import { AgentCreatedDialog } from "../../components/agents/AgentCreatedDialog";
 
@@ -166,14 +165,6 @@ export const AgentPage = () => {
                                 agentId={id || ""}
                                 signalRClient={signalRClient}
                             />)}
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 12 }}>
-                        {isEdit && (
-                            <StateInformation
-                                agentId={id || ""}
-                                signalRClient={signalRClient}
-                            />
-                        )}
                     </Grid>
                 </Grid>
 
