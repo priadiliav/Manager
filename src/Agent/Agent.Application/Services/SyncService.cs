@@ -9,40 +9,55 @@ namespace Agent.Application.Services;
 
 public interface ISyncService
 {
-  Task SyncAsync();
+  Task SyncAsync(bool isInitial = false);
 }
 
 public class SyncService(
-    ILogger<SyncService> logger,
-    IOptions<EndpointsConfig> endpointsConfig,
-    IStaticDataCollector<CpuInfoMessage> cpuCollector,
-    IStaticDataCollector<RamInfoMessage> memoryCollector,
-    IStaticDataCollector<DiskInfoMessage> diskCollector,
-    IStaticDataCollector<GpuInfoMessage> gpuCollector,
-    ICommunicationClient communicationClient,
-    IConfigurationRepository configurationRepository) : ISyncService
+  ILogger<SyncService> logger,
+  IOptions<EndpointsConfig> endpointsConfig,
+  IStaticDataCollector<CpuInfoMessage> cpuCollector,
+  IStaticDataCollector<RamInfoMessage> memoryCollector,
+  IStaticDataCollector<DiskInfoMessage> diskCollector,
+  IStaticDataCollector<GpuInfoMessage> gpuCollector,
+  ICommunicationClient communicationClient,
+  IConfigurationRepository configurationRepository) : ISyncService
 {
-  public async Task SyncAsync()
+  public async Task SyncAsync(bool isInitial = false)
   {
-    var message = new AgentSyncRequestMessage
+    logger.LogInformation("Starting synchronization. IsInitial: {IsInitial}", isInitial);
+
+    ServerSyncMessage? responseMessage;
+    if (isInitial)
     {
-        Hardware = new AgentHardwareMessage
-        {
-            Cpu = cpuCollector.Collect(),
-            Ram = memoryCollector.Collect(),
-            Disk = diskCollector.Collect(),
-            Gpu = gpuCollector.Collect()
-        },
-        // StateTreeJson = ,
-    };
+      var message = new AgentSyncMessage
+      {
+          Hardware = new AgentHardwareMessage
+          {
+              Cpu = cpuCollector.Collect(),
+              Ram = memoryCollector.Collect(),
+              Disk = diskCollector.Collect(),
+              Gpu = gpuCollector.Collect()
+          },
+      };
 
-    logger.LogInformation("Synchronization: {Message}", message);
+      responseMessage = await communicationClient.PutAsync<ServerSyncMessage, AgentSyncMessage>(
+          url: endpointsConfig.Value.Sync,
+          authenticate: true,
+          message: message);
+    }
+    else
+    {
+      responseMessage = await communicationClient.GetAsync<ServerSyncMessage>(
+          url: endpointsConfig.Value.SyncSubscribe,
+          authenticate: true);
+    }
 
-    var responseMessage = await communicationClient.PutAsync<AgentSyncResponseMessage, AgentSyncRequestMessage>(
-        url: endpointsConfig.Value.Sync,
-        authenticate: true,
-        message: message);
+    if (responseMessage is null)
+    {
+      logger.LogWarning("No response received from sync endpoint.");
+      return;
+    }
 
-    // Update local configuration
+    logger.LogInformation("Received sync response: {Message}", responseMessage);
   }
 }

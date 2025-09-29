@@ -1,7 +1,4 @@
-using System.Security.Claims;
-using Common.Messages.Agent;
 using Common.Messages.Agent.Sync;
-using Server.Application.Abstractions;
 using Server.Application.Abstractions.Providers;
 using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos;
@@ -46,23 +43,29 @@ public interface IAgentService
   /// <param name="agentId"></param>
   /// <param name="message"></param>
   /// <returns></returns>
-  Task<AgentSyncResponseMessage?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message);
+  Task<ServerSyncMessage?> SyncAgentAsync(Guid agentId, AgentSyncMessage? message);
 }
 
 public class AgentService (
+  ILongPollingDispatcher<Guid, ServerSyncMessage> longPollingDispatcher,
   IPasswordHasher passwordHasher,
   IUnitOfWork unitOfWork) : IAgentService
 {
 	public async Task<IEnumerable<AgentDto>> GetAgentsAsync()
 	{
 		var agents = await unitOfWork.Agents.GetAllAsync();
-		return agents.Select(x => x.ToDto());
+
+    // Agent is fully online only if it has an active long-polling connection on the sync channel
+		return agents.Select(x => x.ToDto(longPollingDispatcher.IsKeySubscribed(x.Id)));
 	}
 
 	public async Task<AgentDetailedDto?> GetAgentAsync(Guid agentId)
 	{
 		var agent = await unitOfWork.Agents.GetAsync(agentId);
-		return agent?.ToDetailedDto();
+
+    // Agent is fully online only if it has an active long-polling connection on the sync channel
+    var isOnline = longPollingDispatcher.IsKeySubscribed(agentId);
+		return agent?.ToDetailedDto(isOnline);
 	}
 
 	public async Task<AgentCreateResponse?> CreateAgentAsync(AgentCreateRequest request)
@@ -99,19 +102,27 @@ public class AgentService (
 		return updatedAgentDto?.ToModifyResponse();
 	}
 
-  public async Task<AgentSyncResponseMessage?> SyncAgentAsync(Guid agentId, AgentSyncRequestMessage message)
+  public async Task<ServerSyncMessage?> SyncAgentAsync(Guid agentId, AgentSyncMessage? message)
   {
     var existingAgentDomain = await unitOfWork.Agents.GetAsync(agentId);
     if (existingAgentDomain is null)
       return null;
 
     // Another static agent information can be handled here in the future
-    var hardwareDomain = message.Hardware.ToDomain(agentId);
-    existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
-    existingAgentDomain.UpdateStatus(AgentStatus.Ok);
+    if (message is not null)
+    {
+      var hardwareDomain = message.Hardware.ToDomain(agentId);
+      existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
+      existingAgentDomain.UpdateStatus(AgentStatus.Ok);
+    }
+    else
+    {
+      // If no message is provided, then the agent is just synchronizing server state
+      existingAgentDomain.UpdateStatus(AgentStatus.Ok);
+    }
 
     await unitOfWork.SaveChangesAsync();
 
-    return new AgentSyncResponseMessage();
+    return new ServerSyncMessage();
   }
 }

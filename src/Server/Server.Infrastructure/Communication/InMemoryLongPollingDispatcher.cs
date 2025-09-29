@@ -46,7 +46,10 @@ public class InMemoryLongPollingDispatcher<TKey, T> : ILongPollingDispatcher<TKe
 		_waitingClients.Clear();
 	}
 
-	public void RemoveSubscriber(TKey key)
+  public bool IsKeySubscribed(TKey key)
+    => _waitingClients.ContainsKey(key);
+
+  public void RemoveSubscriber(TKey key)
 		=> _waitingClients.TryRemove(key, out _);
 
 	public int GetSubscribersCount(TKey key)

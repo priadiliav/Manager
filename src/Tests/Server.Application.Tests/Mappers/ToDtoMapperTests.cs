@@ -20,10 +20,11 @@ public class ToDtoMapperTests
         };
 
         // Act
-        var result = agent.ToDto();
+        var result = agent.ToDto(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
+        Assert.That(result.IsOnline, Is.False);
         Assert.That(result.Id, Is.EqualTo(agentId));
         Assert.That(result.Name, Is.EqualTo("TestAgent"));
         Assert.That(result.ConfigurationId, Is.EqualTo(123));
@@ -184,10 +185,11 @@ public class ToDtoMapperTests
         };
 
         // Act
-        var result = agent.ToDto();
+        var result = agent.ToDto(false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
+        Assert.That(result.IsOnline, Is.False);
         Assert.That(result.Id, Is.EqualTo(agentId));
         Assert.That(result.Name, Is.EqualTo(""));
         Assert.That(result.ConfigurationId, Is.EqualTo(0));

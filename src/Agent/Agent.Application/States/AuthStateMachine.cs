@@ -43,7 +43,7 @@ public class AuthStateMachine
         ConfigureStateMachine();
 
         // Register state machine with the wrapper
-        wrapper.RegisterMachine(_machine, "Authentication");
+        wrapper.RegisterMachine(_machine, nameof(AuthStateMachine));
     }
 
     private void ConfigureStateMachine()

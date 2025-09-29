@@ -42,7 +42,7 @@ public class SyncStateMachine
     ConfigureStateMachine();
 
     // Register state machine with the wrapper
-    wrapper.RegisterMachine(_machine, "Synchronization");
+    wrapper.RegisterMachine(_machine, nameof(SyncStateMachine));
   }
 
   private void ConfigureStateMachine()
@@ -79,7 +79,8 @@ public class SyncStateMachine
   /// <returns></returns>
   private Task HandleProcessingAsync()
     => StateMachineExecutor.ExecuteAsync(_machine, _logger,
-        async () => await _syncService.SyncAsync(), SyncTrigger.Success, SyncTrigger.ErrorOccurred);
+        async () => await _syncService.SyncAsync(true),
+        SyncTrigger.Success, SyncTrigger.ErrorOccurred);
 
   /// <summary>
   /// Handles the stopping state by performing any necessary cleanup.
@@ -87,6 +88,7 @@ public class SyncStateMachine
   /// </summary>
   private async Task HandleStoppingAsync()
     => await StateMachineExecutor.ExecuteAsync(_machine, _logger,
-        async () => await Task.Delay(3000), SyncTrigger.Start, SyncTrigger.ErrorOccurred);
+        async () => await Task.Delay(3000),
+        SyncTrigger.Start, SyncTrigger.ErrorOccurred);
   #endregion
 }

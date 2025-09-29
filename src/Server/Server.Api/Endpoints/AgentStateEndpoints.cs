@@ -9,6 +9,7 @@ public static class AgentStateEndpoints
   {
     var group = app.MapGroup("/api/states").WithTags("Agent State");
 
+    // todo: change to post
     group.MapPut("/{agentId:guid}", async (Guid agentId,
       AgentStateChangeRequestMessage agentStateChangeRequestMessage,
       IAgentStateService agentStateService) =>

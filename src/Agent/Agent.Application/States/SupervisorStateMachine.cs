@@ -38,7 +38,7 @@ public class SupervisorStateMachine
     ConfigureStateMachine();
 
     // Register state machine with the wrapper
-    wrapper.RegisterMachine(_machine, "Supervisor");
+    wrapper.RegisterMachine(_machine, nameof(SupervisorStateMachine));
   }
 
   private void ConfigureStateMachine()
@@ -78,9 +78,13 @@ public class SupervisorStateMachine
 
   private async Task HandleStoppingAsync()
   {
-    foreach (var runnerMachine in _runnerMachines)
-      if (runnerMachine.CurrentState is WorkerState.Processing)
-        await runnerMachine.StopAsync();
+    var tasks = _runnerMachines
+        .Where(runner => runner.CurrentState == WorkerState.Processing)
+        .Select(runner => runner.StopAsync());
+
+    await Task.WhenAll(tasks);
+
+    await _machine.FireAsync(SupervisorTrigger.Start);
   }
   #endregion
 }

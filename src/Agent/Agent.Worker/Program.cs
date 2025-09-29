@@ -20,13 +20,12 @@ builder.Services.AddSingleton<AuthStateMachine>();
 builder.Services.AddSingleton<SyncStateMachine>();
 builder.Services.AddSingleton<SupervisorStateMachine>();
 builder.Services.AddSingleton<WorkerStateMachine, MetricWorkerStateMachine>();
-builder.Services.AddSingleton<WorkerStateMachine, CommandWorkerStateMachine>();
+builder.Services.AddSingleton<WorkerStateMachine, SyncWorkerStateMachine>();
 builder.Services.AddSingleton<OverallStateMachine>();
 
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<ISyncService, SyncService>();
 builder.Services.AddSingleton<IMetricService, MetricService>();
-builder.Services.AddSingleton<ICommandService, CommandService>();
 #endregion
 
 #region Infrastructure layer configurations

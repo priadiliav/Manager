@@ -52,7 +52,7 @@ public class OverallStateMachine
     ConfigureAsync();
 
     // Register state machine with the wrapper
-    wrapper.RegisterMachine(_machine, "Overall");
+    wrapper.RegisterMachine(_machine, nameof(OverallStateMachine));
   }
 
   private void ConfigureAsync()

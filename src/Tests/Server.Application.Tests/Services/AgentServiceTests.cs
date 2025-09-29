@@ -1,4 +1,4 @@
-using Server.Application.Abstractions;
+using Common.Messages.Agent.Sync;
 using Server.Application.Abstractions.Providers;
 using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos.Agent;
@@ -14,7 +14,7 @@ public class AgentServiceTests
     private Mock<IAgentRepository> _mockAgentRepository = null!;
     private AgentService _agentService = null!;
     private Mock<IPasswordHasher> _passwordHasherMock = null!;
-
+    private ILongPollingDispatcher<Guid, ServerSyncMessage> _mockLongPollingDispatcher = null!;
     [SetUp]
     public void Setup()
     {
@@ -25,7 +25,8 @@ public class AgentServiceTests
             .Setup(x => x.CreatePasswordHash(It.IsAny<string>()))
             .Returns((new byte[] { 1 }, new byte[] { 2 }));
         _mockUnitOfWork.Setup(x => x.Agents).Returns(_mockAgentRepository.Object);
-        _agentService = new AgentService(_passwordHasherMock.Object, _mockUnitOfWork.Object);
+        _mockLongPollingDispatcher = new Mock<ILongPollingDispatcher<Guid, ServerSyncMessage>>().Object;
+        _agentService = new AgentService(_mockLongPollingDispatcher, _passwordHasherMock.Object, _mockUnitOfWork.Object);
     }
 
     [Test]
@@ -90,7 +91,6 @@ public class AgentServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Id, Is.EqualTo(agentId));
         Assert.That(result.Name, Is.EqualTo("TestAgent"));
-        Assert.That(result.IsSynchronized, Is.False);
         Assert.That(result.ConfigurationId, Is.EqualTo(1));
         Assert.That(result.Configuration.Name, Is.EqualTo("Default"));
         Assert.That(result.Hardware, Is.Not.Null);
@@ -264,7 +264,7 @@ public class AgentServiceTests
         var agentId = Guid.NewGuid();
         _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync((Agent?)null);
 
-        var message = new Common.Messages.Agent.Sync.AgentSyncRequestMessage
+        var message = new Common.Messages.Agent.Sync.AgentSyncMessage
         {
             Hardware = new Common.Messages.Agent.Sync.AgentHardwareMessage
             {
@@ -300,7 +300,7 @@ public class AgentServiceTests
       _mockAgentRepository.Setup(x => x.GetAsync(agentId)).ReturnsAsync(existing);
       _mockUnitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
 
-      var message = new Common.Messages.Agent.Sync.AgentSyncRequestMessage
+      var message = new Common.Messages.Agent.Sync.AgentSyncMessage
       {
           Hardware = new Common.Messages.Agent.Sync.AgentHardwareMessage
           {

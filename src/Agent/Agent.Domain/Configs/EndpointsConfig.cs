@@ -7,4 +7,5 @@ public class EndpointsConfig
   public string Login { get; set; } = string.Empty;
   public string Metrics { get; set; } = string.Empty;
   public string Sync { get; set; } = string.Empty;
+  public string SyncSubscribe { get; set; } = string.Empty;
 }

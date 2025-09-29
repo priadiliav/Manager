@@ -153,6 +153,7 @@ export const AgentPage = () => {
                         {isEdit && (
                             <AgentStatusInfo
                                 status={agent?.status || 0}
+                                isOnline={agent?.isOnline || false}
                                 lastStatusChangeAt={agent?.lastStatusChangeAt || null}
                             />
                         )}

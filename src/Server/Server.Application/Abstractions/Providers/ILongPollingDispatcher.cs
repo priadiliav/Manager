@@ -6,6 +6,7 @@ public interface ILongPollingDispatcher<in TKey, TResponse>
 {
 	Task<TResponse?> WaitForUpdateAsync(TKey key, CancellationToken cancellationToken);
 	void NotifyUpdateForKey(TKey key, TResponse update);
+  bool IsKeySubscribed(TKey key);
 	int GetSubscribersCount(TKey key);
 	void NotifyUpdate(TResponse update);
 	void RemoveSubscriber(TKey key);

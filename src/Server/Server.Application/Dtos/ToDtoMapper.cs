@@ -15,23 +15,25 @@ namespace Server.Application.Dtos;
 public static class ToDtoMapper
 {
 	#region Agent
-	public static AgentDto ToDto(this Domain.Models.Agent agent)
+	public static AgentDto ToDto(this Domain.Models.Agent agent, bool isOnline)
 	{
 		return new AgentDto
 		{
 			Id = agent.Id,
 			Name = agent.Name,
+      IsOnline = isOnline,
       Status = agent.Status,
       LastStatusChangeAt = agent.LastStatusChangeAt,
 			ConfigurationId = agent.ConfigurationId
 		};
 	}
 
-  public static AgentDetailedDto ToDetailedDto(this Domain.Models.Agent source)
+  public static AgentDetailedDto ToDetailedDto(this Domain.Models.Agent source, bool isOnline)
     => new()
     {
         Id = source.Id,
         Name = source.Name,
+        IsOnline = isOnline,
         ConfigurationId = source.ConfigurationId,
         Status = source.Status,
         LastStatusChangeAt = source.LastStatusChangeAt,

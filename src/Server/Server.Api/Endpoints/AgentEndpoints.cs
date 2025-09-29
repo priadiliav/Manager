@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Common.Messages.Agent.State;
 using Common.Messages.Agent.Sync;
+using Server.Application.Abstractions.Providers;
 using Server.Application.Dtos.Agent;
 using Server.Application.Services;
 
@@ -43,7 +44,7 @@ public static class AgentEndpoints
         // .RequireAuthorization(policy => policy.RequireRole("User"))
         .WithName("CreateAgent");
 
-    group.MapPut("/sync", async (AgentSyncRequestMessage agentSyncRequestMessage, IAgentService agentService, HttpContext context) =>
+     group.MapPut("/sync", async (AgentSyncMessage agentSyncRequestMessage, IAgentService agentService, HttpContext context) =>
         {
           // Getting the agent ID from the authenticated user
           var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
@@ -61,15 +62,47 @@ public static class AgentEndpoints
         .RequireAuthorization(policy => policy.RequireRole("Agent"))
         .WithName("SyncAgents");
 
-    group.MapPut("/{agentId:guid}",
-        async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>
-        {
-          var updatedAgent = await agentService.UpdateAgentAsync(agentId, request);
-          return updatedAgent is null
-              ? Results.NotFound()
-              : Results.Ok(updatedAgent);
-        })
-        // .RequireAuthorization(policy => policy.RequireRole("User"))
-        .WithName("UpdateAgent");
+     group.MapGet("/sync/subscribe",
+         async (ILongPollingDispatcher<Guid, ServerSyncMessage> dispatcher, HttpContext context) =>
+         {
+           // Getting the agent ID from the authenticated user
+           var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
+
+           Guid.TryParse(agentId, out var agentIdGuid);
+
+           if (agentIdGuid == Guid.Empty)
+             return Results.Unauthorized();
+
+           var syncMessage =
+               await dispatcher.WaitForUpdateAsync(agentIdGuid, cancellationToken: context.RequestAborted);
+           return syncMessage is null
+               ? Results.NoContent()
+               : Results.Ok(syncMessage);
+         })
+         .WithName("SubscribeAgentSync");
+
+      group.MapPut("/sync/notify/{agentId:guid}",
+          async (Guid agentId, IAgentService agentService, ILongPollingDispatcher<Guid, ServerSyncMessage> dispatcher) =>
+          {
+            var syncMessage = await agentService.SyncAgentAsync(agentId, null);
+            if (syncMessage is null)
+              return Results.BadRequest();
+
+            dispatcher.NotifyUpdateForKey(agentId, syncMessage);
+            return Results.Ok();
+          })
+          // .RequireAuthorization(policy => policy.RequireRole("User"))
+          .WithName("NotifyAgentSync");
+
+      group.MapPut("/{agentId:guid}",
+          async (Guid agentId, AgentModifyRequest request, IAgentService agentService) =>
+          {
+            var updatedAgent = await agentService.UpdateAgentAsync(agentId, request);
+            return updatedAgent is null
+                ? Results.NotFound()
+                : Results.Ok(updatedAgent);
+          })
+          // .RequireAuthorization(policy => policy.RequireRole("User"))
+          .WithName("UpdateAgent");
   }
 }

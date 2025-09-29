@@ -2,16 +2,17 @@ using Agent.Application.Abstractions;
 using Agent.Application.Services;
 using Agent.Application.States.Workers;
 using Agent.Application.Utils;
+using Common.Messages.Agent.Sync;
 using Microsoft.Extensions.Logging;
 
 namespace Agent.Application.States;
 
-public class CommandWorkerStateMachine(
-    ILogger<CommandWorkerStateMachine> logger,
+public class SyncWorkerStateMachine(
+    ILogger<SyncWorkerStateMachine> logger,
     StateMachineWrapper wrapper,
-    ICommandService commandService,
+    ISyncService syncService,
     IConfigurationRepository configurationRepository)
-    : WorkerStateMachine(logger, wrapper, nameof(CommandWorkerStateMachine))
+    : WorkerStateMachine(logger, wrapper, nameof(SyncWorkerStateMachine))
 {
   #region Getters
   protected override async Task<TimeSpan> GetIntervalAsync()
@@ -34,5 +35,5 @@ public class CommandWorkerStateMachine(
   #endregion
 
   protected override Task HandleProcessingAsync()
-    => commandService.PollAndExecuteCommandsAsync();
+    => syncService.SyncAsync(isInitial: false);
 }

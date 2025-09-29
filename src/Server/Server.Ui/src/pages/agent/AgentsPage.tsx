@@ -10,8 +10,8 @@ const columns = [
     { id: 'id', label: 'ID', minWidth: 100 },
     { id: 'name', label: 'Name', minWidth: 150 },
     {
-        id: 'state',
-        label: 'State',
+        id: 'status',
+        label: 'Status',
         minWidth: 120,
         render: (row: AgentDto) => {
             switch (row.status) {
@@ -20,7 +20,14 @@ const columns = [
                 default: return <span style={{ color: 'gray' }}>Unknown</span>;
             }
         }
-    }
+    },
+    { id: 'isOnline', label: 'Online', minWidth: 100, render: (row: AgentDto) => row.isOnline ? 'Yes' : 'No' },
+    {
+        id: 'lastStatusChangeAt',
+        label: 'Last Status Change',
+        minWidth: 180,
+        render: (row: AgentDto) => row.lastStatusChangeAt ? new Date(row.lastStatusChangeAt).toLocaleString() : 'N/A'
+    },
 ];
 
 export const AgentsPage = () => {

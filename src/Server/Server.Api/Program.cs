@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using ClickHouse.Driver.ADO;
-using Common.Messages.Agent.Command;
+using Common.Messages.Agent.Sync;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -122,7 +122,7 @@ builder.Services.AddScoped<IAgentStateRepository, AgentStateRepository>();
 // Long polling services
 // builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
 // builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
-builder.Services.AddSingleton<ILongPollingDispatcher<Guid, AgentCommandMessage>, InMemoryLongPollingDispatcher<Guid, AgentCommandMessage>>();
+builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ServerSyncMessage>, InMemoryLongPollingDispatcher<Guid, ServerSyncMessage>>();
 
 // Postgres SQL database configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -184,7 +184,6 @@ app.MapPolicyEndpoints();
 app.MapConfigurationEndpoints();
 app.MapUserEndpoints();
 app.UseHttpsRedirection();
-app.MapCommandEndpoints();
 
 app.MapHub<AgentHub>("/agentHub");
 

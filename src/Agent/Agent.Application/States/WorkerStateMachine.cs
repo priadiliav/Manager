@@ -102,6 +102,7 @@ public abstract class WorkerStateMachine
     protected abstract Task<int> GetRetryCountAsync();
 
     protected abstract Task HandleProcessingAsync();
+
     protected virtual Task HandleStoppingAsync() => Task.CompletedTask;
     protected virtual Task HandleErrorAsync() => Task.CompletedTask;
 }

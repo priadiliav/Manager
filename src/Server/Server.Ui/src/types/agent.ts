@@ -10,6 +10,7 @@ export interface AgentDto {
   id: string;
   name: string;
   status: AgentStatus;
+  isOnline: boolean;
   lastStatusChangeAt: string | null;
   configurationId: string;
 }
@@ -32,6 +33,7 @@ export interface AgentModifyRequest {
 export interface AgentDetailedDto {
   id: string;
   name: string;
+  isOnline: boolean;
   configurationId: string;
   status: AgentStatus;
   lastStatusChangeAt: string | null;

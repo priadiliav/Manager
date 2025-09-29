@@ -12,7 +12,6 @@ public interface IAuthService
 
 public class AuthService(
     IAgentRepository agentRepository,
-    IConfigurationRepository configurationRepository,
     ICommunicationClient communicationClient,
     IOptions<EndpointsConfig> endpointsConfig) : IAuthService
 {
