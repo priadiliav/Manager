@@ -9,7 +9,7 @@ interface Props {
 
 export const CpuUsageLineChart = ({ data, labels }: Props) => {
     return (
-        <CollapsibleSection title="CPU Usage (%)" noCard defaultOpen={false}>
+        <CollapsibleSection title="CPU Usage (%)" noCard defaultOpen={true}>
             <Box sx={{ height: 300 }}>
                 <CustomLineChart data={data} labels={labels} />
             </Box>

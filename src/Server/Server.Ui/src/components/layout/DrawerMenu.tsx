@@ -9,23 +9,23 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { Icon } from '@mui/material';
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';//policy
 import SettingsRemoteIcon from '@mui/icons-material/SettingsRemote';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 import TryIcon from '@mui/icons-material/Try';
+//import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 
 interface DrawerMenuProps {
   drawerWidth: number;
 }
 
 const firstList = [
-  {
-    text: 'Dashboard',
-    path: '/dashboard',
-    icon: <Icon component={SpaceDashboardIcon} />,
-    disabled: false
-  },
+  // {
+  //   text: 'Dashboard',
+  //   path: '/dashboard',
+  //   icon: <Icon component={SpaceDashboardIcon} />,
+  //   disabled: false
+  // },
   {
     text: 'Agents',
     path: '/agents',

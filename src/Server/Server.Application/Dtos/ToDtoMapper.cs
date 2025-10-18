@@ -1,6 +1,7 @@
 using Common.Messages.Agent.Login;
 using Common.Messages.Agent.Metric;
 using Common.Messages.Agent.State;
+using Common.Messages.Agent.Sync.Configuration;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Agent.Hardware;
 using Server.Application.Dtos.Agent.Metric;
@@ -149,6 +150,15 @@ public static class ToDtoMapper
       AgentIds = configuration.Agents.Select(a => a.Id).ToList(),
       Processes = configuration.Processes.Select(p => p.ToDto()).ToList(),
       Policies = configuration.Policies.Select(p => p.ToDto()).ToList()
+    };
+  }
+
+  public static ConfigurationMessage ToMessage(this Domain.Models.Configuration configuration)
+  {
+    return new ConfigurationMessage()
+    {
+      Processes =[],
+      Policies = []
     };
   }
 	#endregion

@@ -1,8 +1,11 @@
 using Agent.Application.Utils;
 using Microsoft.Extensions.Logging;
 using Stateless;
+using Polly;
+using Polly.Retry;
+using Polly.Timeout;
 
-namespace Agent.Application.States.Workers;
+namespace Agent.Application.States;
 
 public enum WorkerState
 {
@@ -35,6 +38,7 @@ public abstract class WorkerStateMachine
         _machine = new StateMachine<WorkerState, WorkerTrigger>(WorkerState.Idle);
 
         ConfigureStateMachine();
+
         wrapper.RegisterMachine(_machine, name);
     }
 
@@ -58,8 +62,8 @@ public abstract class WorkerStateMachine
     }
 
     public WorkerState CurrentState => _machine.State;
-    public Task StartAsync() => _machine.FireAsync(WorkerTrigger.Start);
-    public Task StopAsync() => _machine.FireAsync(WorkerTrigger.Stop);
+    public Task StartAsync() => StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Start);
+    public Task StopAsync() => StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Stop);
 
     private async Task ScheduleAsync()
     {
@@ -68,7 +72,7 @@ public abstract class WorkerStateMachine
         var interval = await GetIntervalAsync();
 
         var attempt = 0;
-        while (_machine.State == WorkerState.Processing)
+        while (_machine.State is WorkerState.Processing)
         {
             try
             {
@@ -84,7 +88,7 @@ public abstract class WorkerStateMachine
                 if (attempt >= retries)
                 {
                   _logger.LogError("Worker {name} exceeded max retries, going to Error", _name);
-                  await _machine.FireAsync(WorkerTrigger.ErrorOccurred);
+                  await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.ErrorOccurred);
                   break;
                 }
 
@@ -100,10 +104,18 @@ public abstract class WorkerStateMachine
     protected abstract Task<TimeSpan> GetIntervalAsync();
     protected abstract Task<TimeSpan> GetRetryDelayAsync();
     protected abstract Task<int> GetRetryCountAsync();
+    protected abstract Task HandleProcessingAsync(CancellationToken cancellationToken = default);
 
-    protected abstract Task HandleProcessingAsync();
+    protected virtual Task HandleStoppingAsync()
+    {
+      _logger.LogInformation("Worker {Name} stopping, waiting for manual restart", _name);
+      return Task.CompletedTask;
+    }
 
-    protected virtual Task HandleStoppingAsync() => Task.CompletedTask;
-    protected virtual Task HandleErrorAsync() => Task.CompletedTask;
+    protected virtual Task HandleErrorAsync()
+    {
+      _logger.LogInformation("Worker {Name} in Error state, waiting for manual restart", _name);
+      return Task.CompletedTask;
+    }
 }
 

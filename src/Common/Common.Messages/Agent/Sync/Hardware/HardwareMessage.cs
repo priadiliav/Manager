@@ -1,8 +1,8 @@
 using Common.Messages.Agent.Sync.Hardware;
 
-namespace Common.Messages.Agent.Sync;
+namespace Common.Messages.Agent.Sync.Hardware;
 
-public class AgentHardwareMessage : IMessage
+public class HardwareMessage : IMessage
 {
   public CpuInfoMessage Cpu { get; init; }
   public GpuInfoMessage Gpu { get; init; }

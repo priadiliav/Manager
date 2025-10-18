@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { createAgent, fetchAgentById } from "../../api/agent";
+import { createAgent, fetchAgentById, notifySynchronization } from "../../api/agent";
 import { AgentCreateRequest, AgentCreateResponse, AgentDetailedDto } from "../../types/agent";
 import FetchContentWrapper from "../../components/wrappers/FetchContentWrapper";
 import { AgentForm } from "../../components/agents/AgentForm";
@@ -10,6 +10,7 @@ import { HardwareInformation } from "../../components/agents/HardwareInformation
 import { AgentStatusInfo } from "../../components/agents/AgentStatusInfo";
 import { SignalRClient } from "../../api/signalRClient";
 import { AgentCreatedDialog } from "../../components/agents/AgentCreatedDialog";
+import { AgentStateInfo } from "../../components/agents/AgentStateInfo";
 
 export const AgentPage = () => {
     const navigate = useNavigate();
@@ -28,23 +29,24 @@ export const AgentPage = () => {
     const [createdAgentResponse, setCreatedAgentResponse] = useState<AgentCreateResponse | null>(null);
     const [signalRClient] = useState(() => new SignalRClient("agentHub"));
 
+    const loadAgent = async () => {
+        if (isEdit && id) {
+            try {
+                const data = await fetchAgentById(id);
+                setAgent(data);
+                setFormData({ name: data.name, configurationId: data.configurationId });
+            } catch (err) {
+                console.error("Failed to load agent", err);
+                setError("Failed to load agent");
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
     //#region Effects
     useEffect(() => {
-        if (isEdit && id) {
-            const loadAgent = async () => {
-                try {
-                    const data = await fetchAgentById(id);
-                    setAgent(data);
-                    setFormData({ name: data.name, configurationId: data.configurationId });
-                } catch (err) {
-                    console.error("Failed to load agent", err);
-                    setError("Failed to load agent");
-                } finally {
-                    setLoading(false);
-                }
-            };
-            loadAgent();
-        }
+        loadAgent();
     }, [id, isEdit]);
 
     useEffect(() => {
@@ -103,6 +105,19 @@ export const AgentPage = () => {
         setSecretWindowOpen(false);
         navigate(`/agents/${createdAgentResponse?.id}`);
     };
+
+
+    const handleSynchronize = async () => {
+        if (!id) return;
+
+        try {
+            await notifySynchronization(id);
+            loadAgent();
+            console.log("Synchronization initiated");
+        } catch (err) {
+            console.error("Failed to initiate synchronization", err);
+        }
+    };
     //#endregion
 
     return (
@@ -152,9 +167,17 @@ export const AgentPage = () => {
                     <Grid size={{ xs: 12 }}>
                         {isEdit && (
                             <AgentStatusInfo
+                                handleSynchronize={handleSynchronize}
                                 status={agent?.status || 0}
                                 isOnline={agent?.isOnline || false}
                                 lastStatusChangeAt={agent?.lastStatusChangeAt || null}
+                            />
+                        )}
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        {isEdit && (
+                            <AgentStateInfo
+                                signalRClient={signalRClient}
                             />
                         )}
                     </Grid>
@@ -168,7 +191,6 @@ export const AgentPage = () => {
                             />)}
                     </Grid>
                 </Grid>
-
             </Grid>
 
             <AgentCreatedDialog

@@ -1,7 +1,6 @@
 using Agent.Application.Abstractions;
 using Agent.Application.Services;
 using Agent.Application.States;
-using Agent.Application.States.Workers;
 using Agent.Application.Utils;
 using Agent.Domain.Configs;
 using Agent.Infrastructure.Collectors.Dynamic;

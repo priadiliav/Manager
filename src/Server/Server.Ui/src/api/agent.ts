@@ -21,6 +21,10 @@ export const modifyAgent = async (id: string, agent: AgentModifyRequest): Promis
   return response.data;
 };
 
+export const notifySynchronization = async (id: string): Promise<void> => {
+  await api.put<void>(`api/agents/sync/notify/${id}`);
+};
+
 export const deleteAgent = async (id: string): Promise<void> => {
   await api.delete<void>(`api/agents/${id}`);
 };

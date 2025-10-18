@@ -1,4 +1,3 @@
-using Agent.Application.States.Workers;
 using Agent.Application.Utils;
 using Microsoft.Extensions.Logging;
 using Stateless;

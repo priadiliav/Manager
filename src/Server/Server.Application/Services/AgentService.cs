@@ -108,21 +108,23 @@ public class AgentService (
     if (existingAgentDomain is null)
       return null;
 
-    // Another static agent information can be handled here in the future
+    // If message is not provided its mean that agent just getting new info from server
     if (message is not null)
     {
       var hardwareDomain = message.Hardware.ToDomain(agentId);
       existingAgentDomain.Hardware.ModifyFrom(hardwareDomain);
-      existingAgentDomain.UpdateStatus(AgentStatus.Ok);
-    }
-    else
-    {
-      // If no message is provided, then the agent is just synchronizing server state
-      existingAgentDomain.UpdateStatus(AgentStatus.Ok);
     }
 
+    existingAgentDomain.UpdateStatus(AgentStatus.Ok);
     await unitOfWork.SaveChangesAsync();
 
-    return new ServerSyncMessage();
+    var agentConfiguration = await unitOfWork.Configurations.GetAsync(existingAgentDomain.ConfigurationId);
+    var agentConfigurationMessage = agentConfiguration?.ToMessage();
+
+
+    return new ServerSyncMessage
+    {
+      Configuration = agentConfigurationMessage
+    };
   }
 }

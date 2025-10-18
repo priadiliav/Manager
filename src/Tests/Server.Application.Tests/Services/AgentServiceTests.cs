@@ -1,4 +1,5 @@
 using Common.Messages.Agent.Sync;
+using Common.Messages.Agent.Sync.Hardware;
 using Server.Application.Abstractions.Providers;
 using Server.Application.Abstractions.Repositories;
 using Server.Application.Dtos.Agent;
@@ -266,7 +267,7 @@ public class AgentServiceTests
 
         var message = new Common.Messages.Agent.Sync.AgentSyncMessage
         {
-            Hardware = new Common.Messages.Agent.Sync.AgentHardwareMessage
+            Hardware = new HardwareMessage
             {
                 Cpu = new Common.Messages.Agent.Sync.Hardware.CpuInfoMessage(),
                 Gpu = new Common.Messages.Agent.Sync.Hardware.GpuInfoMessage(),
@@ -302,7 +303,7 @@ public class AgentServiceTests
 
       var message = new Common.Messages.Agent.Sync.AgentSyncMessage
       {
-          Hardware = new Common.Messages.Agent.Sync.AgentHardwareMessage
+          Hardware = new HardwareMessage
           {
               Cpu = new Common.Messages.Agent.Sync.Hardware.CpuInfoMessage { CpuModel = "m", CpuCores = 4 },
               Gpu = new Common.Messages.Agent.Sync.Hardware.GpuInfoMessage { GpuModel = "g", GpuMemoryMb = 2048 },

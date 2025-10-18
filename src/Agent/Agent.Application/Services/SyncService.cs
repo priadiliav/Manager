@@ -31,7 +31,7 @@ public class SyncService(
     {
       var message = new AgentSyncMessage
       {
-          Hardware = new AgentHardwareMessage
+          Hardware = new HardwareMessage
           {
               Cpu = cpuCollector.Collect(),
               Ram = memoryCollector.Collect(),

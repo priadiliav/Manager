@@ -1,6 +1,5 @@
 using Agent.Application.Abstractions;
 using Agent.Application.Services;
-using Agent.Application.States.Workers;
 using Agent.Application.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +32,7 @@ public class MetricWorkerStateMachine(
   }
   #endregion
 
-  protected override Task HandleProcessingAsync()
+  protected override Task HandleProcessingAsync(CancellationToken cancellationToken = default)
     => metricService.CollectAndPublishMetricsAsync();
 }
 

@@ -57,6 +57,7 @@ public class SyncStateMachine
         .Permit(SyncTrigger.ErrorOccurred, SyncState.Error);
 
     _machine.Configure(SyncState.Stopping)
+        .OnEntryAsync(HandleStoppingAsync)
         .Permit(SyncTrigger.Start, SyncState.Idle);
 
     _machine.Configure(SyncState.Error)

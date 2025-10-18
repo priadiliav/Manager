@@ -58,6 +58,7 @@ public class AuthStateMachine
           .Permit(AuthTrigger.ErrorOccurred, AuthState.Error);
 
       _machine.Configure(AuthState.Stopping)
+          .OnEntryAsync(HandleStoppingAsync)
           .Permit(AuthTrigger.Start, AuthState.Idle);
 
       _machine.Configure(AuthState.Error)

@@ -1,6 +1,6 @@
 using Common.Messages.Agent.Metric;
 using Common.Messages.Agent.State;
-using Common.Messages.Agent.Sync;
+using Common.Messages.Agent.Sync.Hardware;
 using Server.Application.Dtos.Agent;
 using Server.Application.Dtos.Configuration;
 using Server.Application.Dtos.Policy;
@@ -65,7 +65,7 @@ public static class ToDomainMapper
   #endregion
 
   #region Agent Hardware
-  public static Domain.Models.AgentHardware ToDomain(this AgentHardwareMessage source, Guid agentId)
+  public static Domain.Models.AgentHardware ToDomain(this HardwareMessage source, Guid agentId)
     => new()
     {
       CpuCores      = source.Cpu.CpuCores,

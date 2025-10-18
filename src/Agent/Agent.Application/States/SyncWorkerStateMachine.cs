@@ -1,8 +1,6 @@
 using Agent.Application.Abstractions;
 using Agent.Application.Services;
-using Agent.Application.States.Workers;
 using Agent.Application.Utils;
-using Common.Messages.Agent.Sync;
 using Microsoft.Extensions.Logging;
 
 namespace Agent.Application.States;
@@ -18,22 +16,22 @@ public class SyncWorkerStateMachine(
   protected override async Task<TimeSpan> GetIntervalAsync()
   {
     var cfg = await configurationRepository.GetAsync();
-    return TimeSpan.FromSeconds(cfg.CommandPollIntervalSeconds);
+    return TimeSpan.FromSeconds(cfg.SyncPollIntervalSeconds);
   }
 
   protected override async Task<TimeSpan> GetRetryDelayAsync()
   {
     var cfg = await configurationRepository.GetAsync();
-    return TimeSpan.FromSeconds(cfg.CommandExecutionRetryDelaySeconds);
+    return TimeSpan.FromSeconds(cfg.SyncExecutionRetryDelaySeconds);
   }
 
   protected override async Task<int> GetRetryCountAsync()
   {
     var cfg = await configurationRepository.GetAsync();
-    return cfg.CommandExecutionRetryCount;
+    return cfg.SyncExecutionRetryCount;
   }
   #endregion
 
-  protected override Task HandleProcessingAsync()
+  protected override Task HandleProcessingAsync(CancellationToken cancellationToken = default)
     => syncService.SyncAsync(isInitial: false);
 }
