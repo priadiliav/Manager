@@ -32,6 +32,6 @@ public class SyncWorkerStateMachine(
   }
   #endregion
 
-  protected override Task HandleProcessingAsync(CancellationToken cancellationToken = default)
+  protected override Task DoWorkAsync(CancellationToken cancellationToken)
     => syncService.SyncAsync(isInitial: false);
 }

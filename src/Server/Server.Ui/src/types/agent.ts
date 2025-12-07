@@ -10,7 +10,6 @@ export interface AgentDto {
   id: string;
   name: string;
   status: AgentStatus;
-  isOnline: boolean;
   lastStatusChangeAt: string | null;
   configurationId: string;
 }

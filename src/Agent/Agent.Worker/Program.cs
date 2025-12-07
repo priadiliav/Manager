@@ -6,6 +6,7 @@ using Agent.Domain.Configs;
 using Agent.Infrastructure.Collectors.Dynamic;
 using Agent.Infrastructure.Collectors.Static;
 using Agent.Infrastructure.Communication;
+using Agent.Infrastructure.Providers;
 using Agent.Infrastructure.Repositories;
 using Common.Messages.Agent.Sync.Hardware;
 using Agent.Worker;
@@ -60,6 +61,8 @@ builder.Services.AddSingleton<IAgentRepository, JsonAgentRepository>();
 builder.Services.AddSingleton<IConfigurationRepository, JsonConfigurationRepository>();
 builder.Services.AddSingleton<IProcessRepository, JsonProcessRepository>();
 builder.Services.AddSingleton<IPolicyRepository, JsonPolicyRepository>();
+
+builder.Services.AddSingleton<IPolicyProvider, WindowsPolicyProvider>();
 #endregion
 
 builder.Services.AddHostedService<Worker>();

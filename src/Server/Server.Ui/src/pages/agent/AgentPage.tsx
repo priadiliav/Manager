@@ -169,7 +169,6 @@ export const AgentPage = () => {
                             <AgentStatusInfo
                                 handleSynchronize={handleSynchronize}
                                 status={agent?.status || 0}
-                                isOnline={agent?.isOnline || false}
                                 lastStatusChangeAt={agent?.lastStatusChangeAt || null}
                             />
                         )}

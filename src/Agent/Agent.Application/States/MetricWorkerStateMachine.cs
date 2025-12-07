@@ -32,7 +32,6 @@ public class MetricWorkerStateMachine(
   }
   #endregion
 
-  protected override Task HandleProcessingAsync(CancellationToken cancellationToken = default)
+  protected override Task DoWorkAsync(CancellationToken cancellationToken)
     => metricService.CollectAndPublishMetricsAsync();
 }
-

@@ -21,7 +21,6 @@ const columns = [
             }
         }
     },
-    { id: 'isOnline', label: 'Online', minWidth: 100, render: (row: AgentDto) => row.isOnline ? 'Yes' : 'No' },
     {
         id: 'lastStatusChangeAt',
         label: 'Last Status Change',

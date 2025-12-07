@@ -20,7 +20,7 @@ public class SyncService(
   IStaticDataCollector<DiskInfoMessage> diskCollector,
   IStaticDataCollector<GpuInfoMessage> gpuCollector,
   ICommunicationClient communicationClient,
-  IConfigurationRepository configurationRepository) : ISyncService
+  IPolicyProvider policyProvider) : ISyncService
 {
   public async Task SyncAsync(bool isInitial = false)
   {
@@ -38,6 +38,7 @@ public class SyncService(
               Disk = diskCollector.Collect(),
               Gpu = gpuCollector.Collect()
           },
+          RsopReportBase64 = policyProvider.GenerateRsopReport()
       };
 
       responseMessage = await communicationClient.PutAsync<ServerSyncMessage, AgentSyncMessage>(

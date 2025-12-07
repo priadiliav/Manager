@@ -1,4 +1,4 @@
-import { Box, Chip } from "@mui/material";
+import { Box, Chip, IconButton, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { SignalRClient } from "../../api/signalRClient";
 import { AgentStateDto } from "../../types/state";
@@ -6,13 +6,14 @@ import { CollapsibleSection } from "../wrappers/CollapsibleSection";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 
-// ✅ Імпортуємо іконки MUI
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import CloudSyncOutlinedIcon from "@mui/icons-material/CloudSyncOutlined";
 import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 
 interface Props {
     signalRClient?: SignalRClient;
@@ -53,10 +54,20 @@ export const AgentStateInfo = ({ signalRClient }: Props) => {
         return <Chip label={s.toState} color={color as any} size="small" />;
     };
 
+    const handleRestart = (machineName: string) => {
+        console.log(`Restarting ${machineName}`);
+    };
+
+    const handleStop = (machineName: string) => {
+        console.log(`Stopping ${machineName}`);
+    };
+
     const renderNodeLabel = (
         Icon: React.ElementType,
         name: string,
-        machine: string
+        machine: string,
+        restartHandler?: () => void,
+        stopHandler?: () => void
     ) => (
         <Box
             sx={{
@@ -71,7 +82,37 @@ export const AgentStateInfo = ({ signalRClient }: Props) => {
                 <Icon sx={{ fontSize: 18, color: "text.secondary" }} />
                 <span>{name}</span>
             </Box>
-            {getChip(machine)}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {getChip(machine)}
+                {stopHandler && (
+                    <Tooltip title="Stop">
+                        <IconButton
+                            size="small"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                stopHandler();
+                            }}
+                            sx={{ padding: 0.5 }}
+                        >
+                            <PauseCircleOutlineIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {restartHandler && (
+                    <Tooltip title="Restart">
+                        <IconButton
+                            size="small"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                restartHandler();
+                            }}
+                            sx={{ padding: 0.5 }}
+                        >
+                            <RestartAltIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                    </Tooltip>
+                )}
+            </Box>
         </Box>
     );
 
@@ -87,27 +128,51 @@ export const AgentStateInfo = ({ signalRClient }: Props) => {
                 >
                     <TreeItem
                         itemId="overall"
-                        label={renderNodeLabel(DashboardOutlinedIcon, "Overall", "OverallStateMachine")}
+                        label={renderNodeLabel(
+                            DashboardOutlinedIcon,
+                            "Overall",
+                            "OverallStateMachine"
+                        )}
                     >
                         <TreeItem
                             itemId="auth"
-                            label={renderNodeLabel(LockOutlinedIcon, "Auth", "AuthStateMachine")}
+                            label={renderNodeLabel(
+                                LockOutlinedIcon,
+                                "Auth",
+                                "AuthStateMachine"
+                            )}
                         />
                         <TreeItem
                             itemId="sync"
-                            label={renderNodeLabel(SyncOutlinedIcon, "Sync", "SyncStateMachine")}
+                            label={renderNodeLabel(
+                                SyncOutlinedIcon,
+                                "Sync",
+                                "SyncStateMachine"
+                            )}
                         />
                         <TreeItem
                             itemId="supervisor"
-                            label={renderNodeLabel(SettingsOutlinedIcon, "Supervisor", "SupervisorStateMachine")}
+                            label={renderNodeLabel(
+                                SettingsOutlinedIcon,
+                                "Supervisor",
+                                "SupervisorStateMachine"
+                            )}
                         >
                             <TreeItem
                                 itemId="syncWorker"
-                                label={renderNodeLabel(CloudSyncOutlinedIcon, "Sync Worker", "SyncWorkerStateMachine")}
+                                label={renderNodeLabel(
+                                    CloudSyncOutlinedIcon,
+                                    "Sync Worker (Receiver)",
+                                    "SyncWorkerStateMachine",
+                                )}
                             />
                             <TreeItem
                                 itemId="metricWorker"
-                                label={renderNodeLabel(ShowChartOutlinedIcon, "Metric Worker", "MetricWorkerStateMachine")}
+                                label={renderNodeLabel(
+                                    ShowChartOutlinedIcon,
+                                    "Metric Worker (Publisher)",
+                                    "MetricWorkerStateMachine",
+                                )}
                             />
                         </TreeItem>
                     </TreeItem>

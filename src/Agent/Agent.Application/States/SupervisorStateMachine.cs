@@ -66,7 +66,7 @@ public class SupervisorStateMachine
   private async Task HandleProcessingAsync()
   {
     var tasks = _runnerMachines
-        .Where(runner => runner.CurrentState is WorkerState.Idle or WorkerState.Stopping)
+        .Where(runner => runner.CurrentState is WorkerState.Idle or WorkerState.WaitingForInterval)
         .Select(runner => runner.StartAsync());
 
     await Task.WhenAll(tasks);
@@ -78,7 +78,7 @@ public class SupervisorStateMachine
   private async Task HandleStoppingAsync()
   {
     var tasks = _runnerMachines
-        .Where(runner => runner.CurrentState == WorkerState.Processing)
+        .Where(runner => runner.CurrentState is WorkerState.Processing or WorkerState.WaitingForInterval)
         .Select(runner => runner.StopAsync());
 
     await Task.WhenAll(tasks);

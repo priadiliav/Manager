@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using ClickHouse.Driver.ADO;
+using Common.Messages.Agent.Command;
 using Common.Messages.Agent.Sync;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -123,6 +124,7 @@ builder.Services.AddScoped<IAgentStateRepository, AgentStateRepository>();
 // builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ConfigurationMessage>, InMemoryLongPollingDispatcher<Guid, ConfigurationMessage>>();
 // builder.Services.AddSingleton<ILongPollingDispatcher<Guid, PoliciesMessage>, InMemoryLongPollingDispatcher<Guid, PoliciesMessage>>();
 builder.Services.AddSingleton<ILongPollingDispatcher<Guid, ServerSyncMessage>, InMemoryLongPollingDispatcher<Guid, ServerSyncMessage>>();
+builder.Services.AddSingleton<ILongPollingDispatcher<Guid, CommandRequestMessage>, InMemoryLongPollingDispatcher<Guid, CommandRequestMessage>>();
 
 // Postgres SQL database configuration
 builder.Services.AddDbContext<AppDbContext>(options =>

@@ -1,9 +1,6 @@
 using Agent.Application.Utils;
 using Microsoft.Extensions.Logging;
 using Stateless;
-using Polly;
-using Polly.Retry;
-using Polly.Timeout;
 
 namespace Agent.Application.States;
 
@@ -11,6 +8,8 @@ public enum WorkerState
 {
   Idle,
   Processing,
+  Success,
+  WaitingForInterval,
   Stopping,
   Error
 }
@@ -18,8 +17,10 @@ public enum WorkerState
 public enum WorkerTrigger
 {
   Start,
-  Success,
+  JobCompleted,
+  IntervalElapsed,
   Stop,
+  Restart,
   ErrorOccurred
 }
 
@@ -28,6 +29,9 @@ public abstract class WorkerStateMachine
     private readonly StateMachine<WorkerState, WorkerTrigger> _machine;
     private readonly ILogger _logger;
     private readonly string _name;
+    private int _currentAttempt;
+    private CancellationTokenSource? _cancellationTokenSource;
+
     protected WorkerStateMachine(
         ILogger logger,
         StateMachineWrapper wrapper,
@@ -48,9 +52,20 @@ public abstract class WorkerStateMachine
             .Permit(WorkerTrigger.Start, WorkerState.Processing);
 
         _machine.Configure(WorkerState.Processing)
-            .OnEntryAsync(async () => await ScheduleAsync())
+            .OnEntryAsync(HandleProcessingAsync)
+            .Permit(WorkerTrigger.JobCompleted, WorkerState.Success)
             .Permit(WorkerTrigger.Stop, WorkerState.Stopping)
             .Permit(WorkerTrigger.ErrorOccurred, WorkerState.Error);
+
+        _machine.Configure(WorkerState.Success)
+            .OnEntryAsync(HandleSuccessAsync)
+            .Permit(WorkerTrigger.IntervalElapsed, WorkerState.WaitingForInterval)
+            .Permit(WorkerTrigger.Stop, WorkerState.Stopping);
+
+        _machine.Configure(WorkerState.WaitingForInterval)
+            .OnEntryAsync(HandleWaitingAsync)
+            .Permit(WorkerTrigger.Start, WorkerState.Processing)
+            .Permit(WorkerTrigger.Stop, WorkerState.Stopping);
 
         _machine.Configure(WorkerState.Stopping)
             .OnEntryAsync(HandleStoppingAsync)
@@ -58,64 +73,112 @@ public abstract class WorkerStateMachine
 
         _machine.Configure(WorkerState.Error)
             .OnEntryAsync(HandleErrorAsync)
-            .Permit(WorkerTrigger.Start, WorkerState.Processing);
+            .Permit(WorkerTrigger.Restart, WorkerState.Processing)
+            .Permit(WorkerTrigger.Stop, WorkerState.Stopping);
     }
 
     public WorkerState CurrentState => _machine.State;
+
     public Task StartAsync() => StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Start);
-    public Task StopAsync() => StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Stop);
 
-    private async Task ScheduleAsync()
+    public async Task StopAsync()
     {
-        var retries = await GetRetryCountAsync();
-        var retryDelaySeconds = await GetRetryDelayAsync();
-        var interval = await GetIntervalAsync();
+        await _cancellationTokenSource?.CancelAsync()!;
+        await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Stop);
+    }
 
-        var attempt = 0;
-        while (_machine.State is WorkerState.Processing)
+    public Task RestartAsync() => StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Restart);
+
+    private async Task HandleProcessingAsync()
+    {
+        try
         {
-            try
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
+            _logger.LogInformation("Worker {Name} starting processing cycle (attempt {Attempt})", _name, _currentAttempt + 1);
+
+            await DoWorkAsync(token);
+
+            _currentAttempt = 0; // Reset on success
+            _logger.LogInformation("Worker {Name} job completed successfully", _name);
+
+            await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.JobCompleted);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Worker {Name} processing was cancelled", _name);
+            // Don't transition, let Stop handle it
+        }
+        catch (Exception ex)
+        {
+            _currentAttempt++;
+            var retries = await GetRetryCountAsync();
+
+            _logger.LogError(ex, "Worker {Name} failed attempt {Attempt}/{Max}", _name, _currentAttempt, retries);
+
+            if (_currentAttempt >= retries)
             {
-                _logger.LogInformation("Worker {Name} starting processing cycle", _name);
-                await HandleProcessingAsync();
-                attempt = 0;
+                _logger.LogError("Worker {Name} exceeded max retries, going to Error state", _name);
+                _currentAttempt = 0; // Reset for next restart
+                await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.ErrorOccurred);
             }
-            catch (Exception ex)
+            else
             {
-                attempt++;
-                _logger.LogError(ex, "Worker {name} failed attempt {Attempt}/{Max}", _name, attempt, retries);
-
-                if (attempt >= retries)
-                {
-                  _logger.LogError("Worker {name} exceeded max retries, going to Error", _name);
-                  await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.ErrorOccurred);
-                  break;
-                }
-
-                await Task.Delay(retryDelaySeconds);
+                // Retry after delay
+                var retryDelay = await GetRetryDelayAsync();
+                _logger.LogInformation("Worker {Name} retrying in {Delay}", _name, retryDelay);
+                await Task.Delay(retryDelay);
+                await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Start);
             }
+        }
+        finally
+        {
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+        }
+    }
 
-            _logger.LogInformation("Worker {Name} completed cycle, waiting for {Interval}", _name, interval);
+    private async Task HandleSuccessAsync()
+    {
+        _logger.LogInformation("Worker {Name} in Success state", _name);
+        await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.IntervalElapsed);
+    }
 
-            await Task.Delay(interval);
+    private async Task HandleWaitingAsync()
+    {
+        var interval = await GetIntervalAsync();
+        _logger.LogInformation("Worker {Name} waiting for {Interval} before next cycle", _name, interval);
+
+        try
+        {
+            await Task.Delay(interval, _cancellationTokenSource?.Token ?? CancellationToken.None);
+
+            if (_machine.State == WorkerState.WaitingForInterval)
+            {
+                await StateMachineWrapper.FireAsync(_machine, WorkerTrigger.Start);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Worker {Name} waiting was cancelled", _name);
         }
     }
 
     protected abstract Task<TimeSpan> GetIntervalAsync();
     protected abstract Task<TimeSpan> GetRetryDelayAsync();
     protected abstract Task<int> GetRetryCountAsync();
-    protected abstract Task HandleProcessingAsync(CancellationToken cancellationToken = default);
+    protected abstract Task DoWorkAsync(CancellationToken cancellationToken);
 
     protected virtual Task HandleStoppingAsync()
     {
-      _logger.LogInformation("Worker {Name} stopping, waiting for manual restart", _name);
-      return Task.CompletedTask;
+        _logger.LogInformation("Worker {Name} stopping, waiting for manual restart", _name);
+        return Task.CompletedTask;
     }
 
     protected virtual Task HandleErrorAsync()
     {
-      _logger.LogInformation("Worker {Name} in Error state, waiting for manual restart", _name);
-      return Task.CompletedTask;
+        _logger.LogInformation("Worker {Name} in Error state, waiting for manual restart", _name);
+        return Task.CompletedTask;
     }
 }
-

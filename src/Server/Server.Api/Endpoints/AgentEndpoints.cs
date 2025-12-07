@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Common.Messages.Agent.State;
+using Common.Messages.Agent.Command;
 using Common.Messages.Agent.Sync;
 using Server.Application.Abstractions.Providers;
 using Server.Application.Dtos.Agent;
@@ -104,5 +104,49 @@ public static class AgentEndpoints
           })
           // .RequireAuthorization(policy => policy.RequireRole("User"))
           .WithName("UpdateAgent");
+
+      // Worker Command Endpoints
+      group.MapPost("/{agentId:guid}/command", (Guid agentId, CommandRequestMessage command, ILongPollingDispatcher<Guid, CommandRequestMessage> commandDispatcher) =>
+          {
+            commandDispatcher.NotifyUpdateForKey(agentId, command);
+            return Task.FromResult(Results.Accepted());
+          })
+          // .RequireAuthorization(policy => policy.RequireRole("User"))
+          .WithName("SendWorkerCommand");
+
+      group.MapGet("/commands",
+          async (ILongPollingDispatcher<Guid, CommandRequestMessage> commandDispatcher, HttpContext context) =>
+          {
+            // Getting the agent ID from the authenticated user
+            var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
+
+            Guid.TryParse(agentId, out var agentIdGuid);
+
+            if (agentIdGuid == Guid.Empty)
+              return Results.Unauthorized();
+
+            var command =
+                await commandDispatcher.WaitForUpdateAsync(agentIdGuid, cancellationToken: context.RequestAborted);
+            return command is null
+                ? Results.NoContent()
+                : Results.Ok(command);
+          })
+          .RequireAuthorization(policy => policy.RequireRole("Agent"))
+          .WithName("PollWorkerCommands");
+
+      group.MapPut("/command-response",
+          async (CommandResponseMessage response, HttpContext context) =>
+          {
+            var agentId = context.User.FindFirst(ClaimTypes.Name)?.Value;
+
+            Guid.TryParse(agentId, out var agentIdGuid);
+
+            if (agentIdGuid == Guid.Empty)
+              return Results.Unauthorized();
+
+            return Results.Ok(new { agentId = agentIdGuid, response.Success, response.Message });
+          })
+          .RequireAuthorization(policy => policy.RequireRole("Agent"))
+          .WithName("ReceiveCommandResponse");
   }
 }

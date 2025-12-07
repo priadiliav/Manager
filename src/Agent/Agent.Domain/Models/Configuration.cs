@@ -8,4 +8,5 @@ public class Configuration
   public int SyncPollIntervalSeconds { get; set; }
   public int SyncExecutionRetryCount { get; set; }
   public int SyncExecutionRetryDelaySeconds { get; set; }
+  public int CommandPollIntervalSeconds { get; set; }
 }
