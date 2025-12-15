@@ -16,7 +16,7 @@ public class JsonMetricStore : IMetricStore
     WriteIndented = true
   };
 
-  public async Task StoreAsync(IEnumerable<Domain.Metric> metrics, CancellationToken cancellationToken)
+  public async Task StoreAsync(IReadOnlyList<Domain.Metric> metrics, CancellationToken cancellationToken)
   {
     await _lock.WaitAsync(cancellationToken);
     try
@@ -33,7 +33,7 @@ public class JsonMetricStore : IMetricStore
     }
   }
 
-  public async Task<IEnumerable<Domain.Metric>> GetAllAsync(CancellationToken cancellationToken)
+  public async Task<IReadOnlyList<Domain.Metric>> GetAllAsync(CancellationToken cancellationToken)
   {
     await _lock.WaitAsync(cancellationToken);
     try

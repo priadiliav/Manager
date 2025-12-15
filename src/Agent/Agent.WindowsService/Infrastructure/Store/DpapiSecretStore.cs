@@ -56,6 +56,7 @@ public class DpapiSecretStore : ISecretStore
     var path = PathConfig.SecretFilePath;
     if (!File.Exists(path))
     {
+      await PersistAsync(ct);
       _isLoaded = true;
       return;
     }

@@ -10,7 +10,25 @@ public partial class StateMachine
 
     try
     {
-      await _instructionService.ExecuteAsync(CancellationToken.None);
+      var getInstructionsFromServer = new List<Instruction>()
+      {
+        new()
+        {
+          AssociativeId = Guid.NewGuid(),
+          Type = InstructionType.ShellCommand,
+          Payload = new Dictionary<string, string>
+            { { "commandj", "ipconfig /all" }, }
+        }
+      };
+
+      foreach (var instruction in getInstructionsFromServer)
+      {
+        var result = await _executors
+          .First(e => e.CanExecute(instruction.Type))
+          .ExecuteAsync(instruction, CancellationToken.None);
+
+        await _instrStore.SaveResultAsync(result, CancellationToken.None);
+      }
 
       _logger.LogInformation("Execution iteration done");
       await _machine.FireAsync(Triggers.Success);

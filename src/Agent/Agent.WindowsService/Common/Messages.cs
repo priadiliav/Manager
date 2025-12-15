@@ -19,3 +19,7 @@ public record InstructionMessage(
   Guid AssociatedId,
   int Type,
   IReadOnlyDictionary<string, string> Payload);
+
+public record ReportMessage (
+  IEnumerable<MetricMessage> Metrics,
+  IEnumerable<InstructionResultMessage> InstructionResults);

@@ -1,23 +1,34 @@
 using Agent.WindowsService.Abstraction;
 using Agent.WindowsService.Domain;
+using FluentValidation;
 
 namespace Agent.WindowsService.Application;
 
 public partial class StateMachine : IStateMachine
 {
     private readonly Stateless.StateMachine<States, Triggers> _machine;
+    private readonly IEnumerable<IInstructionExecutor> _executors;
     private readonly ILogger<StateMachine> _logger;
-    private readonly IMetricService _metricService;
-    private readonly IInstructionService _instructionService;
+    private readonly IMetricCollector _metricCollector;
+    private readonly IMetricStore _metricStore;
+    private readonly IInstructionStore _instrStore;
+    private readonly ISecretStore _secretStore;
 
     public StateMachine(
       ILogger<StateMachine> logger,
-      IMetricService metricService,
-      IInstructionService instructionService)
+      IEnumerable<IInstructionExecutor> executors,
+      IMetricCollector metricCollector,
+      IMetricStore metricStore,
+      IInstructionStore instrStore,
+      ISecretStore secretStore)
     {
         _logger = logger;
-        _metricService = metricService;
-        _instructionService = instructionService;
+        _executors = executors;
+        _metricCollector = metricCollector;
+        _metricStore = metricStore;
+        _instrStore = instrStore;
+        _secretStore = secretStore;
+
         _machine = new Stateless.StateMachine<States, Triggers>(States.Idle);
         ConfigureStateMachine();
     }
@@ -28,12 +39,8 @@ public partial class StateMachine : IStateMachine
             .Permit(Triggers.Start, States.Authentication);
 
         _machine.Configure(States.Authentication)
-            .OnEntryAsync(async () =>
-            {
-                _logger.LogInformation("Entering Authentication state");
-                await Task.Delay(500);
-                await _machine.FireAsync(Triggers.Success);
-            })
+            .OnEntryAsync(HandleAuthenticationEntryAsync)
+            .OnExitAsync(HandleAuthenticationExitAsync)
             .Permit(Triggers.Success, States.Synchronization)
             .Permit(Triggers.Failed, States.Error)
             .Permit(Triggers.Stop, States.Idle);
@@ -59,7 +66,7 @@ public partial class StateMachine : IStateMachine
         _machine.Configure(States.Execution)
             .OnEntryAsync(HandleExecutionEntryAsync)
             .OnExitAsync(HandleExecutionExitAsync)
-            .Permit(Triggers.Success, States.Running)
+            .Permit(Triggers.Success, States.Delaying)
             .Permit(Triggers.Failed, States.Error)
             .Permit(Triggers.Stop, States.Idle);
 

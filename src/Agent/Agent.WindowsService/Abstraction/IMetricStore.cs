@@ -8,12 +8,12 @@ public interface IMetricStore
   /// <summary>
   /// Stores the given metrics asynchronously.
   /// </summary>
-  Task StoreAsync(IEnumerable<Domain.Metric> metrics, CancellationToken cancellationToken);
+  Task StoreAsync(IReadOnlyList<Domain.Metric> metrics, CancellationToken cancellationToken);
 
   /// <summary>
   /// Retrieves all stored metrics asynchronously.
   /// </summary>
-  Task<IEnumerable<Domain.Metric>> GetAllAsync(CancellationToken cancellationToken);
+  Task<IReadOnlyList<Domain.Metric>> GetAllAsync(CancellationToken cancellationToken);
 
   /// <summary>
   /// Removes all stored metrics asynchronously.

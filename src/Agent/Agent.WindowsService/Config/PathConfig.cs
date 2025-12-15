@@ -8,8 +8,14 @@ public static class PathConfig
   /// <summary>
   /// Metrics directory in the common application data directory.
   /// </summary>
-  public static string MetricsDirectory
-    => Path.Combine(BaseDirectory, "metrics");
+  public static readonly string MetricsDirectory
+    = Path.Combine(BaseDirectory, "metrics");
+
+  /// <summary>
+  /// Instruction results directory in the common application data directory.
+  /// </summary>
+  public static readonly string InstructionResultsDirectory
+    = Path.Combine(BaseDirectory, "instructions");
 
   /// <summary>
   /// Log file path in the common application data directory.
@@ -41,7 +47,7 @@ public static class PathConfig
   /// Creates a new instruction result file path with a timestamp in the instructions directory.
   /// </summary>
   public static string CreateInstructionResultFilePath
-    => Path.Combine(BaseDirectory, "instructions", $"instruction-result-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.json");
+    => Path.Combine(InstructionResultsDirectory, $"instruction-result-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.json");
 
   #endregion
 }

@@ -1,16 +1,29 @@
 using System.Diagnostics;
 using Agent.WindowsService.Abstraction;
 using Agent.WindowsService.Domain;
+using FluentValidation;
 
 namespace Agent.WindowsService.Infrastructure.Executors;
 
-public class ShellExecutor : IInstructionExecutor
+public class ShellExecutor(IValidator<Instruction> validator) : IInstructionExecutor
 {
   public bool CanExecute(InstructionType type) => type is InstructionType.ShellCommand;
 
   public async Task<InstructionResult> ExecuteAsync(Instruction instruction, CancellationToken cancellationToken = default)
   {
-    var command = instruction.Payload["command"];
+    var isValid = await validator.ValidateAsync(instruction, cancellationToken);
+    if (!isValid.IsValid)
+    {
+      return new InstructionResult
+      {
+        AssociativeId = instruction.AssociativeId,
+        Success = false,
+        Output = string.Join("; ", isValid.Errors.Select(e => e.ErrorMessage)),
+        Error = "Validation failed"
+      };
+    }
+
+    var command = instruction.Payload.GetValueOrDefault("command");
 
     using var process = new Process();
     process.StartInfo = new ProcessStartInfo
@@ -39,7 +52,15 @@ public class ShellExecutor : IInstructionExecutor
     var exited = await Task.Run(() => process.WaitForExit(timeout), cancellationToken);
     if (!exited)
     {
-      try { process.Kill(entireProcessTree: true); } catch { }
+      try
+      {
+        process.Kill(entireProcessTree: true);
+      }
+      catch
+      {
+        // ignored
+      }
+
       return new InstructionResult
       {
         AssociativeId = instruction.AssociativeId,
